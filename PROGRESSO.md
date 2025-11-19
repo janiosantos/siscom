@@ -127,13 +127,54 @@
 
 ---
 
-## 🔄 SPRINT 5 - PENDENTE (0%)
+## ✅ SPRINT 5 - COMPLETO (100%)
 
-### Planejado:
-- [ ] WMS Básico (endereçamento)
-- [ ] Inventário Rotativo
-- [ ] Picking por localização
-- [ ] Acuracidade de estoque
+### Módulos Implementados
+
+1. **WMS (Warehouse Management System)** ✅
+   - **Localizações de Estoque:**
+     * Tipos: CORREDOR, PRATELEIRA, PALLET, DEPOSITO
+     * CRUD completo de localizações
+     * Endereçamento físico (corredor, prateleira, nível)
+   - **Produto-Localização:**
+     * Vínculo produto ↔ localização
+     * Controle de quantidade por localização
+     * Quantidade mínima/máxima por localização
+   - **Picking (Separação):**
+     * Geração de lista de separação automática
+     * Sugestão de localizações por FIFO
+     * Otimização de caminho de separação
+   - **Arquivos:** 2 (wms_repository.py, wms_service.py)
+   - **Endpoints:** 8 novos endpoints WMS
+
+2. **Inventário de Estoque** ✅
+   - **Tipos de Inventário:**
+     * GERAL: Todos os produtos ativos
+     * PARCIAL: Por produtos/categorias/localizações
+     * ROTATIVO: Produtos com maior rotatividade
+   - **Fluxo Completo:**
+     * Criação de ficha de inventário
+     * Geração automática de itens
+     * Início de contagem
+     * Registro de contagens individuais
+     * Finalização com ajuste automático de estoque
+     * Cancelamento
+   - **Análises:**
+     * Cálculo de acuracidade
+     * Listagem de divergências
+     * Divergências positivas e negativas
+     * Percentual de precisão
+   - **Arquivos:** 2 (inventario_repository.py, inventario_service.py)
+   - **Endpoints:** 10 novos endpoints Inventário
+
+**Commit:** próximo | **Linhas:** ~6.400 | **Arquivos:** 4 novos + 4 atualizados
+
+### Funcionalidades Adicionadas
+- Endereçamento físico completo de estoque
+- Picking otimizado por FIFO
+- Inventário com 3 modalidades
+- Ajuste automático de estoque pós-inventário
+- KPIs de acuracidade de estoque
 
 ---
 
@@ -161,17 +202,18 @@
 ## 📈 Estatísticas Gerais
 
 ### Código
-- **Total de linhas:** ~20.756
-- **Total de arquivos:** ~118
-- **Módulos completos:** 15
-- **Sprints completos:** 4 de 7 (57%)
+- **Total de linhas:** ~27.156
+- **Total de arquivos:** ~126
+- **Módulos completos:** 17 (15 anteriores + WMS + Inventário)
+- **Sprints completos:** 5 de 7 (71%)
 
 ### Commits no GitHub
 1. ✅ `8a3e785` - Sprint 1 completo
 2. ✅ `070993f` - Sprint 2 completo
 3. ✅ `21657e9` - Sprint 3 parcial
 4. ✅ `850f2eb` - Sprint 3 completo (análise fornecedores)
-5. ✅ `[próximo]` - Sprint 4 completo (Ordens de Serviço)
+5. ✅ `97014a8` - Sprint 4 completo (Ordens de Serviço)
+6. ✅ `[próximo]` - Sprint 5 completo (WMS + Inventário)
 
 ### Tecnologias
 - Python 3.12+
@@ -196,10 +238,10 @@
 
 1. ✅ Sprint 1 completo
 2. ✅ Sprint 2 completo
-3. 🔄 Sprint 3 em andamento (66%)
-4. ⏳ Sprint 4
-5. ⏳ Sprint 5
-6. ⏳ Sprint 6
+3. ✅ Sprint 3 completo
+4. ✅ Sprint 4 completo
+5. ✅ Sprint 5 completo
+6. 🔄 Sprint 6 em andamento (0%)
 7. ⏳ Sprint 7
 8. ⏳ Documentação final
 9. ⏳ Testes completos
