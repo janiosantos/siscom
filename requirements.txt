@@ -29,6 +29,7 @@ xmltodict==0.13.0
 # Testes
 pytest==7.4.3
 pytest-asyncio==0.21.1
+pytest-cov==4.1.0
 httpx==0.26.0
 faker==22.0.0
 
@@ -41,3 +42,11 @@ redis==5.0.1
 
 # Validação CPF/CNPJ
 validate-docbr==1.10.0
+
+# Logging estruturado e Monitoramento
+python-json-logger==2.0.7
+psutil==5.9.8
+sentry-sdk==1.40.0  # Opcional para monitoramento de erros
+
+# Rate Limiting
+slowapi==0.1.9
