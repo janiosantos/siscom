@@ -300,16 +300,23 @@
   - [x] Integrado com main.py (/api/v1/integrations/frete)
   - [x] Autenticação via get_current_user
   - [x] Validação Pydantic completa
-- [ ] Integração com sistema de vendas
+- [x] Integração com sistema de vendas ✅ COMPLETO!
+  - [x] FreteVendasService (service layer)
+  - [x] 3 endpoints no módulo vendas (/vendas/frete/*)
+  - [x] Cálculo de frete no checkout
+  - [x] Validação de CEP em tempo real
+  - [x] Rastreamento de envios
 - [x] Testes automatizados ✅ COMPLETO!
 
 **Arquivos**:
 - `app/integrations/correios.py` (client - 220 linhas)
 - `app/integrations/melhorenvio.py` (client - 340 linhas)
 - `app/integrations/frete_router.py` (router - 300 linhas)
-- `tests/test_frete_router.py` (testes - 450 linhas) ✅ NOVO!
+- `app/modules/vendas/frete_service.py` (service - 380 linhas) ✅ NOVO!
+- `app/modules/vendas/router.py` (3 endpoints frete) ✅ ATUALIZADO!
+- `tests/test_frete_router.py` (testes - 450 linhas)
 
-**Status**: Sistema completo com testes! API REST funcional, integrada e testada 🚀📦✅
+**Status**: Sistema completo, testado e integrado com vendas! 🚀📦✅💼
 
 ### Comunicação - ✅ 100% COMPLETO!
 - [x] Email (SendGrid / AWS SES) - ✅ Client completo
