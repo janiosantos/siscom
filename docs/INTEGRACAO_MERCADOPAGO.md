@@ -444,12 +444,50 @@ logger.info(f"Webhook processado - Payment ID: {payment_id}, Status: {status}")
 1. ✅ Implementar client Mercado Pago (`mercadopago.py`)
 2. ✅ Criar endpoints REST (`mercadopago_router.py`)
 3. ✅ Integrar com `main.py`
-4. ⏳ Criar testes automatizados (`test_mercadopago.py`)
-5. ⏳ Implementar persistência em banco de dados
-6. ⏳ Implementar processamento de webhooks completo
+4. ✅ Criar testes automatizados (`test_mercadopago.py`)
+5. ✅ Implementar persistência em banco de dados
+6. ✅ Implementar processamento de webhooks completo
 7. ⏳ Adicionar validação de assinatura de webhooks
 8. ⏳ Configurar webhooks no painel do Mercado Pago
 9. ⏳ Migrar para credenciais de produção
+
+## Banco de Dados
+
+### Migration
+
+Execute a migration para adicionar campos de integração:
+
+```bash
+alembic upgrade head
+```
+
+A migration `001_add_integration_fields_to_transacao_pix.py` adiciona os seguintes campos à tabela `transacoes_pix`:
+
+- `integration_id`: ID do pagamento no sistema externo (Mercado Pago)
+- `integration_provider`: Nome do provedor (mercadopago, pagseguro, etc)
+- `integration_data`: JSON com todos os dados retornados pelo provedor
+
+### Consultas Úteis
+
+**Buscar todas as transações do Mercado Pago:**
+```sql
+SELECT * FROM transacoes_pix
+WHERE integration_provider = 'mercadopago';
+```
+
+**Buscar transações por status:**
+```sql
+SELECT * FROM transacoes_pix
+WHERE integration_provider = 'mercadopago'
+AND status = 'aprovado';
+```
+
+**Buscar transação por ID do Mercado Pago:**
+```sql
+SELECT * FROM transacoes_pix
+WHERE integration_id = '123456789'
+AND integration_provider = 'mercadopago';
+```
 
 ## Suporte
 

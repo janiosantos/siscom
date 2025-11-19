@@ -92,8 +92,35 @@ async def criar_pagamento_pix_mp(
             external_reference=pagamento.external_reference
         )
 
-        # TODO: Salvar no banco de dados local
-        # Criar registro na tabela TransacaoPix com integration_id = resultado['id']
+        # Salvar no banco de dados local
+        from app.modules.pagamentos.models import TransacaoPix, StatusPagamento, ChavePix
+        from sqlalchemy import select
+        import json
+
+        # Buscar a primeira chave PIX ativa (ou criar lógica para selecionar)
+        query = select(ChavePix).where(ChavePix.ativa == True).limit(1)
+        result = await db.execute(query)
+        chave_pix = result.scalar_one_or_none()
+
+        if chave_pix:
+            # Criar transação no banco de dados
+            transacao = TransacaoPix(
+                txid=str(resultado['id']),  # Usar ID do MP como txid temporário
+                chave_pix_id=chave_pix.id,
+                valor=resultado['valor'],
+                descricao=pagamento.descricao,
+                status=converter_status_mp(resultado['status']),
+                qr_code_texto=resultado.get('qr_code'),
+                qr_code_imagem=resultado.get('qr_code_base64'),
+                integration_id=str(resultado['id']),
+                integration_provider='mercadopago',
+                integration_data=json.dumps(resultado)
+            )
+            db.add(transacao)
+            await db.commit()
+            await db.refresh(transacao)
+
+            logger.info(f"Transação PIX MP salva no BD - ID: {transacao.id}, Integration ID: {resultado['id']}")
 
         return PagamentoPixMPResponse(**resultado)
 
@@ -132,7 +159,8 @@ async def consultar_pagamento_mp(
 @router.delete("/pagamento/{payment_id}")
 async def cancelar_pagamento_mp(
     payment_id: int,
-    current_user=Depends(get_current_user)
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_session)
 ):
     """
     Cancela um pagamento pendente no Mercado Pago
@@ -143,7 +171,23 @@ async def cancelar_pagamento_mp(
         mp_client = get_mp_client()
         resultado = await mp_client.cancelar_pagamento(payment_id)
 
-        # TODO: Atualizar status no banco de dados local
+        # Atualizar status no banco de dados local
+        from app.modules.pagamentos.models import TransacaoPix, StatusPagamento
+        from sqlalchemy import select
+        import json
+
+        query = select(TransacaoPix).where(
+            TransacaoPix.integration_id == str(payment_id),
+            TransacaoPix.integration_provider == 'mercadopago'
+        )
+        result = await db.execute(query)
+        transacao = result.scalar_one_or_none()
+
+        if transacao:
+            transacao.status = StatusPagamento.CANCELADO
+            transacao.integration_data = json.dumps(resultado)
+            await db.commit()
+            logger.info(f"Transação {transacao.id} marcada como CANCELADA")
 
         return {"sucesso": True, "status": resultado["status"]}
 
@@ -173,15 +217,50 @@ async def webhook_mercadopago(
         mp_client = get_mp_client()
         dados_processados = await mp_client.processar_webhook(webhook_data)
 
-        # TODO: Atualizar status do pagamento no banco de dados
-        # Buscar TransacaoPix por integration_id e atualizar status
+        # Atualizar status do pagamento no banco de dados
+        from app.modules.pagamentos.models import TransacaoPix
+        from sqlalchemy import select
+        from datetime import datetime
+        import json
 
-        logger.info(f"Webhook processado - Payment ID: {dados_processados.get('id')}, Status: {dados_processados.get('status')}")
+        payment_id = str(dados_processados.get('id'))
+
+        # Buscar transação por integration_id
+        query = select(TransacaoPix).where(
+            TransacaoPix.integration_id == payment_id,
+            TransacaoPix.integration_provider == 'mercadopago'
+        )
+        result = await db.execute(query)
+        transacao = result.scalar_one_or_none()
+
+        if transacao:
+            # Atualizar status
+            novo_status = converter_status_mp(dados_processados.get('status'))
+            transacao.status = novo_status
+
+            # Atualizar data de pagamento se aprovado
+            if novo_status == 'aprovado' and not transacao.data_pagamento:
+                transacao.data_pagamento = datetime.utcnow()
+
+            # Atualizar dados da integração
+            transacao.integration_data = json.dumps(dados_processados)
+
+            # Atualizar e2e_id se disponível
+            if dados_processados.get('e2e_id'):
+                transacao.e2e_id = dados_processados['e2e_id']
+
+            await db.commit()
+
+            logger.info(f"Transação atualizada - ID: {transacao.id}, Novo Status: {novo_status}")
+        else:
+            logger.warning(f"Transação não encontrada para Payment ID: {payment_id}")
+
+        logger.info(f"Webhook processado - Payment ID: {payment_id}, Status: {dados_processados.get('status')}")
 
         return {"sucesso": True}
 
     except Exception as e:
-        logger.error(f"Erro ao processar webhook MP: {str(e)}")
+        logger.error(f"Erro ao processar webhook MP: {str(e)}", exc_info=True)
         # Retornar 200 mesmo com erro para não fazer MP retentar infinitamente
         return {"sucesso": False, "erro": str(e)}
 
