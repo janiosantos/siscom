@@ -1,0 +1,104 @@
+# Pre-commit hooks para garantir qualidade do código
+# Instalação: pip install pre-commit
+# Ativar: pre-commit install
+
+repos:
+  # Hooks gerais
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+        name: Remove espaços em branco no fim das linhas
+      - id: end-of-file-fixer
+        name: Garante nova linha no fim do arquivo
+      - id: check-yaml
+        name: Verifica sintaxe YAML
+      - id: check-json
+        name: Verifica sintaxe JSON
+      - id: check-added-large-files
+        name: Previne commit de arquivos grandes (>500kb)
+        args: ['--maxkb=500']
+      - id: check-merge-conflict
+        name: Detecta marcadores de merge conflict
+      - id: debug-statements
+        name: Detecta breakpoints/debugs esquecidos
+      - id: check-ast
+        name: Verifica sintaxe Python (AST)
+      - id: check-case-conflict
+        name: Verifica conflitos de case em nomes de arquivo
+
+  # Black - Formatação de código
+  - repo: https://github.com/psf/black
+    rev: 23.12.1
+    hooks:
+      - id: black
+        name: Formatar código com Black
+        language_version: python3.11
+        args: ['--line-length=120']
+
+  # isort - Organização de imports
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        name: Organizar imports com isort
+        args: ['--profile', 'black', '--line-length', '120']
+
+  # Flake8 - Linting
+  - repo: https://github.com/PyCQA/flake8
+    rev: 7.0.0
+    hooks:
+      - id: flake8
+        name: Lint com Flake8
+        args: [
+          '--max-line-length=120',
+          '--extend-ignore=E203,W503',
+          '--exclude=.git,__pycache__,migrations,venv,.venv'
+        ]
+
+  # MyPy - Type checking
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.8.0
+    hooks:
+      - id: mypy
+        name: Type checking com MyPy
+        additional_dependencies: [types-all]
+        args: ['--ignore-missing-imports', '--no-strict-optional']
+        exclude: '^(tests/|migrations/)'
+
+  # Bandit - Security linting
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.6
+    hooks:
+      - id: bandit
+        name: Security scan com Bandit
+        args: ['-r', 'app/', '-ll']
+        exclude: '^tests/'
+
+  # Pytest - Executar testes
+  - repo: local
+    hooks:
+      - id: pytest
+        name: Executar testes com Pytest
+        entry: pytest
+        language: system
+        types: [python]
+        args: ['--maxfail=1', '--disable-warnings', '-q']
+        pass_filenames: false
+        always_run: true
+
+  # Check de documentação
+  - repo: https://github.com/pycqa/pydocstyle
+    rev: 6.3.0
+    hooks:
+      - id: pydocstyle
+        name: Check docstrings
+        args: ['--ignore=D100,D101,D102,D103,D104,D105,D107,D203,D213']
+        exclude: '^(tests/|migrations/|scripts/)'
+
+# Configuração global
+default_language_version:
+  python: python3.11
+
+# Execução
+fail_fast: false  # Executa todos os hooks mesmo se algum falhar

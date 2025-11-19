@@ -10,6 +10,7 @@ from app.core.database import init_db, close_db
 from app.core.logging import setup_logging, setup_sentry, get_logger
 from app.middleware.correlation import CorrelationIdMiddleware
 from app.middleware.rate_limit import setup_rate_limiting, limiter
+from app.middleware.security_headers import setup_security_headers
 
 # Configura logging estruturado
 setup_logging()
@@ -50,19 +51,34 @@ app = FastAPI(
 # Configuração de Rate Limiting
 setup_rate_limiting(app)
 
+# Configuração de Security Headers
+setup_security_headers(app)
+
 # Configuração de Middlewares
 
 # Middleware de Correlation ID (deve ser o primeiro)
 app.add_middleware(CorrelationIdMiddleware)
 
-# Configuração CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Configuração CORS (mais restritivo em produção)
+cors_config = {
+    "allow_origins": settings.ALLOWED_ORIGINS,
+    "allow_credentials": True,
+    "allow_methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    "allow_headers": ["*"],
+}
+
+# Em produção, restringe headers permitidos
+if not settings.DEBUG:
+    cors_config["allow_headers"] = [
+        "Authorization",
+        "Content-Type",
+        "X-Requested-With",
+        "X-Correlation-ID",
+    ]
+    cors_config["expose_headers"] = ["X-Correlation-ID", "X-RateLimit-Limit", "X-RateLimit-Remaining"]
+    cors_config["max_age"] = 600  # Cache preflight por 10 minutos
+
+app.add_middleware(CORSMiddleware, **cors_config)
 
 
 # Importação e registro dos routers dos módulos
