@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field, EmailStr
 from app.modules.auth.dependencies import get_current_user
 from app.integrations.email import EmailClient, EmailProvider
 from app.integrations.sms import SMSClient
+from app.integrations.email_templates import EmailTemplates
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
@@ -328,3 +329,207 @@ async def health_check():
         "email_ativo": status_config["sendgrid"] or status_config["aws_ses"],
         "sms_ativo": status_config["twilio"]
     }
+
+
+# ============================================
+# ENDPOINTS DE TEMPLATES DE EMAIL
+# ============================================
+
+@router.post("/email/templates/confirmacao-pedido")
+async def enviar_confirmacao_pedido(
+    dados: Dict[str, Any],
+    destinatario: EmailStr = Query(...),
+    current_user=Depends(get_current_user)
+):
+    """
+    Envia email de confirmação de pedido usando template
+
+    Dados esperados: numero_pedido, cliente_nome, itens, subtotal, frete, total, etc.
+    """
+    logger.info(f"Enviando confirmação de pedido para {destinatario}")
+
+    try:
+        # Gerar email a partir do template
+        email_data = EmailTemplates.confirmacao_pedido(dados)
+
+        # Enviar
+        client = get_email_client()
+        resultado = await client.enviar_email(
+            destinatario=destinatario,
+            assunto=email_data["assunto"],
+            corpo_html=email_data["html"]
+        )
+
+        return resultado
+
+    except Exception as e:
+        logger.error(f"Erro ao enviar confirmação de pedido: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erro ao enviar email: {str(e)}"
+        )
+
+
+@router.post("/email/templates/status-pagamento")
+async def enviar_status_pagamento(
+    dados: Dict[str, Any],
+    destinatario: EmailStr = Query(...),
+    current_user=Depends(get_current_user)
+):
+    """
+    Envia email de status de pagamento usando template
+
+    Dados esperados: numero_pedido, cliente_nome, status, valor, forma_pagamento
+    """
+    logger.info(f"Enviando status pagamento para {destinatario}")
+
+    try:
+        email_data = EmailTemplates.status_pagamento(dados)
+        client = get_email_client()
+
+        resultado = await client.enviar_email(
+            destinatario=destinatario,
+            assunto=email_data["assunto"],
+            corpo_html=email_data["html"]
+        )
+
+        return resultado
+
+    except Exception as e:
+        logger.error(f"Erro ao enviar status pagamento: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erro ao enviar email: {str(e)}"
+        )
+
+
+@router.post("/email/templates/tracking-envio")
+async def enviar_tracking_envio(
+    dados: Dict[str, Any],
+    destinatario: EmailStr = Query(...),
+    current_user=Depends(get_current_user)
+):
+    """
+    Envia email de tracking de envio usando template
+
+    Dados esperados: numero_pedido, cliente_nome, codigo_rastreio, transportadora, previsao_entrega
+    """
+    logger.info(f"Enviando tracking para {destinatario}")
+
+    try:
+        email_data = EmailTemplates.tracking_envio(dados)
+        client = get_email_client()
+
+        resultado = await client.enviar_email(
+            destinatario=destinatario,
+            assunto=email_data["assunto"],
+            corpo_html=email_data["html"]
+        )
+
+        return resultado
+
+    except Exception as e:
+        logger.error(f"Erro ao enviar tracking: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erro ao enviar email: {str(e)}"
+        )
+
+
+@router.post("/email/templates/boas-vindas")
+async def enviar_boas_vindas(
+    dados: Dict[str, Any],
+    destinatario: EmailStr = Query(...),
+    current_user=Depends(get_current_user)
+):
+    """
+    Envia email de boas-vindas usando template
+
+    Dados esperados: nome, email, cupom_desconto (opcional)
+    """
+    logger.info(f"Enviando boas-vindas para {destinatario}")
+
+    try:
+        email_data = EmailTemplates.boas_vindas(dados)
+        client = get_email_client()
+
+        resultado = await client.enviar_email(
+            destinatario=destinatario,
+            assunto=email_data["assunto"],
+            corpo_html=email_data["html"]
+        )
+
+        return resultado
+
+    except Exception as e:
+        logger.error(f"Erro ao enviar boas-vindas: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erro ao enviar email: {str(e)}"
+        )
+
+
+@router.post("/email/templates/recuperacao-senha")
+async def enviar_recuperacao_senha(
+    dados: Dict[str, Any],
+    destinatario: EmailStr = Query(...),
+    current_user=Depends(get_current_user)
+):
+    """
+    Envia email de recuperação de senha usando template
+
+    Dados esperados: nome, token, link_reset, expiracao
+    """
+    logger.info(f"Enviando recuperação senha para {destinatario}")
+
+    try:
+        email_data = EmailTemplates.recuperacao_senha(dados)
+        client = get_email_client()
+
+        resultado = await client.enviar_email(
+            destinatario=destinatario,
+            assunto=email_data["assunto"],
+            corpo_html=email_data["html"]
+        )
+
+        return resultado
+
+    except Exception as e:
+        logger.error(f"Erro ao enviar recuperação senha: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erro ao enviar email: {str(e)}"
+        )
+
+
+@router.post("/email/templates/carrinho-abandonado")
+async def enviar_carrinho_abandonado(
+    dados: Dict[str, Any],
+    destinatario: EmailStr = Query(...),
+    current_user=Depends(get_current_user)
+):
+    """
+    Envia email de recuperação de carrinho abandonado usando template
+
+    Dados esperados: nome, itens, total, cupom_desconto (opcional), link_carrinho
+    """
+    logger.info(f"Enviando recuperação carrinho para {destinatario}")
+
+    try:
+        email_data = EmailTemplates.carrinho_abandonado(dados)
+        client = get_email_client()
+
+        resultado = await client.enviar_email(
+            destinatario=destinatario,
+            assunto=email_data["assunto"],
+            corpo_html=email_data["html"]
+        )
+
+        return resultado
+
+    except Exception as e:
+        logger.error(f"Erro ao enviar recuperação carrinho: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erro ao enviar email: {str(e)}"
+        )
