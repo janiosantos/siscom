@@ -321,3 +321,266 @@ class CurvaABCResponse(BaseModel):
     items: list[CurvaABCItem] = Field(..., description="Lista de produtos classificados")
 
     model_config = ConfigDict(from_attributes=True)
+
+
+# ==================== SCHEMAS WMS ====================
+
+
+class TipoLocalizacaoEnum(str, Enum):
+    """Enum para tipos de localização de estoque"""
+
+    CORREDOR = "CORREDOR"
+    PRATELEIRA = "PRATELEIRA"
+    PALLET = "PALLET"
+    DEPOSITO = "DEPOSITO"
+
+
+class LocalizacaoEstoqueBase(BaseModel):
+    """Schema base de Localização de Estoque"""
+
+    codigo: str = Field(..., min_length=1, max_length=50, description="Código da localização")
+    descricao: str = Field(..., min_length=1, max_length=200, description="Descrição da localização")
+    tipo: TipoLocalizacaoEnum = Field(..., description="Tipo de localização")
+    corredor: Optional[str] = Field(None, max_length=20, description="Código do corredor")
+    prateleira: Optional[str] = Field(None, max_length=20, description="Código da prateleira")
+    nivel: Optional[str] = Field(None, max_length=20, description="Nível/altura")
+    observacoes: Optional[str] = Field(None, max_length=500, description="Observações")
+    ativo: bool = Field(True, description="Localização ativa")
+
+
+class LocalizacaoEstoqueCreate(LocalizacaoEstoqueBase):
+    """Schema para criação de Localização de Estoque"""
+
+    pass
+
+
+class LocalizacaoEstoqueUpdate(BaseModel):
+    """Schema para atualização de Localização de Estoque"""
+
+    descricao: Optional[str] = Field(None, min_length=1, max_length=200, description="Descrição da localização")
+    tipo: Optional[TipoLocalizacaoEnum] = Field(None, description="Tipo de localização")
+    corredor: Optional[str] = Field(None, max_length=20, description="Código do corredor")
+    prateleira: Optional[str] = Field(None, max_length=20, description="Código da prateleira")
+    nivel: Optional[str] = Field(None, max_length=20, description="Nível/altura")
+    observacoes: Optional[str] = Field(None, max_length=500, description="Observações")
+    ativo: Optional[bool] = Field(None, description="Localização ativa")
+
+
+class LocalizacaoEstoqueResponse(LocalizacaoEstoqueBase):
+    """Schema de resposta de Localização de Estoque"""
+
+    id: int
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class LocalizacaoEstoqueList(BaseModel):
+    """Schema para lista paginada de localizações"""
+
+    items: list[LocalizacaoEstoqueResponse]
+    total: int
+    page: int
+    page_size: int
+    pages: int
+
+
+class ProdutoLocalizacaoBase(BaseModel):
+    """Schema base de Produto-Localização"""
+
+    produto_id: int = Field(..., gt=0, description="ID do produto")
+    localizacao_id: int = Field(..., gt=0, description="ID da localização")
+    quantidade: float = Field(0.0, ge=0, description="Quantidade na localização")
+    quantidade_minima: Optional[float] = Field(None, ge=0, description="Quantidade mínima nesta localização")
+    quantidade_maxima: Optional[float] = Field(None, ge=0, description="Quantidade máxima nesta localização")
+
+
+class ProdutoLocalizacaoCreate(ProdutoLocalizacaoBase):
+    """Schema para criação de Produto-Localização"""
+
+    pass
+
+
+class ProdutoLocalizacaoResponse(ProdutoLocalizacaoBase):
+    """Schema de resposta de Produto-Localização"""
+
+    id: int
+    created_at: datetime
+    updated_at: datetime
+    localizacao: LocalizacaoEstoqueResponse
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class VincularProdutoLocalizacaoRequest(BaseModel):
+    """Schema para vincular produto a localização"""
+
+    localizacao_id: int = Field(..., gt=0, description="ID da localização")
+    quantidade: float = Field(0.0, ge=0, description="Quantidade inicial na localização")
+    quantidade_minima: Optional[float] = Field(None, ge=0, description="Quantidade mínima")
+    quantidade_maxima: Optional[float] = Field(None, ge=0, description="Quantidade máxima")
+
+
+class PickingListItem(BaseModel):
+    """Item da lista de separação (picking)"""
+
+    produto_id: int
+    produto_descricao: str
+    codigo_barras: str
+    quantidade_necessaria: float
+    localizacao_codigo: str
+    localizacao_descricao: str
+    localizacao_tipo: TipoLocalizacaoEnum
+    quantidade_disponivel: float
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ==================== SCHEMAS INVENTÁRIO ====================
+
+
+class TipoInventarioEnum(str, Enum):
+    """Enum para tipos de inventário"""
+
+    GERAL = "GERAL"
+    PARCIAL = "PARCIAL"
+    ROTATIVO = "ROTATIVO"
+
+
+class StatusInventarioEnum(str, Enum):
+    """Enum para status de inventário"""
+
+    ABERTA = "ABERTA"
+    EM_ANDAMENTO = "EM_ANDAMENTO"
+    CONCLUIDA = "CONCLUIDA"
+    CANCELADA = "CANCELADA"
+
+
+class FichaInventarioBase(BaseModel):
+    """Schema base de Ficha de Inventário"""
+
+    tipo: TipoInventarioEnum = Field(..., description="Tipo de inventário")
+    observacoes: Optional[str] = Field(None, max_length=1000, description="Observações")
+    usuario_responsavel_id: Optional[int] = Field(None, description="ID do usuário responsável")
+
+
+class FichaInventarioCreate(FichaInventarioBase):
+    """Schema para criação de Ficha de Inventário"""
+
+    # Filtros opcionais para inventário PARCIAL ou ROTATIVO
+    produto_ids: Optional[list[int]] = Field(None, description="IDs dos produtos para inventário parcial")
+    localizacao_ids: Optional[list[int]] = Field(None, description="IDs das localizações para inventário parcial")
+    categoria_ids: Optional[list[int]] = Field(None, description="IDs das categorias para inventário parcial")
+
+
+class FichaInventarioResponse(FichaInventarioBase):
+    """Schema de resposta de Ficha de Inventário"""
+
+    id: int
+    data_geracao: datetime
+    data_inicio: Optional[datetime]
+    data_conclusao: Optional[datetime]
+    status: StatusInventarioEnum
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class FichaInventarioList(BaseModel):
+    """Schema para lista paginada de fichas de inventário"""
+
+    items: list[FichaInventarioResponse]
+    total: int
+    page: int
+    page_size: int
+    pages: int
+
+
+class ItemInventarioBase(BaseModel):
+    """Schema base de Item de Inventário"""
+
+    produto_id: int = Field(..., gt=0, description="ID do produto")
+    localizacao_id: Optional[int] = Field(None, description="ID da localização (opcional)")
+    quantidade_sistema: float = Field(..., ge=0, description="Quantidade registrada no sistema")
+
+
+class ItemInventarioCreate(ItemInventarioBase):
+    """Schema para criação de Item de Inventário"""
+
+    ficha_id: int = Field(..., gt=0, description="ID da ficha de inventário")
+
+
+class ItemInventarioUpdate(BaseModel):
+    """Schema para atualização de Item de Inventário (registro de contagem)"""
+
+    quantidade_contada: float = Field(..., ge=0, description="Quantidade contada fisicamente")
+    justificativa: Optional[str] = Field(None, max_length=500, description="Justificativa da divergência")
+    conferido_por_id: Optional[int] = Field(None, description="ID do usuário que conferiu")
+
+
+class ItemInventarioResponse(ItemInventarioBase):
+    """Schema de resposta de Item de Inventário"""
+
+    id: int
+    ficha_id: int
+    quantidade_contada: Optional[float]
+    divergencia: Optional[float]
+    justificativa: Optional[str]
+    conferido_por_id: Optional[int]
+    data_contagem: Optional[datetime]
+    created_at: datetime
+    produto: ProdutoResponse
+    localizacao: Optional[LocalizacaoEstoqueResponse]
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class RegistrarContagemRequest(BaseModel):
+    """Schema para registrar contagem de um item"""
+
+    item_id: int = Field(..., gt=0, description="ID do item de inventário")
+    quantidade_contada: float = Field(..., ge=0, description="Quantidade contada")
+    justificativa: Optional[str] = Field(None, max_length=500, description="Justificativa se houver divergência")
+    conferido_por_id: Optional[int] = Field(None, description="ID do usuário que conferiu")
+
+
+class IniciarContagemRequest(BaseModel):
+    """Schema para iniciar contagem de inventário"""
+
+    observacoes: Optional[str] = Field(None, max_length=1000, description="Observações sobre o início")
+
+
+class FinalizarContagemRequest(BaseModel):
+    """Schema para finalizar inventário"""
+
+    ajustar_estoque: bool = Field(True, description="Se deve ajustar o estoque automaticamente")
+    observacoes: Optional[str] = Field(None, max_length=1000, description="Observações finais")
+
+
+class AcuracidadeResponse(BaseModel):
+    """Schema de resposta de acuracidade de estoque"""
+
+    total_itens: int = Field(..., description="Total de itens inventariados")
+    itens_sem_divergencia: int = Field(..., description="Itens sem divergência")
+    itens_com_divergencia: int = Field(..., description="Itens com divergência")
+    percentual_acuracidade: float = Field(..., description="Percentual de acuracidade (0-100)")
+    divergencia_total_positiva: float = Field(..., description="Total de divergências positivas (sobras)")
+    divergencia_total_negativa: float = Field(..., description="Total de divergências negativas (faltas)")
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class DivergenciaItem(BaseModel):
+    """Item com divergência no inventário"""
+
+    produto_id: int
+    produto_descricao: str
+    codigo_barras: str
+    quantidade_sistema: float
+    quantidade_contada: float
+    divergencia: float
+    percentual_divergencia: float
+    localizacao_codigo: Optional[str]
+
+    model_config = ConfigDict(from_attributes=True)

@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.modules.compras.service import ComprasService
+from app.modules.compras.fornecedor_analise_service import FornecedorAnaliseService
 from app.modules.compras.schemas import (
     PedidoCompraCreate,
     PedidoCompraUpdate,
@@ -231,3 +232,85 @@ async def listar_atrasados(
     """
     service = ComprasService(db)
     return await service.get_pedidos_atrasados(page, page_size)
+
+
+# Endpoints de Análise de Fornecedores
+
+
+@router.get(
+    "/analise/fornecedor/{fornecedor_id}",
+    summary="Analisar desempenho de fornecedor",
+    description="Analisa o desempenho de um fornecedor baseado em pedidos realizados",
+)
+async def analisar_fornecedor(
+    fornecedor_id: int,
+    periodo_dias: int = Query(
+        180, ge=30, le=730, description="Período de análise em dias (30-730)"
+    ),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Analisa o desempenho de um fornecedor
+
+    Métricas analisadas:
+    - Total de pedidos no período
+    - Valor total comprado
+    - Ticket médio
+    - Taxa de entrega no prazo (%)
+    - Média de dias de atraso
+    - Taxa de recebimento completo (%)
+    - Classificação (EXCELENTE, BOM, REGULAR, RUIM)
+
+    Critérios de classificação:
+    - EXCELENTE: >90% prazo, <2 dias atraso, >95% completo
+    - BOM: >75% prazo, <5 dias atraso, >85% completo
+    - REGULAR: >60% prazo, <10 dias atraso, >70% completo
+    - RUIM: abaixo dos critérios acima
+    """
+    service = FornecedorAnaliseService(db)
+    return await service.analisar_desempenho_fornecedor(fornecedor_id, periodo_dias)
+
+
+@router.get(
+    "/analise/ranking",
+    summary="Ranking de fornecedores",
+    description="Ranking de fornecedores por desempenho",
+)
+async def ranking_fornecedores(
+    periodo_dias: int = Query(
+        180, ge=30, le=730, description="Período de análise em dias (30-730)"
+    ),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Gera ranking de fornecedores por desempenho
+
+    - Ordena fornecedores por classificação e taxa de entrega
+    - Apenas fornecedores ativos com pedidos no período
+    - Útil para decisões de compra e negociação
+    """
+    service = FornecedorAnaliseService(db)
+    return await service.ranking_fornecedores(periodo_dias)
+
+
+@router.post(
+    "/analise/comparar",
+    summary="Comparar fornecedores",
+    description="Compara o desempenho de múltiplos fornecedores",
+)
+async def comparar_fornecedores(
+    fornecedor_ids: list[int],
+    periodo_dias: int = Query(
+        180, ge=30, le=730, description="Período de análise em dias (30-730)"
+    ),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Compara o desempenho de múltiplos fornecedores
+
+    - Fornece análise lado a lado
+    - Útil para decisão entre fornecedores
+    - Retorna métricas completas para cada fornecedor
+    """
+    service = FornecedorAnaliseService(db)
+    return await service.comparar_fornecedores(fornecedor_ids, periodo_dias)
