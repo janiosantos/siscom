@@ -92,14 +92,38 @@
 
 ---
 
-## 🔄 SPRINT 4 - PENDENTE (0%)
+## ✅ SPRINT 4 - COMPLETO (100%)
 
-### Planejado:
-- [ ] Ordens de Serviço completas
-- [ ] Gestão de Técnicos
-- [ ] Controle de Número de Série
-- [ ] Apontamento de materiais e horas
-- [ ] Faturamento de OS
+### Módulos Implementados
+
+1. **Ordens de Serviço (OS)** ✅
+   - Tipos de serviço cadastráveis
+   - Cadastro de técnicos com especialidades
+   - **Ordem de Serviço completa:**
+     * Abertura vinculando cliente, técnico, tipo serviço
+     * Vínculo com produto/equipamento + número de série
+     * Status: ABERTA, EM_ANDAMENTO, CONCLUIDA, CANCELADA, FATURADA
+   - **Gestão de materiais:**
+     * Adição de materiais/peças utilizadas
+     * Baixa automática de estoque (integração EstoqueService)
+   - **Apontamento de horas:**
+     * Registro de horas trabalhadas por técnico
+     * Histórico de apontamentos
+   - **Faturamento:**
+     * Cálculo automático (mão de obra + materiais + horas)
+     * Criação de conta a receber (integração FinanceiroService)
+     * Mudança de status para FATURADA
+   - **Controle de número de série:**
+     * Campo controla_serie em Produto
+     * Rastreamento de equipamentos
+   - **Funcionalidades adicionais:**
+     * Agenda de técnicos
+     * OS abertas e atrasadas
+     * Atribuição/reatribuição de técnico
+   - **Arquivos:** 6 (models, schemas, repository, service, router, __init__)
+   - **Linhas:** ~2.106
+
+**Commit:** próximo | **Linhas:** ~2.106 | **Arquivos:** 6 + 1 atualizado (produtos/models)
 
 ---
 
@@ -137,15 +161,17 @@
 ## 📈 Estatísticas Gerais
 
 ### Código
-- **Total de linhas:** ~18.302
-- **Total de arquivos:** ~107
-- **Módulos completos:** 14
-- **Sprints completos:** 2.66 de 7 (38%)
+- **Total de linhas:** ~20.756
+- **Total de arquivos:** ~118
+- **Módulos completos:** 15
+- **Sprints completos:** 4 de 7 (57%)
 
 ### Commits no GitHub
 1. ✅ `8a3e785` - Sprint 1 completo
 2. ✅ `070993f` - Sprint 2 completo
 3. ✅ `21657e9` - Sprint 3 parcial
+4. ✅ `850f2eb` - Sprint 3 completo (análise fornecedores)
+5. ✅ `[próximo]` - Sprint 4 completo (Ordens de Serviço)
 
 ### Tecnologias
 - Python 3.12+

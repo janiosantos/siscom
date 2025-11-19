@@ -35,6 +35,7 @@ class Produto(Base):
     unidade: Mapped[str] = mapped_column(String(10), nullable=False, default="UN")
     ncm: Mapped[str] = mapped_column(String(10), nullable=True)
     controla_lote: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    controla_serie: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     ativo: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, nullable=False
