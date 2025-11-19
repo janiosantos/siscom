@@ -34,6 +34,8 @@ Todos os endpoints estão sob o prefixo `/api/v1/integrations/mercadopago`
 
 Cria um pagamento PIX e retorna QR Code para pagamento instantâneo.
 
+**Autenticação**: Requerida (Bearer Token)
+
 **Headers:**
 ```
 Authorization: Bearer {seu-jwt-token}
@@ -78,7 +80,141 @@ curl -X POST "http://localhost:8000/api/v1/integrations/mercadopago/pix" \
   }'
 ```
 
-### 2. Consultar Pagamento
+### 2. Criar Pagamento com Cartão
+
+**POST** `/api/v1/integrations/mercadopago/cartao`
+
+Cria um pagamento com cartão de crédito ou débito. Suporta parcelamento em até 12x.
+
+**Autenticação**: Requerida (Bearer Token)
+
+**⚠️ IMPORTANTE**: O frontend deve tokenizar o cartão usando MercadoPago.js antes de enviar a requisição. NUNCA envie dados brutos do cartão para o backend.
+
+**Headers:**
+```
+Authorization: Bearer {seu-jwt-token}
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "valor": 350.00,
+  "descricao": "Venda #5678 - Material de Construção",
+  "token_cartao": "a1b2c3d4e5f6g7h8i9j0",
+  "installments": 3,
+  "email_pagador": "cliente@email.com",
+  "cpf_pagador": "12345678900",
+  "nome_pagador": "João Silva",
+  "external_reference": "VENDA-5678"
+}
+```
+
+**Campos:**
+- `valor` (obrigatório): Valor do pagamento
+- `descricao` (obrigatório): Descrição da compra
+- `token_cartao` (obrigatório): Token do cartão obtido via MercadoPago.js
+- `installments` (opcional): Número de parcelas (1-12), padrão: 1
+- `email_pagador` (opcional): Email do cliente
+- `cpf_pagador` (opcional): CPF do cliente (sem formatação)
+- `nome_pagador` (opcional): Nome completo do cliente
+- `external_reference` (opcional): ID da venda no seu sistema
+
+**Response (201 Created):**
+```json
+{
+  "id": 987654321,
+  "status": "approved",
+  "status_detail": "accredited",
+  "valor": 350.00,
+  "data_criacao": "2025-11-19T14:30:00Z",
+  "data_aprovacao": "2025-11-19T14:30:05Z",
+  "metodo_pagamento": "visa",
+  "parcelas": 3,
+  "authorization_code": "ABC123",
+  "external_reference": "VENDA-5678"
+}
+```
+
+**Exemplo de Uso (Backend):**
+```bash
+curl -X POST "http://localhost:8000/api/v1/integrations/mercadopago/cartao" \
+  -H "Authorization: Bearer eyJhbGc..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "valor": 350.00,
+    "descricao": "Venda #5678",
+    "token_cartao": "a1b2c3d4e5f6g7h8i9j0",
+    "installments": 3,
+    "email_pagador": "cliente@email.com",
+    "cpf_pagador": "12345678900",
+    "nome_pagador": "João Silva"
+  }'
+```
+
+**Exemplo de Uso (Frontend - Tokenização):**
+```javascript
+// 1. Incluir MercadoPago.js no HTML
+<script src="https://sdk.mercadopago.com/js/v2"></script>
+
+// 2. Inicializar SDK com Public Key
+const mp = new MercadoPago('TEST-040da26c-318d-46ff-b42e-4ef22fbf755f');
+
+// 3. Criar token do cartão
+const cardData = {
+  cardNumber: '4235 6477 2802 5682',
+  cardholderName: 'JOÃO SILVA',
+  cardExpirationMonth: '11',
+  cardExpirationYear: '2025',
+  securityCode: '123',
+  identificationType: 'CPF',
+  identificationNumber: '12345678900'
+};
+
+mp.createCardToken(cardData).then(response => {
+  const token = response.id; // Enviar este token para o backend
+
+  // 4. Enviar token para o backend
+  fetch('/api/v1/integrations/mercadopago/cartao', {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer ' + userToken,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      valor: 350.00,
+      descricao: 'Venda #5678',
+      token_cartao: token,
+      installments: 3,
+      email_pagador: 'cliente@email.com',
+      cpf_pagador: '12345678900',
+      nome_pagador: 'João Silva'
+    })
+  });
+}).catch(error => {
+  console.error('Erro ao tokenizar cartão:', error);
+});
+```
+
+**Parcelamento:**
+- 1x: À vista
+- 2-6x: Parcelamento comum
+- 7-12x: Parcelamento estendido
+
+**Status de Resposta:**
+- `approved`: Pagamento aprovado
+- `pending`: Pagamento pendente (aguardando processamento)
+- `rejected`: Pagamento rejeitado
+- `in_process`: Em análise
+
+**Códigos de Erro Comuns:**
+- `cc_rejected_bad_filled_card_number`: Número do cartão inválido
+- `cc_rejected_bad_filled_date`: Data de validade inválida
+- `cc_rejected_bad_filled_security_code`: Código de segurança inválido
+- `cc_rejected_insufficient_amount`: Saldo/limite insuficiente
+- `cc_rejected_call_for_authorize`: Necessário contato com emissor
+
+### 3. Consultar Pagamento
 
 **GET** `/api/v1/integrations/mercadopago/pagamento/{payment_id}`
 
@@ -386,29 +522,62 @@ No ambiente de teste, o QR Code gerado é válido, mas o pagamento não será pr
 
 ## Segurança
 
-### Validação de Webhook
+### Validação de Assinatura de Webhook
 
-O Mercado Pago envia um header `x-signature` para validar a autenticidade do webhook:
+✅ **Implementado automaticamente!**
 
+O sistema valida automaticamente a assinatura dos webhooks do Mercado Pago para garantir que as notificações são autênticas.
+
+**Como funciona:**
+
+1. **Mercado Pago envia headers especiais:**
+   - `x-signature`: Contém timestamp e hash HMAC SHA256
+   - `x-request-id`: ID único da requisição
+
+2. **Sistema valida automaticamente:**
+   - Extrai `ts` (timestamp) e `v1` (hash) do header `x-signature`
+   - Reconstrói a string no formato: `id:{data_id};request-id:{x_request_id};ts:{ts};`
+   - Calcula HMAC SHA256 usando o webhook secret
+   - Compara os hashes usando `hmac.compare_digest()` (resistente a timing attacks)
+
+3. **Rejeita webhooks inválidos:**
+   - Se a assinatura não bater, retorna HTTP 401 Unauthorized
+   - Webhook rejeitado não é processado
+
+**Configuração:**
+
+Adicione no `.env`:
+```bash
+MERCADOPAGO_WEBHOOK_SECRET=seu-secret-aqui
+```
+
+**Onde obter o secret:**
+1. Acesse: https://www.mercadopago.com.br/developers/panel/webhooks
+2. Configure ou edite seu webhook
+3. Copie o "Secret" exibido
+4. Cole no `.env`
+
+**⚠️ IMPORTANTE:**
+- Sem o secret configurado, os webhooks funcionam mas **SEM validação de assinatura**
+- Sempre use o secret em produção para segurança
+- O secret é diferente para teste e produção
+
+**Logs:**
+- ✅ Assinatura válida: `"Assinatura do webhook validada com sucesso"`
+- ❌ Assinatura inválida: `"Webhook MP rejeitado: assinatura inválida"`
+- ⚠️ Secret não configurado: `"MERCADOPAGO_WEBHOOK_SECRET não configurado - webhook sem validação de assinatura"`
+
+**Implementação (já funcionando):**
 ```python
-import hmac
-import hashlib
+# Código já implementado em app/integrations/mercadopago_router.py
+webhook_secret = getattr(settings, 'MERCADOPAGO_WEBHOOK_SECRET', None)
+if webhook_secret:
+    x_signature = request.headers.get('x-signature')
+    x_request_id = request.headers.get('x-request-id')
+    data_id = webhook_data.get('data', {}).get('id', '')
 
-def validar_webhook_mp(x_signature: str, x_request_id: str, data: dict) -> bool:
-    """Valida assinatura do webhook do Mercado Pago"""
-    secret = settings.MERCADOPAGO_WEBHOOK_SECRET  # Obter no painel MP
-
-    # Criar string para assinar
-    template = f"id:{data['data']['id']};request-id:{x_request_id};ts:{data['date_created']};"
-
-    # Calcular HMAC SHA256
-    hmac_sha256 = hmac.new(
-        secret.encode(),
-        template.encode(),
-        hashlib.sha256
-    ).hexdigest()
-
-    return hmac_sha256 == x_signature
+    if not validar_assinatura_webhook(x_signature, x_request_id, data_id, webhook_secret):
+        raise HTTPException(status_code=401, detail="Assinatura do webhook inválida")
 ```
 
 ### Rate Limiting
@@ -447,9 +616,12 @@ logger.info(f"Webhook processado - Payment ID: {payment_id}, Status: {status}")
 4. ✅ Criar testes automatizados (`test_mercadopago.py`)
 5. ✅ Implementar persistência em banco de dados
 6. ✅ Implementar processamento de webhooks completo
-7. ⏳ Adicionar validação de assinatura de webhooks
-8. ⏳ Configurar webhooks no painel do Mercado Pago
-9. ⏳ Migrar para credenciais de produção
+7. ✅ Adicionar validação de assinatura de webhooks
+8. ✅ Implementar pagamento com cartão de crédito/débito
+9. ⏳ Configurar webhooks no painel do Mercado Pago
+10. ⏳ Migrar para credenciais de produção
+11. ⏳ Implementar split de pagamentos (marketplace)
+12. ⏳ Adicionar suporte a boleto bancário via MP
 
 ## Banco de Dados
 

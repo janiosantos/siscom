@@ -256,6 +256,90 @@ class MercadoPagoClient:
                 logger.error(f"Erro ao criar preferência: {str(e)}")
                 raise
 
+    async def criar_pagamento_cartao(
+        self,
+        valor: Decimal,
+        descricao: str,
+        token_cartao: str,
+        installments: int = 1,
+        email_pagador: str = None,
+        cpf_pagador: str = None,
+        nome_pagador: str = None,
+        external_reference: str = None
+    ) -> Dict[str, Any]:
+        """
+        Cria um pagamento com cartão de crédito/débito
+
+        Args:
+            valor: Valor do pagamento
+            descricao: Descrição do pagamento
+            token_cartao: Token do cartão (obtido via MercadoPago.js)
+            installments: Número de parcelas (1-12)
+            email_pagador: Email do pagador
+            cpf_pagador: CPF do pagador
+            nome_pagador: Nome do pagador
+            external_reference: Referência externa
+
+        Returns:
+            Dados do pagamento criado
+        """
+        logger.info(f"Criando pagamento com cartão - Valor: {valor}, Parcelas: {installments}")
+
+        payload = {
+            "transaction_amount": float(valor),
+            "description": descricao,
+            "token": token_cartao,
+            "installments": installments,
+            "payer": {
+                "email": email_pagador or "test@test.com"
+            }
+        }
+
+        if cpf_pagador:
+            payload["payer"]["identification"] = {
+                "type": "CPF",
+                "number": cpf_pagador
+            }
+
+        if nome_pagador:
+            payload["payer"]["first_name"] = nome_pagador.split()[0] if nome_pagador else "Nome"
+            payload["payer"]["last_name"] = " ".join(nome_pagador.split()[1:]) if len(nome_pagador.split()) > 1 else "Sobrenome"
+
+        if external_reference:
+            payload["external_reference"] = external_reference
+
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            try:
+                response = await client.post(
+                    f"{self.base_url}/v1/payments",
+                    headers=self.headers,
+                    json=payload
+                )
+                response.raise_for_status()
+
+                data = response.json()
+                logger.info(f"Pagamento com cartão criado - ID: {data.get('id')}, Status: {data.get('status')}")
+
+                return {
+                    "id": data.get("id"),
+                    "status": data.get("status"),
+                    "status_detail": data.get("status_detail"),
+                    "valor": data.get("transaction_amount"),
+                    "data_criacao": data.get("date_created"),
+                    "data_aprovacao": data.get("date_approved"),
+                    "metodo_pagamento": data.get("payment_method_id"),
+                    "parcelas": data.get("installments"),
+                    "authorization_code": data.get("authorization_code"),
+                    "external_reference": data.get("external_reference")
+                }
+
+            except httpx.HTTPStatusError as e:
+                logger.error(f"Erro ao criar pagamento com cartão: {e.response.status_code} - {e.response.text}")
+                raise
+            except Exception as e:
+                logger.error(f"Erro ao criar pagamento com cartão: {str(e)}")
+                raise
+
 
 # Helper para converter status MP para status interno
 def converter_status_mp(status_mp: str) -> str:
