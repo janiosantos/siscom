@@ -40,6 +40,10 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
+    # Logging and Monitoring
+    SENTRY_DSN: str = ""  # URL do Sentry para monitoramento de erros (opcional)
+    LOG_LEVEL: str = "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+
     @validator("ALLOWED_ORIGINS")
     def assemble_cors_origins(cls, v: str) -> List[str]:
         """Converte string de origens em lista"""

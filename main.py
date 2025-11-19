@@ -7,16 +7,36 @@ from contextlib import asynccontextmanager
 
 from app.core.config import settings
 from app.core.database import init_db, close_db
+from app.core.logging import setup_logging, setup_sentry, get_logger
+from app.middleware.correlation import CorrelationIdMiddleware
+from app.middleware.rate_limit import setup_rate_limiting, limiter
+
+# Configura logging estruturado
+setup_logging()
+logger = get_logger(__name__)
+
+# Configura Sentry (se configurado)
+if settings.SENTRY_DSN:
+    setup_sentry()
+    logger.info("Sentry integration enabled")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Gerencia o ciclo de vida da aplicação"""
     # Startup
+    logger.info("Starting application", extra={
+        "app_name": settings.APP_NAME,
+        "version": settings.APP_VERSION,
+        "environment": "development" if settings.DEBUG else "production"
+    })
     await init_db()
+    logger.info("Database initialized successfully")
     yield
     # Shutdown
+    logger.info("Shutting down application")
     await close_db()
+    logger.info("Application shutdown complete")
 
 
 # Criação da aplicação FastAPI
@@ -26,6 +46,14 @@ app = FastAPI(
     description="Sistema ERP completo para loja de materiais de construção",
     lifespan=lifespan,
 )
+
+# Configuração de Rate Limiting
+setup_rate_limiting(app)
+
+# Configuração de Middlewares
+
+# Middleware de Correlation ID (deve ser o primeiro)
+app.add_middleware(CorrelationIdMiddleware)
 
 # Configuração CORS
 app.add_middleware(
@@ -38,6 +66,14 @@ app.add_middleware(
 
 
 # Importação e registro dos routers dos módulos
+
+# Autenticação e Autorização
+try:
+    from app.modules.auth.router import router as auth_router
+    app.include_router(auth_router, prefix="/api/v1/auth", tags=["Autenticação"])
+except ImportError:
+    pass
+
 # Sprint 1
 try:
     from app.modules.produtos.router import router as produtos_router
@@ -157,10 +193,9 @@ async def root():
     }
 
 
-@app.get("/health", tags=["Health"])
-async def health_check():
-    """Health check"""
-    return {"status": "healthy"}
+# Registra endpoints de health check
+from app.core.health import router as health_router
+app.include_router(health_router)
 
 
 if __name__ == "__main__":
