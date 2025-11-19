@@ -62,7 +62,7 @@
 
 ---
 
-## 🔄 SPRINT 3 - PARCIAL (66%)
+## ✅ SPRINT 3 - COMPLETO (100%)
 
 ### Módulos Implementados
 
@@ -71,9 +71,14 @@
    - Status: PENDENTE, APROVADO, RECEBIDO_PARCIAL, RECEBIDO, CANCELADO
    - Integração com estoque (entrada automática)
    - Integração com financeiro (conta a pagar)
-   - Sugestão automática de compras
+   - Sugestão automática de compras (estoque mínimo + Curva ABC)
    - Controle de atrasos
-   - **Arquivos:** 6
+   - **Análise de Fornecedores:**
+     * Desempenho individual (taxa entrega, atraso, recebimento)
+     * Classificação automática (EXCELENTE, BOM, REGULAR, RUIM)
+     * Ranking de fornecedores
+     * Comparação entre fornecedores
+   - **Arquivos:** 7 (incl. fornecedor_analise_service.py)
 
 2. **Mobile API** ✅
    - API otimizada para dispositivos móveis
@@ -83,11 +88,7 @@
    - Produtos populares
    - **Arquivos:** 4
 
-### Pendente Sprint 3
-- [ ] Análise de desempenho de fornecedores
-- [ ] Ajustes finais de integração
-
-**Commit:** `21657e9` | **Linhas:** ~2.121 | **Arquivos:** 10
+**Commit:** `21657e9` + próximo | **Linhas:** ~2.350 | **Arquivos:** 11
 
 ---
 
