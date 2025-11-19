@@ -272,3 +272,105 @@ async def auto_conciliar(
         data_inicio=data_inicio,
         data_fim=data_fim
     )
+
+
+# ==============================================================================
+# CNAB 240/400
+# ==============================================================================
+
+@router.post("/cnab/remessa", response_model=schemas.CNABRemessaResponse, status_code=status.HTTP_201_CREATED)
+async def gerar_arquivo_cnab_remessa(
+    request_data: schemas.CNABRemessaRequest,
+    current_user = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_session)
+):
+    """
+    Gera arquivo CNAB de remessa (envio de boletos ao banco)
+
+    Formatos suportados:
+    - 240: CNAB 240 (moderno, recomendado)
+    - 400: CNAB 400 (legado, compatibilidade)
+    """
+    from app.modules.pagamentos.services.cnab_service import CNABService
+    from sqlalchemy import select
+    import base64
+    from datetime import datetime
+
+    service = CNABService(db)
+
+    # Buscar boletos
+    stmt = select(Boleto).where(Boleto.id.in_(request_data.boleto_ids))
+    result = await db.execute(stmt)
+    boletos = result.scalars().all()
+
+    if not boletos:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Nenhum boleto encontrado"
+        )
+
+    # Gerar arquivo CNAB
+    if request_data.formato == "240":
+        conteudo = await service.gerar_cnab240_remessa(
+            request_data.configuracao_id,
+            boletos,
+            request_data.numero_remessa
+        )
+    else:  # 400
+        conteudo = await service.gerar_cnab400_remessa(
+            request_data.configuracao_id,
+            boletos,
+            request_data.numero_remessa
+        )
+
+    # Converter para base64
+    arquivo_base64 = base64.b64encode(conteudo.encode()).decode()
+
+    # Nome do arquivo
+    data_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+    nome_arquivo = f"remessa_cnab{request_data.formato}_{data_str}.txt"
+
+    return schemas.CNABRemessaResponse(
+        sucesso=True,
+        formato=request_data.formato,
+        total_boletos=len(boletos),
+        arquivo_base64=arquivo_base64,
+        nome_arquivo=nome_arquivo
+    )
+
+
+@router.post("/cnab/retorno", response_model=schemas.CNABRetornoResponse)
+async def processar_arquivo_cnab_retorno(
+    request_data: schemas.CNABRetornoRequest,
+    current_user = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_session)
+):
+    """
+    Processa arquivo CNAB de retorno (resposta do banco)
+
+    Atualiza status dos boletos com base nas ocorrências do arquivo.
+    """
+    from app.modules.pagamentos.services.cnab_service import CNABService
+
+    service = CNABService(db)
+
+    # Processar arquivo CNAB
+    if request_data.formato == "240":
+        resultado = await service.processar_cnab240_retorno(
+            request_data.configuracao_id,
+            request_data.conteudo_arquivo
+        )
+    else:  # 400
+        resultado = await service.processar_cnab400_retorno(
+            request_data.configuracao_id,
+            request_data.conteudo_arquivo
+        )
+
+    return schemas.CNABRetornoResponse(
+        sucesso=True,
+        formato=request_data.formato,
+        total_registros=resultado["total_registros"],
+        boletos_atualizados=resultado["boletos_atualizados"],
+        boletos_pagos=resultado["boletos_pagos"],
+        erros=resultado.get("erros", [])
+    )
