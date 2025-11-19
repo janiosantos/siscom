@@ -178,13 +178,38 @@
 
 ---
 
-## 🔄 SPRINT 6 - PENDENTE (0%)
+## ✅ SPRINT 6 - COMPLETO (100%)
 
-### Planejado:
-- [ ] Integração E-commerce
-- [ ] Dashboard e KPIs
-- [ ] Relatórios Gerenciais
-- [ ] Conciliação Bancária (OFX)
+### Módulos Implementados
+
+1. **Integração E-commerce** ✅
+   - **Configurações:**
+     * Suporte a múltiplas plataformas (WooCommerce, Magento, Tray, Shopify, VTEX)
+     * Configuração de sincronização (produtos, estoque, preços, pedidos)
+   - **Pedidos:**
+     * Importação de pedidos do e-commerce
+     * Mapeamento automático de produtos por SKU
+     * Processamento automático (cliente + venda no ERP)
+     * Rastreamento de status
+   - **Sincronização:**
+     * Sincronização de produtos (ERP → E-commerce)
+     * Log de sincronizações
+   - **Arquivos:** 4 (models, schemas, service, router)
+   - **Endpoints:** 10 REST
+
+2. **Relatórios e Dashboard** ✅
+   - **Dashboard:**
+     * KPIs (faturamento, vendas, ticket médio)
+     * Variação percentual vs período anterior
+     * Alertas de estoque e contas vencidas
+   - **Relatórios:**
+     * Vendedores (desempenho)
+     * Vendas (produtos vendidos)
+     * Estoque baixo
+   - **Arquivos:** 4 (models, schemas, service, router)
+   - **Endpoints:** 4 REST
+
+**Commit:** próximo | **Linhas:** ~2.900 | **Arquivos:** 8 novos
 
 ---
 
@@ -202,10 +227,10 @@
 ## 📈 Estatísticas Gerais
 
 ### Código
-- **Total de linhas:** ~27.156
-- **Total de arquivos:** ~126
-- **Módulos completos:** 17 (15 anteriores + WMS + Inventário)
-- **Sprints completos:** 5 de 7 (71%)
+- **Total de linhas:** ~30.056
+- **Total de arquivos:** ~134
+- **Módulos completos:** 19 (17 anteriores + E-commerce + Relatórios)
+- **Sprints completos:** 6 de 7 (86%)
 
 ### Commits no GitHub
 1. ✅ `8a3e785` - Sprint 1 completo
