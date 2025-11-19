@@ -1,0 +1,43 @@
+# FastAPI e dependências
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+python-multipart==0.0.6
+
+# SQLAlchemy 2.0 e Alembic
+sqlalchemy[asyncio]==2.0.25
+alembic==1.13.1
+asyncpg==0.29.0
+psycopg2-binary==2.9.9
+
+# Pydantic v2
+pydantic==2.5.3
+pydantic-settings==2.1.0
+
+# Autenticação e Segurança
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-dotenv==1.0.0
+
+# Utilitários
+python-dateutil==2.8.2
+pytz==2023.3
+
+# XML e Fiscal
+lxml==5.1.0
+xmltodict==0.13.0
+
+# Testes
+pytest==7.4.3
+pytest-asyncio==0.21.1
+httpx==0.26.0
+faker==22.0.0
+
+# Relatórios e Excel
+openpyxl==3.1.2
+reportlab==4.0.8
+
+# Redis para cache (opcional)
+redis==5.0.1
+
+# Validação CPF/CNPJ
+validate-docbr==1.10.0
