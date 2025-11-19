@@ -277,20 +277,73 @@
 - ✅ Migration do banco de dados
 - ✅ Documentação completa com exemplos de frontend
 
-### Frete e Logística - ❌ 0% Completo
-- [ ] Correios (cálculo de frete)
-- [ ] Transportadoras
-- [ ] Rastreamento
+### Frete e Logística - ✅ 100% CLIENTS IMPLEMENTADOS!
+- [x] Correios - ✅ Client completo
+  - [x] Cálculo de frete (PAC, SEDEX)
+  - [x] Consulta de CEP (via ViaCEP)
+  - [x] Rastreamento de encomendas (estrutura)
+  - [x] Suporte a múltiplos serviços
+  - [x] Tratamento de erros completo
+- [x] Melhor Envio - ✅ Client completo
+  - [x] Cálculo de frete (múltiplas transportadoras)
+  - [x] OAuth2 authentication
+  - [x] Criação de carrinho
+  - [x] Checkout e pagamento
+  - [x] Geração de etiquetas em PDF
+  - [x] Rastreamento completo
+- [ ] Endpoints REST (criar routers)
+- [ ] Integração com sistema de vendas
+- [ ] Testes automatizados
 
-### Comunicação - ❌ 0% Completo
-- [ ] SendGrid/AWS SES
-- [ ] Twilio (SMS)
-- [ ] WhatsApp Business
+**Arquivos**:
+- `app/integrations/correios.py` (client - 220 linhas)
+- `app/integrations/melhorenvio.py` (client - 340 linhas)
 
-### Marketplaces - ❌ 0% Completo
-- [ ] Mercado Livre
-- [ ] Amazon
-- [ ] B2W
+**Status**: Clients completos! Prontos para integração com API REST 🚀
+
+### Comunicação - ✅ 100% CLIENTS IMPLEMENTADOS!
+- [x] Email (SendGrid / AWS SES) - ✅ Client completo
+  - [x] Envio de emails (HTML + texto)
+  - [x] Suporte SendGrid e AWS SES
+  - [x] Templates dinâmicos (SendGrid)
+  - [x] Anexos, CC, BCC
+  - [x] Tratamento de erros
+- [x] SMS / WhatsApp (Twilio) - ✅ Client completo
+  - [x] Envio de SMS
+  - [x] Envio de WhatsApp Business
+  - [x] Consulta de status de mensagens
+  - [x] Verificação de números (Lookup API)
+  - [x] Suporte a mídias no WhatsApp
+- [ ] Endpoints REST (criar routers)
+- [ ] Templates de email pre-configurados
+- [ ] Testes automatizados
+
+**Arquivos**:
+- `app/integrations/email.py` (client - 300 linhas)
+- `app/integrations/sms.py` (client - 260 linhas)
+
+**Status**: Clients completos! Sistema pronto para notificações 📧📱
+
+### Marketplaces - ✅ 100% MERCADO LIVRE IMPLEMENTADO!
+- [x] Mercado Livre - ✅ Client completo
+  - [x] OAuth2 authentication
+  - [x] Criação e edição de anúncios
+  - [x] Atualização de estoque
+  - [x] Pausar/ativar anúncios
+  - [x] Listagem de vendas
+  - [x] Detalhes de pedidos
+  - [x] Envio de mensagens para compradores
+  - [x] Gestão completa de anúncios
+- [ ] Amazon (próxima implementação)
+- [ ] Shopee (próxima implementação)
+- [ ] Endpoints REST (criar routers)
+- [ ] Sincronização automática de estoque
+- [ ] Testes automatizados
+
+**Arquivos**:
+- `app/integrations/mercadolivre.py` (client - 400 linhas)
+
+**Status**: Mercado Livre completo! Sistema pronto para marketplace 🛒
 
 ---
 
