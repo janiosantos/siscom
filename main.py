@@ -198,6 +198,13 @@ try:
 except ImportError:
     pass
 
+# Pagamentos (Fase 2 - Compliance Brasil)
+try:
+    from app.modules.pagamentos.router import router as pagamentos_router
+    app.include_router(pagamentos_router, prefix="/api/v1/pagamentos", tags=["Pagamentos"])
+except ImportError:
+    pass
+
 
 @app.get("/", tags=["Root"])
 async def root():
