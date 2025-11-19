@@ -205,6 +205,13 @@ try:
 except ImportError:
     pass
 
+# Integrações de Pagamento (Fase 4)
+try:
+    from app.integrations.mercadopago_router import router as mercadopago_router
+    app.include_router(mercadopago_router, prefix="/api/v1/integrations", tags=["Integrações"])
+except ImportError:
+    pass
+
 
 @app.get("/", tags=["Root"])
 async def root():
