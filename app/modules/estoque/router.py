@@ -8,6 +8,8 @@ from typing import Optional
 
 from app.core.database import get_db
 from app.modules.estoque.service import EstoqueService
+from app.modules.estoque.lote_service import LoteEstoqueService
+from app.modules.estoque.curva_abc_service import CurvaABCService
 from app.modules.estoque.schemas import (
     EntradaEstoqueCreate,
     SaidaEstoqueCreate,
@@ -16,6 +18,13 @@ from app.modules.estoque.schemas import (
     MovimentacaoList,
     EstoqueAtualResponse,
     TipoMovimentacaoEnum,
+    LoteEstoqueCreate,
+    LoteEstoqueResponse,
+    LoteEstoqueList,
+    ProdutoLoteFIFO,
+    CurvaABCResponse,
+    CurvaABCItem,
+    ClassificacaoABC,
 )
 
 router = APIRouter()
@@ -306,3 +315,252 @@ async def relatorio_periodo(
     """
     service = EstoqueService(db)
     return await service.get_relatorio_periodo(data_inicio, data_fim, page, page_size)
+
+
+# ==================== ENDPOINTS DE LOTE ====================
+
+
+@router.post(
+    "/lotes",
+    response_model=LoteEstoqueResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Criar lote de estoque",
+    description="Cria um novo lote de estoque para produto com controle de lote habilitado",
+)
+async def criar_lote(
+    lote_data: LoteEstoqueCreate, db: AsyncSession = Depends(get_db)
+):
+    """
+    Cria um novo lote de estoque.
+
+    **Regras:**
+    - Produto deve ter controla_lote=True
+    - Data de validade deve ser futura
+    - Número do lote é obrigatório
+
+    **Exemplo de requisição:**
+    ```json
+    {
+        "produto_id": 1,
+        "numero_lote": "LOTE-2024-001",
+        "data_fabricacao": "2024-01-15",
+        "data_validade": "2025-01-15",
+        "quantidade_inicial": 100.0,
+        "custo_unitario": 25.50,
+        "documento_referencia": "NF-12345"
+    }
+    ```
+    """
+    service = LoteEstoqueService(db)
+    return await service.criar_lote(lote_data)
+
+
+@router.get(
+    "/lotes/produto/{produto_id}",
+    response_model=LoteEstoqueList,
+    summary="Listar lotes de um produto",
+    description="Lista todos os lotes de um produto específico",
+)
+async def listar_lotes_produto(
+    produto_id: int,
+    page: int = Query(1, ge=1, description="Número da página"),
+    page_size: int = Query(50, ge=1, le=100, description="Itens por página"),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Lista todos os lotes de um produto.
+
+    **Parâmetros:**
+    - **produto_id**: ID do produto
+    - **page**: Número da página (padrão: 1)
+    - **page_size**: Quantidade de itens por página (padrão: 50, máximo: 100)
+
+    **Retorna:**
+    - Lista de lotes ordenados por data de validade (FIFO)
+    """
+    service = LoteEstoqueService(db)
+    return await service.listar_lotes_produto(produto_id, page, page_size)
+
+
+@router.get(
+    "/lotes/{lote_id}",
+    response_model=LoteEstoqueResponse,
+    summary="Buscar lote por ID",
+    description="Busca informações detalhadas de um lote específico",
+)
+async def get_lote(lote_id: int, db: AsyncSession = Depends(get_db)):
+    """
+    Busca um lote específico por ID.
+
+    **Retorna:**
+    - Informações completas do lote
+    - Quantidade atual disponível
+    - Status de vencimento
+    """
+    service = LoteEstoqueService(db)
+    return await service.get_lote(lote_id)
+
+
+@router.get(
+    "/lotes/fifo/{produto_id}",
+    response_model=ProdutoLoteFIFO,
+    summary="Sugerir lote FIFO para saída",
+    description="Retorna o lote mais antigo disponível para saída (FIFO)",
+)
+async def sugerir_lote_fifo(
+    produto_id: int, db: AsyncSession = Depends(get_db)
+):
+    """
+    Sugere o lote mais antigo disponível para saída seguindo método FIFO.
+
+    **Regras FIFO:**
+    - Prioriza lote com data de validade mais próxima
+    - Apenas lotes com quantidade_atual > 0
+    - Alerta se lote está vencido
+
+    **Exemplo de resposta:**
+    ```json
+    {
+        "lote_id": 1,
+        "numero_lote": "LOTE-2024-001",
+        "data_validade": "2025-01-15",
+        "quantidade_disponivel": 50.0,
+        "custo_unitario": 25.50,
+        "esta_vencido": false,
+        "dias_para_vencer": 180
+    }
+    ```
+    """
+    service = LoteEstoqueService(db)
+    return await service.sugerir_lote_fifo(produto_id)
+
+
+@router.get(
+    "/lotes/vencidos",
+    response_model=LoteEstoqueList,
+    summary="Listar lotes vencidos",
+    description="Lista todos os lotes com data de validade vencida",
+)
+async def listar_lotes_vencidos(
+    page: int = Query(1, ge=1, description="Número da página"),
+    page_size: int = Query(50, ge=1, le=100, description="Itens por página"),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Lista lotes vencidos.
+
+    **Útil para:**
+    - Identificar produtos vencidos no estoque
+    - Planejamento de descartes
+    - Auditoria de validade
+    """
+    service = LoteEstoqueService(db)
+    return await service.get_lotes_vencidos(page, page_size)
+
+
+@router.get(
+    "/lotes/a-vencer",
+    response_model=LoteEstoqueList,
+    summary="Listar lotes a vencer",
+    description="Lista lotes que vencem nos próximos N dias",
+)
+async def listar_lotes_a_vencer(
+    dias: int = Query(30, ge=1, le=365, description="Dias para vencer"),
+    page: int = Query(1, ge=1, description="Número da página"),
+    page_size: int = Query(50, ge=1, le=100, description="Itens por página"),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Lista lotes que vencem nos próximos N dias.
+
+    **Parâmetros:**
+    - **dias**: Número de dias para verificar (padrão: 30)
+
+    **Útil para:**
+    - Planejamento de vendas prioritárias
+    - Evitar perdas por vencimento
+    - Gestão proativa de estoque
+    """
+    service = LoteEstoqueService(db)
+    return await service.get_lotes_a_vencer(dias, page, page_size)
+
+
+# ==================== ENDPOINTS DE CURVA ABC ====================
+
+
+@router.get(
+    "/curva-abc",
+    response_model=CurvaABCResponse,
+    summary="Calcular Curva ABC",
+    description="Analisa e classifica produtos pela Curva ABC baseada nas vendas",
+)
+async def calcular_curva_abc(
+    periodo_meses: int = Query(
+        6, ge=1, le=24, description="Período de análise em meses (padrão: 6)"
+    ),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Calcula a Curva ABC de produtos baseada nas vendas.
+
+    **Classificação:**
+    - **Classe A**: Produtos que representam 80% do faturamento (~20% dos produtos)
+    - **Classe B**: Produtos que representam 15% do faturamento (~30% dos produtos)
+    - **Classe C**: Produtos que representam 5% do faturamento (~50% dos produtos)
+
+    **Parâmetros:**
+    - **periodo_meses**: Número de meses para análise (padrão: 6, máximo: 24)
+
+    **Retorna:**
+    - Lista de produtos classificados por faturamento
+    - Percentuais individuais e acumulados
+    - Estatísticas por classe
+
+    **Útil para:**
+    - Gestão estratégica de estoque
+    - Priorização de compras
+    - Análise de rentabilidade
+    - Decisões de mix de produtos
+    """
+    service = CurvaABCService(db)
+    return await service.calcular_curva_abc(periodo_meses)
+
+
+@router.get(
+    "/curva-abc/classe/{classe}",
+    response_model=list[CurvaABCItem],
+    summary="Listar produtos por classe ABC",
+    description="Lista apenas produtos de uma classe específica (A, B ou C)",
+)
+async def listar_produtos_por_classe(
+    classe: ClassificacaoABC,
+    periodo_meses: int = Query(
+        6, ge=1, le=24, description="Período de análise em meses (padrão: 6)"
+    ),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Lista produtos de uma classe ABC específica.
+
+    **Parâmetros:**
+    - **classe**: Classe ABC (A, B ou C)
+    - **periodo_meses**: Número de meses para análise (padrão: 6)
+
+    **Exemplos:**
+    - `/curva-abc/classe/A` - Lista produtos classe A (top sellers)
+    - `/curva-abc/classe/B` - Lista produtos classe B (médio desempenho)
+    - `/curva-abc/classe/C` - Lista produtos classe C (baixo desempenho)
+
+    **Útil para:**
+    - Foco em produtos estratégicos (classe A)
+    - Análise de produtos intermediários (classe B)
+    - Identificação de produtos de baixo giro (classe C)
+    """
+    service = CurvaABCService(db)
+
+    if classe == ClassificacaoABC.A:
+        return await service.get_produtos_curva_a(periodo_meses)
+    elif classe == ClassificacaoABC.B:
+        return await service.get_produtos_curva_b(periodo_meses)
+    else:  # ClassificacaoABC.C
+        return await service.get_produtos_curva_c(periodo_meses)

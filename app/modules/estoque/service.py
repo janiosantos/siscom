@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import math
 
 from app.modules.estoque.repository import MovimentacaoEstoqueRepository
+from app.modules.estoque.lote_repository import LoteEstoqueRepository
 from app.modules.estoque.models import TipoMovimentacao
 from app.modules.estoque.schemas import (
     EntradaEstoqueCreate,
@@ -17,6 +18,7 @@ from app.modules.estoque.schemas import (
     MovimentacaoList,
     EstoqueAtualResponse,
     TipoMovimentacaoEnum,
+    LoteEstoqueCreate,
 )
 from app.modules.produtos.repository import ProdutoRepository
 from app.core.exceptions import (
@@ -33,6 +35,7 @@ class EstoqueService:
     def __init__(self, session: AsyncSession):
         self.repository = MovimentacaoEstoqueRepository(session)
         self.produto_repository = ProdutoRepository(session)
+        self.lote_repository = LoteEstoqueRepository(session)
         self.session = session
 
     async def validar_produto_existe(self, produto_id: int):
@@ -128,6 +131,7 @@ class EstoqueService:
 
         Regras:
         - Produto deve existir e estar ativo
+        - Se produto controla_lote=True, cria lote automaticamente
         - Atualiza produto.estoque_atual somando a quantidade
         - Calcula valor_total = quantidade * custo_unitario
 
@@ -139,6 +143,31 @@ class EstoqueService:
         """
         # Valida produto
         produto = await self.validar_produto_existe(entrada_data.produto_id)
+
+        # Se produto controla lote, valida e cria lote
+        if produto.controla_lote:
+            if not entrada_data.numero_lote:
+                raise ValidationException(
+                    f"Produto '{produto.descricao}' exige controle de lote. "
+                    "Informe numero_lote, data_validade."
+                )
+            if not entrada_data.data_validade:
+                raise ValidationException(
+                    f"Produto '{produto.descricao}' exige controle de lote. "
+                    "Informe data_validade."
+                )
+
+            # Cria lote automaticamente
+            lote_data = LoteEstoqueCreate(
+                produto_id=entrada_data.produto_id,
+                numero_lote=entrada_data.numero_lote,
+                data_fabricacao=entrada_data.data_fabricacao,
+                data_validade=entrada_data.data_validade,
+                quantidade_inicial=entrada_data.quantidade,
+                custo_unitario=entrada_data.custo_unitario,
+                documento_referencia=entrada_data.documento_referencia,
+            )
+            await self.lote_repository.create_lote(lote_data)
 
         # Cria movimentação de entrada
         movimentacao_data = MovimentacaoCreate(
@@ -174,6 +203,7 @@ class EstoqueService:
 
         Regras:
         - Produto deve existir e estar ativo
+        - Se produto controla_lote=True, exige lote_id e dá baixa no lote
         - Valida se há estoque suficiente antes de permitir saída
         - Atualiza produto.estoque_atual subtraindo a quantidade
         - Se custo_unitario não informado, usa o preço de custo do produto
@@ -187,9 +217,48 @@ class EstoqueService:
 
         Raises:
             InsufficientStockException: Se não há estoque suficiente
+            ValidationException: Se produto controla lote mas lote_id não informado
         """
         # Valida produto
         produto = await self.validar_produto_existe(saida_data.produto_id)
+
+        # Se produto controla lote, valida e dá baixa no lote
+        if produto.controla_lote:
+            # Se lote_id não informado, usa FIFO automático
+            lote_id = saida_data.lote_id
+            if not lote_id:
+                # Busca lote mais antigo disponível (FIFO)
+                lote = await self.lote_repository.get_lote_mais_antigo_disponivel(
+                    saida_data.produto_id
+                )
+                if not lote:
+                    raise ValidationException(
+                        f"Produto '{produto.descricao}' exige controle de lote, "
+                        "mas não há lotes disponíveis."
+                    )
+                lote_id = lote.id
+
+            # Busca lote
+            lote = await self.lote_repository.get_by_id(lote_id)
+            if not lote:
+                raise NotFoundException(f"Lote {lote_id} não encontrado")
+
+            # Valida se lote pertence ao produto
+            if lote.produto_id != saida_data.produto_id:
+                raise ValidationException(
+                    f"Lote {lote_id} não pertence ao produto {saida_data.produto_id}"
+                )
+
+            # Valida quantidade disponível no lote
+            if float(lote.quantidade_atual) < saida_data.quantidade:
+                raise InsufficientStockException(
+                    produto=f"Lote {lote.numero_lote}",
+                    disponivel=float(lote.quantidade_atual),
+                    necessario=saida_data.quantidade,
+                )
+
+            # Dá baixa no lote
+            await self.lote_repository.dar_baixa_lote(lote_id, saida_data.quantidade)
 
         # Valida estoque suficiente
         await self.validar_estoque_suficiente(

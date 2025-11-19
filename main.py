@@ -81,6 +81,18 @@ try:
 except ImportError:
     pass
 
+try:
+    from app.modules.condicoes_pagamento.router import router as condicoes_pagamento_router
+    app.include_router(condicoes_pagamento_router, prefix="/api/v1/condicoes-pagamento", tags=["Condições de Pagamento"])
+except ImportError:
+    pass
+
+try:
+    from app.modules.clientes.router import router as clientes_router
+    app.include_router(clientes_router, prefix="/api/v1/clientes", tags=["Clientes"])
+except ImportError:
+    pass
+
 # Sprint 2
 try:
     from app.modules.orcamentos.router import router as orcamentos_router
