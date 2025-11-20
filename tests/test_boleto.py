@@ -107,7 +107,7 @@ class TestConfiguracaoBoleto:
         configs = await boleto_service.listar_configuracoes(ativas_apenas=True)
 
         assert len(configs) > 0
-        assert all(config.ativo for config in configs)
+        assert all(config.ativa for config in configs)
 
 
 class TestGeracaoBoleto:
