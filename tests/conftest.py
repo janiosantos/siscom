@@ -18,7 +18,7 @@ from app.modules.auth.security import get_password_hash, create_access_token
 from main import app
 
 # Import all models to register them with Base.metadata
-import app.models  # noqa: F401
+from app import models  # noqa: F401
 
 
 # ============================================================================
