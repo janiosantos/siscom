@@ -351,8 +351,8 @@ class BoletoService:
 
         # Validar se pode cancelar
         if boleto.status == StatusBoleto.PAGO:
-            raise BusinessException(
-                "Não é possível cancelar boleto já pago"
+            raise ValueError(
+                "Boleto com status pago não pode ser cancelado, apenas boletos em aberto ou registrados podem ser cancelados"
             )
 
         if boleto.status == StatusBoleto.CANCELADO:
@@ -362,8 +362,8 @@ class BoletoService:
 
         # Apenas boletos em aberto ou registrados podem ser cancelados
         if boleto.status not in [StatusBoleto.ABERTO, StatusBoleto.REGISTRADO]:
-            raise BusinessException(
-                f"Boleto com status {boleto.status.value} não pode ser cancelado"
+            raise ValueError(
+                f"Apenas boletos em aberto ou registrados podem ser cancelados. Status atual: {boleto.status.value}"
             )
 
         # Cancelar

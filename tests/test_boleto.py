@@ -30,7 +30,9 @@ async def config_boleto_bb(boleto_service: BoletoService):
         convenio="1234567",
         cedente_nome="EMPRESA TESTE LTDA",
         cedente_documento="12345678000190",
-        cedente_endereco="Rua Teste, 123"
+        cedente_endereco="Rua Teste, 123",
+        percentual_juros=Decimal("2.0"),  # 2% ao mês
+        percentual_multa=Decimal("2.0")  # 2% fixo
     )
     return await boleto_service.criar_configuracao(config_data)
 
