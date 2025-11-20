@@ -33,7 +33,7 @@ from app.modules.financeiro.models import (  # noqa: F401
     ContaPagar,
     ContaReceber,
 )
-from app.modules.nfe.models import NotaFiscal, ItemNotaFiscal  # noqa: F401
+from app.modules.nfe.models import NotaFiscal  # noqa: F401
 from app.modules.clientes.models import Cliente  # noqa: F401
 from app.modules.condicoes_pagamento.models import (  # noqa: F401
     CondicaoPagamento,
@@ -51,35 +51,23 @@ from app.modules.compras.models import (  # noqa: F401
     PedidoCompra,
     ItemPedidoCompra,
 )
-from app.modules.fornecedores.models import (  # noqa: F401
-    Fornecedor,
-    AvaliacaoFornecedor,
-)
+from app.modules.fornecedores.models import Fornecedor  # noqa: F401
 
 # Sprint 4
 from app.modules.os.models import (  # noqa: F401
+    TipoServico,
+    Tecnico,
     OrdemServico,
     ItemOS,
-    Tecnico,
+    ApontamentoHoras,
 )
 
 # Sprint 6
 from app.modules.ecommerce.models import (  # noqa: F401
+    ConfiguracaoEcommerce,
     PedidoEcommerce,
     ItemPedidoEcommerce,
-    CarrinhoEcommerce,
-    ItemCarrinho,
-)
-from app.modules.relatorios.models import (  # noqa: F401
-    RelatorioAgendado,
-    HistoricoRelatorio,
-)
-
-# Sprint 7
-from app.modules.crm.models import (  # noqa: F401
-    Contato,
-    Interacao,
-    Tarefa,
+    LogSincronizacao,
 )
 
 # Pagamentos (Fase 2)
@@ -137,7 +125,6 @@ __all__ = [
     "ContaPagar",
     "ContaReceber",
     "NotaFiscal",
-    "ItemNotaFiscal",
     "Cliente",
     "CondicaoPagamento",
     "ParcelaCondicao",
@@ -148,22 +135,17 @@ __all__ = [
     "PedidoCompra",
     "ItemPedidoCompra",
     "Fornecedor",
-    "AvaliacaoFornecedor",
     # Sprint 4
+    "TipoServico",
+    "Tecnico",
     "OrdemServico",
     "ItemOS",
-    "Tecnico",
+    "ApontamentoHoras",
     # Sprint 6
+    "ConfiguracaoEcommerce",
     "PedidoEcommerce",
     "ItemPedidoEcommerce",
-    "CarrinhoEcommerce",
-    "ItemCarrinho",
-    "RelatorioAgendado",
-    "HistoricoRelatorio",
-    # Sprint 7
-    "Contato",
-    "Interacao",
-    "Tarefa",
+    "LogSincronizacao",
     # Pagamentos
     "ChavePix",
     "TransacaoPix",
