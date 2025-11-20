@@ -44,7 +44,7 @@ class ChavePixInResponse(ChavePixBase):
 class TransacaoPixCreate(BaseModel):
     """Schema para criação de transação PIX"""
     chave_pix_id: int
-    valor: Decimal = Field(..., gt=0, decimal_places=2)
+    valor: Decimal = Field(..., gt=0)
     descricao: Optional[str] = None
     pagador_nome: Optional[str] = None
     pagador_documento: Optional[str] = None
@@ -102,8 +102,8 @@ class ConfiguracaoBoletoBase(BaseModel):
     variacao_carteira: Optional[str] = None
     instrucoes: Optional[str] = None
     local_pagamento: str = "Pagável em qualquer banco até o vencimento"
-    percentual_juros: Decimal = Field(default=0, ge=0, le=100, decimal_places=2)
-    percentual_multa: Decimal = Field(default=0, ge=0, le=100, decimal_places=2)
+    percentual_juros: Decimal = Field(default=0, ge=0, le=100)
+    percentual_multa: Decimal = Field(default=0, ge=0, le=100)
     ativa: bool = True
 
 
@@ -124,8 +124,8 @@ class ConfiguracaoBoletoInResponse(ConfiguracaoBoletoBase):
 class BoletoCreate(BaseModel):
     """Schema para criação de Boleto"""
     configuracao_id: int
-    valor: Decimal = Field(..., gt=0, decimal_places=2)
-    valor_desconto: Decimal = Field(default=0, ge=0, decimal_places=2)
+    valor: Decimal = Field(..., gt=0)
+    valor_desconto: Decimal = Field(default=0, ge=0)
     data_vencimento: date
     sacado_nome: str = Field(..., min_length=1, max_length=255)
     sacado_documento: str = Field(..., min_length=11, max_length=14)
@@ -179,9 +179,9 @@ class ExtratoBancarioCreate(BaseModel):
     data: date
     descricao: str
     documento: Optional[str] = None
-    valor: Decimal = Field(..., decimal_places=2)
+    valor: Decimal
     tipo: str = Field(..., pattern='^[CD]$')  # C ou D
-    saldo: Optional[Decimal] = Field(None, decimal_places=2)
+    saldo: Optional[Decimal] = None
     arquivo_origem: Optional[str] = None
     linha_arquivo: Optional[int] = None
 
@@ -212,8 +212,8 @@ class ConciliacaoBancariaCreate(BaseModel):
     extrato_bancario_id: int
     transacao_pix_id: Optional[int] = None
     boleto_id: Optional[int] = None
-    valor_sistema: Decimal = Field(..., decimal_places=2)
-    valor_extrato: Decimal = Field(..., decimal_places=2)
+    valor_sistema: Decimal
+    valor_extrato: Decimal
     automatica: bool = False
     observacoes: Optional[str] = None
 
