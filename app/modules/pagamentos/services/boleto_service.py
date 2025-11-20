@@ -119,8 +119,18 @@ class BoletoService:
         valor_pago: Decimal,
         data_pagamento: date
     ) -> Boleto:
-        """Marca boleto como pago (processamento de CNAB retorno)"""
-        boleto = await self.consultar_boleto(boleto_id)
+        """
+        Marca boleto como pago (processamento de CNAB retorno)
+
+        Calcula automaticamente juros e multa se boleto pago após vencimento
+        """
+        # Buscar boleto com configuração
+        result = await self.db.execute(
+            select(Boleto)
+            .options(selectinload(Boleto.configuracao))
+            .where(Boleto.id == boleto_id)
+        )
+        boleto = result.scalar_one_or_none()
 
         if not boleto:
             raise HTTPException(
@@ -128,18 +138,41 @@ class BoletoService:
                 detail="Boleto não encontrado"
             )
 
+        # Calcular juros e multa se pagamento após vencimento
+        valor_juros = Decimal(0)
+        valor_multa = Decimal(0)
+
+        if data_pagamento > boleto.data_vencimento:
+            dias_atraso = (data_pagamento - boleto.data_vencimento).days
+            config = boleto.configuracao
+
+            # Multa (cobrada uma vez)
+            if config.percentual_multa > 0:
+                valor_multa = (boleto.valor * config.percentual_multa) / 100
+
+            # Juros (proporcional aos dias de atraso)
+            if config.percentual_juros > 0:
+                # Juros ao dia = (juros ao mês / 30)
+                juros_dia = config.percentual_juros / 30
+                valor_juros = (boleto.valor * juros_dia * dias_atraso) / 100
+
+        # Atualizar boleto
         boleto.status = StatusBoleto.PAGO
         boleto.valor_pago = valor_pago
+        boleto.valor_juros = valor_juros
+        boleto.valor_multa = valor_multa
         boleto.data_pagamento = data_pagamento
 
         await self.db.commit()
         await self.db.refresh(boleto)
 
-        logger.info(f"Boleto marcado como pago: {boleto.nosso_numero}")
+        logger.info(f"Boleto marcado como pago: {boleto.nosso_numero}, valor_pago={valor_pago}, juros={valor_juros}, multa={valor_multa}")
         log_business_event(
             event_name="boleto_pago",
             nosso_numero=boleto.nosso_numero,
-            valor_pago=float(valor_pago)
+            valor_pago=float(valor_pago),
+            valor_juros=float(valor_juros),
+            valor_multa=float(valor_multa)
         )
 
         return boleto
@@ -164,14 +197,26 @@ class BoletoService:
 
     def _gerar_codigo_barras_fake(self, config: ConfiguracaoBoleto, boleto: Boleto) -> str:
         """
-        Gera código de barras FAKE para demonstração
+        Gera código de barras FAKE para demonstração (44 dígitos)
         PRODUÇÃO: Usar biblioteca python-boleto com cálculo real do DV
+
+        Formato padrão: 44 dígitos
+        - Posições 1-3: Código do banco (3)
+        - Posição 4: Código da moeda (1)
+        - Posição 5: Dígito verificador (1)
+        - Posições 6-19: Valor com fator de vencimento (14)
+        - Posições 20-44: Campo livre (25)
         """
-        banco = config.banco_codigo
-        moeda = "9"  # Real
-        valor = str(int(boleto.valor * 100)).zfill(10)
-        # Simplificado - não é um código real
-        return f"{banco}{moeda}000000000000000{valor}0000000000000"
+        banco = config.banco_codigo  # 3 dígitos
+        moeda = "9"  # Real (1 dígito)
+        dv = "0"  # Dígito verificador fake (1 dígito)
+        valor = str(int(boleto.valor * 100)).zfill(10)  # 10 dígitos
+        fator = "0000"  # Fator de vencimento fake (4 dígitos)
+        campo_livre = "0" * 25  # 25 dígitos
+
+        # Total: 3 + 1 + 1 + 10 + 4 + 25 = 44 dígitos
+        codigo = f"{banco}{moeda}{dv}{valor}{fator}{campo_livre}"
+        return codigo
 
     def _gerar_linha_digitavel_fake(self, codigo_barras: str) -> str:
         """

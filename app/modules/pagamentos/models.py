@@ -44,6 +44,7 @@ class TipoChavePix(str, enum.Enum):
 
 class StatusBoleto(str, enum.Enum):
     """Status de boleto"""
+    ABERTO = "aberto"
     REGISTRADO = "registrado"
     PAGO = "pago"
     VENCIDO = "vencido"
@@ -197,6 +198,8 @@ class Boleto(Base):
     valor: Mapped[Decimal] = mapped_column(Numeric(15, 2), nullable=False)
     valor_desconto: Mapped[Decimal] = mapped_column(Numeric(15, 2), default=0, nullable=False)
     valor_pago: Mapped[Decimal] = mapped_column(Numeric(15, 2), nullable=True)
+    valor_juros: Mapped[Decimal] = mapped_column(Numeric(15, 2), default=0, nullable=False)
+    valor_multa: Mapped[Decimal] = mapped_column(Numeric(15, 2), default=0, nullable=False)
 
     # Datas
     data_emissao: Mapped[date] = mapped_column(Date, default=date.today, nullable=False)
