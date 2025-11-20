@@ -2,6 +2,8 @@
 Service Layer para Boleto Bancário
 NOTA: Implementação simplificada. Para produção, integrar com biblioteca python-boleto
 """
+from __future__ import annotations
+
 from datetime import date, datetime
 from typing import Optional, List
 from decimal import Decimal

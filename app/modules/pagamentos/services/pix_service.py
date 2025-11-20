@@ -2,6 +2,8 @@
 Service Layer para PIX
 Gerencia toda a lógica de negócio do PIX
 """
+from __future__ import annotations
+
 import uuid
 import qrcode
 import io

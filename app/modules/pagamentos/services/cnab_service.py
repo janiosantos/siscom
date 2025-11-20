@@ -2,6 +2,8 @@
 Serviço para geração e processamento de arquivos CNAB 240/400
 CNAB = Centro Nacional de Automação Bancária
 """
+from __future__ import annotations
+
 import logging
 from datetime import date, datetime
 from decimal import Decimal

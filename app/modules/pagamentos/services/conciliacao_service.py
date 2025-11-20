@@ -1,8 +1,10 @@
 """
 Service Layer para Conciliação Bancária
 """
+from __future__ import annotations
+
 from datetime import date, datetime
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from decimal import Decimal
 import csv
 import io
