@@ -8,6 +8,8 @@ from typing import Dict, Any, Optional
 from decimal import Decimal
 from datetime import datetime
 
+from app.modules.pagamentos.models import StatusPagamento
+
 logger = logging.getLogger(__name__)
 
 
@@ -342,26 +344,26 @@ class MercadoPagoClient:
 
 
 # Helper para converter status MP para status interno
-def converter_status_mp(status_mp: str) -> str:
+def converter_status_mp(status_mp: str) -> StatusPagamento:
     """
-    Converte status do Mercado Pago para status interno
+    Converte status do Mercado Pago para StatusPagamento enum
 
     Args:
-        status_mp: Status do Mercado Pago
+        status_mp: Status do Mercado Pago (pending, approved, rejected, etc.)
 
     Returns:
-        Status interno
+        StatusPagamento enum correspondente
     """
     status_map = {
-        "pending": "PENDENTE",
-        "approved": "APROVADO",
-        "authorized": "AUTORIZADO",
-        "in_process": "EM_PROCESSAMENTO",
-        "in_mediation": "EM_MEDIACAO",
-        "rejected": "RECUSADO",
-        "cancelled": "CANCELADO",
-        "refunded": "REEMBOLSADO",
-        "charged_back": "ESTORNADO"
+        "pending": StatusPagamento.PENDENTE,
+        "approved": StatusPagamento.APROVADO,
+        "authorized": StatusPagamento.APROVADO,  # Autorizado = Aprovado
+        "in_process": StatusPagamento.PROCESSANDO,
+        "in_mediation": StatusPagamento.PROCESSANDO,  # Em mediação = Processando
+        "rejected": StatusPagamento.REJEITADO,
+        "cancelled": StatusPagamento.CANCELADO,
+        "refunded": StatusPagamento.ESTORNADO,
+        "charged_back": StatusPagamento.ESTORNADO
     }
 
-    return status_map.get(status_mp, "DESCONHECIDO")
+    return status_map.get(status_mp, StatusPagamento.PENDENTE)
