@@ -1,6 +1,8 @@
 """
 Router para Pagamentos (PIX, Boleto, Conciliação)
 """
+from __future__ import annotations
+
 from typing import List
 from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -22,6 +24,9 @@ from app.modules.pagamentos.schemas import (
     ExtratoBancarioInResponse,
     ConciliacaoBancariaInResponse,
     ImportCSVRequest,
+    # CNAB
+    CNABRemessaRequest, CNABRemessaResponse,
+    CNABRetornoRequest, CNABRetornoResponse,
 )
 from app.modules.pagamentos.services.pix_service import PixService
 from app.modules.pagamentos.services.boleto_service import BoletoService
@@ -278,9 +283,9 @@ async def auto_conciliar(
 # CNAB 240/400
 # ==============================================================================
 
-@router.post("/cnab/remessa", response_model=schemas.CNABRemessaResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/cnab/remessa", response_model=CNABRemessaResponse, status_code=status.HTTP_201_CREATED)
 async def gerar_arquivo_cnab_remessa(
-    request_data: schemas.CNABRemessaRequest,
+    request_data: CNABRemessaRequest,
     current_user = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
@@ -330,7 +335,7 @@ async def gerar_arquivo_cnab_remessa(
     data_str = datetime.now().strftime("%Y%m%d_%H%M%S")
     nome_arquivo = f"remessa_cnab{request_data.formato}_{data_str}.txt"
 
-    return schemas.CNABRemessaResponse(
+    return CNABRemessaResponse(
         sucesso=True,
         formato=request_data.formato,
         total_boletos=len(boletos),
@@ -339,9 +344,9 @@ async def gerar_arquivo_cnab_remessa(
     )
 
 
-@router.post("/cnab/retorno", response_model=schemas.CNABRetornoResponse)
+@router.post("/cnab/retorno", response_model=CNABRetornoResponse)
 async def processar_arquivo_cnab_retorno(
-    request_data: schemas.CNABRetornoRequest,
+    request_data: CNABRetornoRequest,
     current_user = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
@@ -366,7 +371,7 @@ async def processar_arquivo_cnab_retorno(
             request_data.conteudo_arquivo
         )
 
-    return schemas.CNABRetornoResponse(
+    return CNABRetornoResponse(
         sucesso=True,
         formato=request_data.formato,
         total_registros=resultado["total_registros"],

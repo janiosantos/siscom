@@ -72,6 +72,21 @@ async def async_db_session(async_db_engine) -> AsyncGenerator[AsyncSession, None
 
 
 @pytest.fixture(scope="function")
+async def db_session(async_db_engine) -> AsyncGenerator[AsyncSession, None]:
+    """
+    Alias para async_db_session para compatibilidade com testes existentes
+    """
+    async_session_maker = async_sessionmaker(
+        async_db_engine,
+        class_=AsyncSession,
+        expire_on_commit=False
+    )
+
+    async with async_session_maker() as session:
+        yield session
+
+
+@pytest.fixture(scope="function")
 async def override_get_db(async_db_session: AsyncSession):
     """
     Override da dependency get_db para usar banco de teste
@@ -181,7 +196,7 @@ async def test_role(async_db_session: AsyncSession, test_permission: Permission)
 
 
 @pytest.fixture(scope="function")
-def user_token(test_user: User) -> str:
+async def user_token(test_user: User) -> str:
     """
     Gera token JWT para usuário de teste
     """
@@ -192,7 +207,7 @@ def user_token(test_user: User) -> str:
 
 
 @pytest.fixture(scope="function")
-def superuser_token(test_superuser: User) -> str:
+async def superuser_token(test_superuser: User) -> str:
     """
     Gera token JWT para superuser de teste
     """
@@ -203,7 +218,7 @@ def superuser_token(test_superuser: User) -> str:
 
 
 @pytest.fixture(scope="function")
-def auth_headers(user_token: str) -> dict:
+async def auth_headers(user_token: str) -> dict:
     """
     Headers de autenticação para requisições
     """
@@ -211,7 +226,7 @@ def auth_headers(user_token: str) -> dict:
 
 
 @pytest.fixture(scope="function")
-def admin_headers(superuser_token: str) -> dict:
+async def admin_headers(superuser_token: str) -> dict:
     """
     Headers de autenticação para superuser
     """

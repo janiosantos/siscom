@@ -120,17 +120,22 @@ class GetNetClient:
         # Remove espaços e traços
         card_number = card_number.replace(" ", "").replace("-", "")
 
-        # Padrões de bandeiras
-        if card_number[0] == "4":
-            return GetNetCardBrand.VISA.value
-        elif card_number[:2] in ["51", "52", "53", "54", "55"] or card_number[:4] in ["2221", "2720"]:
-            return GetNetCardBrand.MASTERCARD.value
-        elif card_number[:2] in ["34", "37"]:
-            return GetNetCardBrand.AMEX.value
-        elif card_number[:4] in ["4011", "4312", "4389", "4514", "4576", "5067", "6277", "6362", "6363"]:
+        # Padrões de bandeiras - Ordem importa! Mais específicos primeiro
+        # Elo (deve vir antes de Visa pois alguns bins começam com 4)
+        if card_number[:4] in ["4011", "4312", "4389", "4514", "4576", "5067", "6277", "6362", "6363"]:
             return GetNetCardBrand.ELO.value
+        # Hipercard
         elif card_number[:3] in ["384", "606"]:
             return GetNetCardBrand.HIPERCARD.value
+        # Amex
+        elif card_number[:2] in ["34", "37"]:
+            return GetNetCardBrand.AMEX.value
+        # Mastercard
+        elif card_number[:2] in ["51", "52", "53", "54", "55"] or card_number[:4] in ["2221", "2720"]:
+            return GetNetCardBrand.MASTERCARD.value
+        # Visa (genérico - deve ser último)
+        elif card_number[0] == "4":
+            return GetNetCardBrand.VISA.value
 
         return GetNetCardBrand.VISA.value
 

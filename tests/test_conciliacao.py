@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.modules.pagamentos.services.conciliacao_service import ConciliacaoService
 from app.modules.pagamentos.services.pix_service import PixService
 from app.modules.pagamentos.services.boleto_service import BoletoService
-from app.modules.pagamentos.models import ExtratoBancario, StatusConciliacao
+from app.modules.pagamentos.models import ExtratoBancario
 from app.modules.pagamentos.schemas import ImportCSVRequest
 
 

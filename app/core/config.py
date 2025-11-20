@@ -13,10 +13,10 @@ class Settings(BaseSettings):
     APP_NAME: str = "ERP Materiais de Construção"
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = True
-    SECRET_KEY: str
+    SECRET_KEY: str = "test-secret-key-change-in-production"
 
     # Database
-    DATABASE_URL: str
+    DATABASE_URL: str = "sqlite+aiosqlite:///:memory:"
     DATABASE_TEST_URL: str = "sqlite+aiosqlite:///:memory:"
 
     # CORS
