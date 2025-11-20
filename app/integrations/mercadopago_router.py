@@ -10,7 +10,7 @@ from typing import Dict, Any, Optional
 from decimal import Decimal
 from pydantic import BaseModel, Field
 
-from app.core.database import get_async_session
+from app.core.database import get_db
 from app.modules.auth.dependencies import get_current_user
 from app.integrations.mercadopago import MercadoPagoClient, converter_status_mp
 from app.core.config import settings
@@ -162,7 +162,7 @@ def get_mp_client() -> MercadoPagoClient:
 async def criar_pagamento_pix_mp(
     pagamento: CriarPagamentoPixMP,
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_session)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Cria um pagamento PIX via Mercado Pago
@@ -226,7 +226,7 @@ async def criar_pagamento_pix_mp(
 async def criar_pagamento_cartao_mp(
     pagamento: CriarPagamentoCartaoMP,
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_session)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Cria um pagamento com cartão de crédito/débito via Mercado Pago
@@ -294,7 +294,7 @@ async def consultar_pagamento_mp(
 async def cancelar_pagamento_mp(
     payment_id: int,
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_session)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Cancela um pagamento pendente no Mercado Pago
@@ -336,7 +336,7 @@ async def cancelar_pagamento_mp(
 @router.post("/webhook")
 async def webhook_mercadopago(
     request: Request,
-    db: AsyncSession = Depends(get_async_session)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Webhook para receber notificações do Mercado Pago

@@ -7,7 +7,7 @@ from datetime import datetime
 from fastapi import APIRouter, status
 from sqlalchemy import text
 
-from app.core.database import get_async_session
+from app.core.database import get_db
 from app.core.config import settings
 from app.core.logging import get_logger
 
@@ -94,7 +94,7 @@ async def check_database() -> bool:
         True se banco está acessível, False caso contrário
     """
     try:
-        async for session in get_async_session():
+        async for session in get_db():
             # Executa query simples
             result = await session.execute(text("SELECT 1"))
             result.scalar()

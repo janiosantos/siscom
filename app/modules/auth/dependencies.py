@@ -7,7 +7,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from app.core.database import get_async_session
+from app.core.database import get_db
 from app.core.logging import get_logger
 from app.modules.auth.models import User, Permission
 from app.modules.auth.security import decode_token, extract_permissions_from_token
@@ -20,7 +20,7 @@ security = HTTPBearer()
 
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
-    db: AsyncSession = Depends(get_async_session)
+    db: AsyncSession = Depends(get_db)
 ) -> User:
     """
     Dependency que retorna o usuário atual autenticado
@@ -215,7 +215,7 @@ def require_permissions(*permissions: str):
 
 async def get_optional_current_user(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(HTTPBearer(auto_error=False)),
-    db: AsyncSession = Depends(get_async_session)
+    db: AsyncSession = Depends(get_db)
 ) -> Optional[User]:
     """
     Dependency que retorna o usuário atual se autenticado, ou None
