@@ -391,7 +391,7 @@ async def webhook_mercadopago(
             transacao.status = novo_status
 
             # Atualizar data de pagamento se aprovado
-            if novo_status == 'aprovado' and not transacao.data_pagamento:
+            if novo_status == StatusPagamento.APROVADO and not transacao.data_pagamento:
                 transacao.data_pagamento = datetime.utcnow()
 
             # Atualizar dados da integração

@@ -29,7 +29,7 @@ class Caixa(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     operador_id: Mapped[int] = mapped_column(
-        ForeignKey("usuarios.id"), nullable=False, index=True
+        ForeignKey("users.id"), nullable=False, index=True
     )
     data_abertura: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, nullable=False, index=True

@@ -12,7 +12,12 @@ from app.core.logging import get_logger
 logger = get_logger(__name__)
 
 # Contexto de criptografia de senhas
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(
+    schemes=["bcrypt"],
+    deprecated="auto",
+    bcrypt__default_rounds=12,
+    bcrypt__min_rounds=4,
+)
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:

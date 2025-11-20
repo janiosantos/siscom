@@ -17,6 +17,9 @@ from app.modules.auth.models import User, Role, Permission
 from app.modules.auth.security import get_password_hash, create_access_token
 from main import app
 
+# Import all models to register them with Base.metadata
+import app.models  # noqa: F401
+
 
 # ============================================================================
 # Database Fixtures
@@ -107,7 +110,9 @@ async def override_get_db(async_db_session: AsyncSession):
 async def client(override_get_db) -> AsyncGenerator[AsyncClient, None]:
     """
     Cliente HTTP assíncrono para testes de API
+    Usa override_get_db para garantir que os testes usem o banco de teste
     """
+    # override_get_db já configurou app.dependency_overrides
     async with AsyncClient(app=app, base_url="http://test") as ac:
         yield ac
 
