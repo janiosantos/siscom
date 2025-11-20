@@ -84,7 +84,7 @@ class BoletoService:
             sacado_uf=boleto_data.sacado_uf,
             instrucoes=boleto_data.instrucoes,
             demonstrativo=boleto_data.demonstrativo,
-            status=StatusBoleto.REGISTRADO
+            status=StatusBoleto.ABERTO
         )
 
         # Gera código de barras e linha digitável (simplificado)
@@ -220,11 +220,25 @@ class BoletoService:
 
     def _gerar_linha_digitavel_fake(self, codigo_barras: str) -> str:
         """
-        Gera linha digitável FAKE
-        PRODUÇÃO: Usar biblioteca python-boleto
+        Gera linha digitável FAKE para demonstração (47 caracteres)
+        PRODUÇÃO: Usar biblioteca python-boleto com cálculo real dos DVs
+
+        Formato: AAAAA.AAAAA BBBBB.BBBBBB CCCCC.CCCCCC DDDDDDDDD
+        Total: 11 + 1 + 12 + 1 + 12 + 1 + 9 = 47 caracteres
         """
-        # Simplificado
-        return f"{codigo_barras[:5]}.{codigo_barras[5:10]} {codigo_barras[10:20]} {codigo_barras[20:30]} {codigo_barras[30:44]}"
+        # Campo 1: 5.5 (11 chars)
+        campo1 = f"{codigo_barras[0:5]}.{codigo_barras[5:10]}"
+
+        # Campo 2: 5.6 (12 chars)
+        campo2 = f"{codigo_barras[10:15]}.{codigo_barras[15:21]}"
+
+        # Campo 3: 5.6 (12 chars)
+        campo3 = f"{codigo_barras[21:26]}.{codigo_barras[26:32]}"
+
+        # Campo 4: 9 dígitos (DV + Fator + parte do valor)
+        campo4 = codigo_barras[32:41]
+
+        return f"{campo1} {campo2} {campo3} {campo4}"
 
     # =========================================================================
     # Métodos adicionais para testes
