@@ -239,6 +239,34 @@ try:
 except ImportError:
     pass
 
+# Import/Export Avançado (Fase 3)
+try:
+    from app.modules.importexport.router import router as importexport_router
+    app.include_router(importexport_router, prefix="/api/v1/importexport", tags=["Import/Export"])
+except ImportError:
+    pass
+
+# Gateway Cielo (Fase 4)
+try:
+    from app.integrations.cielo_router import router as cielo_router
+    app.include_router(cielo_router, prefix="/api/v1/integrations", tags=["Integrações"])
+except ImportError:
+    pass
+
+# Gateway GetNet (Fase 4)
+try:
+    from app.integrations.getnet_router import router as getnet_router
+    app.include_router(getnet_router, prefix="/api/v1/integrations", tags=["Integrações"])
+except ImportError:
+    pass
+
+# Gateway Sicoob (Fase 4)
+try:
+    from app.integrations.sicoob_router import router as sicoob_router
+    app.include_router(sicoob_router, prefix="/api/v1/integrations", tags=["Integrações"])
+except ImportError:
+    pass
+
 
 @app.get("/", tags=["Root"])
 async def root():
