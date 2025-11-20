@@ -246,6 +246,13 @@ try:
 except ImportError:
     pass
 
+# Gateway Cielo (Fase 4)
+try:
+    from app.integrations.cielo_router import router as cielo_router
+    app.include_router(cielo_router, prefix="/api/v1/integrations", tags=["Integrações"])
+except ImportError:
+    pass
+
 
 @app.get("/", tags=["Root"])
 async def root():
