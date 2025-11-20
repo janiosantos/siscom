@@ -21,10 +21,11 @@ from app.modules.produtos.models import Produto  # noqa: F401
 from app.modules.categorias.models import Categoria  # noqa: F401
 from app.modules.estoque.models import (  # noqa: F401
     MovimentacaoEstoque,
-    Lote,
-    NumeroSerie,
-    EnderecoEstoque,
-    InventarioRotativo,
+    LoteEstoque,
+    LocalizacaoEstoque,
+    ProdutoLocalizacao,
+    FichaInventario,
+    ItemInventario,
 )
 from app.modules.vendas.models import Venda, ItemVenda  # noqa: F401
 from app.modules.pdv.models import Caixa, MovimentacaoCaixa  # noqa: F401
@@ -125,10 +126,11 @@ __all__ = [
     "Produto",
     "Categoria",
     "MovimentacaoEstoque",
-    "Lote",
-    "NumeroSerie",
-    "EnderecoEstoque",
-    "InventarioRotativo",
+    "LoteEstoque",
+    "LocalizacaoEstoque",
+    "ProdutoLocalizacao",
+    "FichaInventario",
+    "ItemInventario",
     "Venda",
     "ItemVenda",
     "Caixa",
