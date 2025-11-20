@@ -59,3 +59,7 @@ class ForbiddenException(ERPException):
     """Acesso negado"""
     def __init__(self, message: str = "Acesso negado"):
         super().__init__(message, status_code=403)
+
+
+# Aliases para compatibilidade
+BusinessException = BusinessRuleException

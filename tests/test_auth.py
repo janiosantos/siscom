@@ -11,7 +11,7 @@ from app.modules.auth.security import verify_password
 
 @pytest.mark.auth
 @pytest.mark.asyncio
-class TestAuth Endpoints:
+class TestAuthEndpoints:
     """Testes dos endpoints de autenticação"""
 
     async def test_register_user(self, client: AsyncClient):
