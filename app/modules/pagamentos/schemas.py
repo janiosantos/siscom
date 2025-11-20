@@ -24,6 +24,8 @@ class ChavePixBase(BaseModel):
     banco: str = Field(..., min_length=1, max_length=100)
     agencia: str = Field(..., min_length=1, max_length=10)
     conta: str = Field(..., min_length=1, max_length=20)
+    tipo_conta: Optional[str] = Field(None, max_length=20)
+    nome_titular: Optional[str] = Field(None, max_length=255)
     ativa: bool = True
 
 
