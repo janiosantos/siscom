@@ -65,3 +65,7 @@ htmlcov/
 # Uploads
 uploads/
 temp/
+
+# Test coverage
+coverage.xml
+htmlcov/
