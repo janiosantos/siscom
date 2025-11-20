@@ -101,7 +101,6 @@ class TestAuthEndpoints:
 
 
 @pytest.mark.unit
-@pytest.mark.asyncio
 class TestPasswordSecurity:
     """Testes de segurança de senhas"""
 
@@ -127,7 +126,6 @@ class TestPasswordSecurity:
 
 
 @pytest.mark.unit
-@pytest.mark.asyncio
 class TestJWT:
     """Testes de JWT"""
 
