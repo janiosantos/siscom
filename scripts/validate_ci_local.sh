@@ -16,8 +16,11 @@
 #   7. Checa configuração bcrypt
 #   8. Valida imports em conftest.py
 #   9. Verifica nomes de campos em testes
-#   10. VALIDA MÉTODOS (análise estática - detecta AttributeError)
-#   11. Executa testes pytest (opcional)
+#   10. Verifica tamanhos de boleto (código barras 44, linha digitável 47)
+#   11. Verifica tipos de exceções (ValueError vs BusinessException)
+#   12. Verifica percentuais em fixtures de teste
+#   13. VALIDA MÉTODOS (análise estática - detecta AttributeError)
+#   14. Executa testes pytest (opcional)
 #
 # VANTAGENS:
 #   - Detecta erros ANTES de fazer push
@@ -184,8 +187,79 @@ else
 fi
 echo ""
 
-# 10. Validar métodos usados nos testes (análise estática)
-echo -e "${YELLOW}🔟  Validando métodos usados nos testes...${NC}"
+# 10. Verificar tamanhos corretos (código de barras, linha digitável)
+echo -e "${YELLOW}🔟  Verificando tamanhos de boleto (código de barras, linha digitável)...${NC}"
+errors=0
+
+# Verificar se gera código de barras com 44 dígitos
+if [ -f "app/modules/pagamentos/services/boleto_service.py" ]; then
+    if grep -q "# Total.*44" app/modules/pagamentos/services/boleto_service.py && \
+       grep -q "def _gerar_codigo_barras_fake" app/modules/pagamentos/services/boleto_service.py; then
+        echo -e "   ${GREEN}✅ Código de barras configurado para 44 dígitos${NC}"
+    else
+        echo -e "   ${YELLOW}⚠️  Verificar geração de código de barras (deve ser 44 dígitos)${NC}"
+        ((errors++))
+    fi
+
+    # Verificar linha digitável (47 caracteres)
+    if grep -q "# Total.*47" app/modules/pagamentos/services/boleto_service.py && \
+       grep -q "def _gerar_linha_digitavel_fake" app/modules/pagamentos/services/boleto_service.py; then
+        echo -e "   ${GREEN}✅ Linha digitável configurada para 47 caracteres${NC}"
+    else
+        echo -e "   ${YELLOW}⚠️  Verificar geração de linha digitável (deve ser 47 caracteres)${NC}"
+        ((errors++))
+    fi
+fi
+
+if [ $errors -eq 0 ]; then
+    echo -e "   ${GREEN}✅ Tamanhos de boleto corretos${NC}"
+fi
+echo ""
+
+# 11. Verificar tipos de exceções corretos
+echo -e "${YELLOW}1️⃣1️⃣  Verificando tipos de exceções...${NC}"
+errors=0
+
+# Verificar se cancelar_boleto usa ValueError (não BusinessException)
+if [ -f "app/modules/pagamentos/services/boleto_service.py" ]; then
+    if grep -A 5 "def cancelar_boleto" app/modules/pagamentos/services/boleto_service.py | \
+       grep -q "raise ValueError" app/modules/pagamentos/services/boleto_service.py; then
+        echo -e "   ${GREEN}✅ cancelar_boleto usa ValueError${NC}"
+    else
+        if grep -A 5 "def cancelar_boleto" app/modules/pagamentos/services/boleto_service.py | \
+           grep -q "raise BusinessException" app/modules/pagamentos/services/boleto_service.py; then
+            echo -e "   ${YELLOW}⚠️  cancelar_boleto deveria usar ValueError (não BusinessException)${NC}"
+            ((errors++))
+        fi
+    fi
+fi
+
+if [ $errors -eq 0 ]; then
+    echo -e "   ${GREEN}✅ Tipos de exceções corretos${NC}"
+fi
+echo ""
+
+# 12. Verificar percentuais em fixtures de teste
+echo -e "${YELLOW}1️⃣2️⃣  Verificando percentuais em fixtures de teste...${NC}"
+errors=0
+
+if [ -f "tests/test_boleto.py" ]; then
+    if grep -q "percentual_juros" tests/test_boleto.py && \
+       grep -q "percentual_multa" tests/test_boleto.py; then
+        echo -e "   ${GREEN}✅ Fixture config_boleto_bb tem percentuais${NC}"
+    else
+        echo -e "   ${YELLOW}⚠️  Fixture config_boleto_bb pode estar faltando percentuais de juros/multa${NC}"
+        ((errors++))
+    fi
+fi
+
+if [ $errors -eq 0 ]; then
+    echo -e "   ${GREEN}✅ Fixtures de teste configuradas corretamente${NC}"
+fi
+echo ""
+
+# 13. Validar métodos usados nos testes (análise estática)
+echo -e "${YELLOW}1️⃣3️⃣  Validando métodos usados nos testes...${NC}"
 if command -v python3 &> /dev/null; then
     if python3 scripts/validate_test_methods.py 2>&1 | tail -20 | grep -q "❌"; then
         echo -e "   ${RED}❌ Métodos inexistentes detectados${NC}"
@@ -199,8 +273,8 @@ else
 fi
 echo ""
 
-# 11. Executar testes pytest (opcional - pode falhar se deps não instaladas)
-echo -e "${YELLOW}1️⃣1️⃣  Executando testes pytest (opcional)...${NC}"
+# 14. Executar testes pytest (opcional - pode falhar se deps não instaladas)
+echo -e "${YELLOW}1️⃣4️⃣  Executando testes pytest (opcional)...${NC}"
 if command -v pytest &> /dev/null; then
     echo -e "   ${YELLOW}   Executando pytest com coverage...${NC}"
 
