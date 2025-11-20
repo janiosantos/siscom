@@ -239,6 +239,13 @@ try:
 except ImportError:
     pass
 
+# Import/Export Avançado (Fase 3)
+try:
+    from app.modules.importexport.router import router as importexport_router
+    app.include_router(importexport_router, prefix="/api/v1/importexport", tags=["Import/Export"])
+except ImportError:
+    pass
+
 
 @app.get("/", tags=["Root"])
 async def root():
