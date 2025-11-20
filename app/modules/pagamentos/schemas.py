@@ -253,3 +253,41 @@ class ImportCSVRequest(BaseModel):
     arquivo_base64: str  # Arquivo CSV em base64
     separador: str = ","
     encoding: str = "utf-8"
+
+
+# ==============================================================================
+# CNAB Schemas
+# ==============================================================================
+
+class CNABRemessaRequest(BaseModel):
+    """Request para geração de arquivo CNAB de remessa"""
+    configuracao_id: int
+    boleto_ids: list[int] = Field(..., min_items=1)
+    formato: str = Field(..., pattern="^(240|400)$")  # 240 ou 400
+    numero_remessa: int = Field(default=1, ge=1)
+
+
+class CNABRetornoRequest(BaseModel):
+    """Request para processamento de arquivo CNAB de retorno"""
+    configuracao_id: int
+    formato: str = Field(..., pattern="^(240|400)$")
+    conteudo_arquivo: str  # Conteúdo do arquivo CNAB
+
+
+class CNABRemessaResponse(BaseModel):
+    """Response da geração de arquivo CNAB de remessa"""
+    sucesso: bool
+    formato: str
+    total_boletos: int
+    arquivo_base64: str  # Arquivo CNAB em base64
+    nome_arquivo: str
+
+
+class CNABRetornoResponse(BaseModel):
+    """Response do processamento de arquivo CNAB de retorno"""
+    sucesso: bool
+    formato: str
+    total_registros: int
+    boletos_atualizados: int
+    boletos_pagos: int
+    erros: list[dict] = []

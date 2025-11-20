@@ -2,12 +2,15 @@
 Router para endpoints de Vendas
 """
 from datetime import datetime
-from typing import Optional
-from fastapi import APIRouter, Depends, status, Query
+from typing import Optional, List, Dict, Any
+from fastapi import APIRouter, Depends, status, Query, Body
 from sqlalchemy.ext.asyncio import AsyncSession
+from pydantic import BaseModel, Field
+from decimal import Decimal
 
 from app.core.database import get_db
 from app.modules.vendas.service import VendasService
+from app.modules.vendas.frete_service import FreteVendasService
 from app.modules.vendas.schemas import (
     VendaCreate,
     VendaResponse,
@@ -242,3 +245,156 @@ async def get_total_vendas_periodo(
         "total": total,
         "status": status.value if status else None,
     }
+
+
+# ============================================
+# ENDPOINTS DE FRETE
+# ============================================
+
+# Schemas para frete
+class ItemFreteSchema(BaseModel):
+    """Schema para item no cálculo de frete"""
+    produto_id: int
+    quantidade: int = Field(..., gt=0)
+    peso: Optional[float] = Field(None, description="Peso em kg")
+    altura: Optional[float] = Field(None, description="Altura em cm")
+    largura: Optional[float] = Field(None, description="Largura em cm")
+    comprimento: Optional[float] = Field(None, description="Comprimento em cm")
+
+
+class CalcularFreteRequest(BaseModel):
+    """Request para cálculo de frete"""
+    cep_origem: str = Field(..., min_length=8, max_length=9)
+    cep_destino: str = Field(..., min_length=8, max_length=9)
+    itens: List[ItemFreteSchema] = Field(..., min_items=1)
+    valor_total: Optional[Decimal] = Field(None, gt=0)
+
+
+@router.post(
+    "/frete/calcular",
+    summary="Calcular frete para venda",
+    description="Calcula opções de frete para uma venda usando múltiplos provedores"
+)
+async def calcular_frete_venda(
+    dados: CalcularFreteRequest
+):
+    """
+    Calcula frete para os itens de uma venda.
+
+    Consulta múltiplos provedores (Correios, Melhor Envio) e retorna
+    todas as opções disponíveis ordenadas por preço.
+
+    **Funcionalidades:**
+    - Cálculo com Correios (PAC, SEDEX)
+    - Cálculo com Melhor Envio (múltiplas transportadoras)
+    - Comparação automática de preços
+    - Recomendação da melhor opção (custo-benefício)
+
+    **Retorna:**
+    - Lista de opções de frete ordenadas por preço
+    - Recomendação baseada em preço e prazo
+    - Informações de peso e dimensões calculadas
+
+    **Exemplo de requisição:**
+    ```json
+    {
+        "cep_origem": "01310100",
+        "cep_destino": "04547130",
+        "itens": [
+            {
+                "produto_id": 1,
+                "quantidade": 2,
+                "peso": 2.5,
+                "altura": 10,
+                "largura": 15,
+                "comprimento": 20
+            }
+        ],
+        "valor_total": 250.00
+    }
+    ```
+    """
+    service = FreteVendasService()
+
+    # Converter itens para formato esperado
+    itens_formatados = [
+        {
+            "quantidade": item.quantidade,
+            "peso": item.peso or 0.1,  # Default 100g
+            "altura": item.altura or 2.0,  # Default mínimo
+            "largura": item.largura or 11.0,
+            "comprimento": item.comprimento or 16.0
+        }
+        for item in dados.itens
+    ]
+
+    resultado = await service.calcular_frete_para_venda(
+        cep_origem=dados.cep_origem,
+        cep_destino=dados.cep_destino,
+        itens=itens_formatados,
+        valor_total=dados.valor_total
+    )
+
+    return resultado
+
+
+@router.get(
+    "/frete/validar-cep/{cep}",
+    summary="Validar CEP",
+    description="Valida um CEP e retorna informações do endereço"
+)
+async def validar_cep(
+    cep: str
+):
+    """
+    Valida um CEP e retorna dados do endereço.
+
+    Útil para validação em tempo real no formulário de checkout.
+
+    **Retorna:**
+    - Logradouro, bairro, cidade, estado
+    - Indicação se o CEP é válido
+
+    **Exemplo de resposta:**
+    ```json
+    {
+        "valido": true,
+        "cep": "01310-100",
+        "logradouro": "Avenida Paulista",
+        "bairro": "Bela Vista",
+        "cidade": "São Paulo",
+        "estado": "SP"
+    }
+    ```
+    """
+    service = FreteVendasService()
+    resultado = await service.validar_cep(cep)
+    return resultado
+
+
+@router.get(
+    "/frete/rastrear/{codigo}",
+    summary="Rastrear envio",
+    description="Consulta rastreamento de um envio"
+)
+async def rastrear_envio(
+    codigo: str,
+    provedor: str = Query(..., description="Provedor (correios ou melhor_envio)")
+):
+    """
+    Consulta rastreamento de um envio.
+
+    **Provedores suportados:**
+    - correios: Código de rastreamento dos Correios
+    - melhor_envio: Order ID do Melhor Envio
+
+    **Retorna:**
+    - Status atual do envio
+    - Histórico de eventos de rastreamento
+
+    **Exemplo de uso:**
+    - GET /vendas/frete/rastrear/BR123456789BR?provedor=correios
+    """
+    service = FreteVendasService()
+    resultado = await service.obter_rastreamento(codigo, provedor)
+    return resultado

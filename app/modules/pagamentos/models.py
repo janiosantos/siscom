@@ -117,6 +117,11 @@ class TransacaoPix(Base):
     webhook_url: Mapped[str] = mapped_column(String(500), nullable=True)
     metadata: Mapped[str] = mapped_column(Text, nullable=True)  # JSON com dados adicionais
 
+    # Integração com gateways externos (Mercado Pago, PagSeguro, etc)
+    integration_id: Mapped[Optional[str]] = mapped_column(String(100), nullable=True, index=True)  # ID no sistema externo
+    integration_provider: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)  # mercadopago, pagseguro, etc
+    integration_data: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON com dados do provider
+
     # Relacionamentos
     chave_pix: Mapped["ChavePix"] = relationship("ChavePix", back_populates="transacoes_pix")
 

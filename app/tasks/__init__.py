@@ -1,0 +1,3 @@
+"""
+Celery Tasks - Tarefas Assíncronas
+"""

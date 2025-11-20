@@ -198,6 +198,47 @@ try:
 except ImportError:
     pass
 
+# Pagamentos (Fase 2 - Compliance Brasil)
+try:
+    from app.modules.pagamentos.router import router as pagamentos_router
+    app.include_router(pagamentos_router, prefix="/api/v1/pagamentos", tags=["Pagamentos"])
+except ImportError:
+    pass
+
+# Integrações de Pagamento (Fase 4)
+try:
+    from app.integrations.mercadopago_router import router as mercadopago_router
+    app.include_router(mercadopago_router, prefix="/api/v1/integrations", tags=["Integrações"])
+except ImportError:
+    pass
+
+try:
+    from app.integrations.pagseguro_router import router as pagseguro_router
+    app.include_router(pagseguro_router, prefix="/api/v1/integrations", tags=["Integrações"])
+except ImportError:
+    pass
+
+# Integrações de Frete (Fase 4)
+try:
+    from app.integrations.frete_router import router as frete_router
+    app.include_router(frete_router, prefix="/api/v1/integrations", tags=["Integrações"])
+except ImportError:
+    pass
+
+# Integrações de Comunicação (Fase 4)
+try:
+    from app.integrations.comunicacao_router import router as comunicacao_router
+    app.include_router(comunicacao_router, prefix="/api/v1/integrations", tags=["Integrações"])
+except ImportError:
+    pass
+
+# Integrações de Marketplaces (Fase 4)
+try:
+    from app.integrations.marketplace_router import router as marketplace_router
+    app.include_router(marketplace_router, prefix="/api/v1/integrations", tags=["Integrações"])
+except ImportError:
+    pass
+
 
 @app.get("/", tags=["Root"])
 async def root():
