@@ -32,7 +32,6 @@ from app.modules.pdv.models import Caixa, MovimentacaoCaixa  # noqa: F401
 from app.modules.financeiro.models import (  # noqa: F401
     ContaPagar,
     ContaReceber,
-    Baixa,
 )
 from app.modules.nfe.models import NotaFiscal, ItemNotaFiscal  # noqa: F401
 from app.modules.clientes.models import Cliente  # noqa: F401
@@ -137,7 +136,6 @@ __all__ = [
     "MovimentacaoCaixa",
     "ContaPagar",
     "ContaReceber",
-    "Baixa",
     "NotaFiscal",
     "ItemNotaFiscal",
     "Cliente",
