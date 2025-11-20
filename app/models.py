@@ -37,7 +37,7 @@ from app.modules.nfe.models import NotaFiscal  # noqa: F401
 from app.modules.clientes.models import Cliente  # noqa: F401
 from app.modules.condicoes_pagamento.models import (  # noqa: F401
     CondicaoPagamento,
-    ParcelaCondicao,
+    ParcelaPadrao,
 )
 
 # Sprint 2
@@ -127,7 +127,7 @@ __all__ = [
     "NotaFiscal",
     "Cliente",
     "CondicaoPagamento",
-    "ParcelaCondicao",
+    "ParcelaPadrao",
     # Sprint 2
     "Orcamento",
     "ItemOrcamento",
