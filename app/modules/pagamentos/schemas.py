@@ -180,7 +180,7 @@ class ExtratoBancarioCreate(BaseModel):
     descricao: str
     documento: Optional[str] = None
     valor: Decimal = Field(..., decimal_places=2)
-    tipo: str = Field(..., regex='^[CD]$')  # C ou D
+    tipo: str = Field(..., pattern='^[CD]$')  # C ou D
     saldo: Optional[Decimal] = Field(None, decimal_places=2)
     arquivo_origem: Optional[str] = None
     linha_arquivo: Optional[int] = None
