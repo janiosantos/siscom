@@ -1,6 +1,8 @@
 """
 Configuração de testes com pytest
 """
+from __future__ import annotations
+
 import pytest
 import asyncio
 from typing import AsyncGenerator, Optional

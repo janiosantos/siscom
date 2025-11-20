@@ -2,6 +2,8 @@
 Configuração global do Pytest
 Fixtures compartilhadas entre todos os testes
 """
+from __future__ import annotations
+
 import pytest
 import asyncio
 from typing import AsyncGenerator, Generator, Optional
