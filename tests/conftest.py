@@ -196,7 +196,7 @@ async def test_role(async_db_session: AsyncSession, test_permission: Permission)
 
 
 @pytest.fixture(scope="function")
-def user_token(test_user: User) -> str:
+async def user_token(test_user: User) -> str:
     """
     Gera token JWT para usuário de teste
     """
@@ -207,7 +207,7 @@ def user_token(test_user: User) -> str:
 
 
 @pytest.fixture(scope="function")
-def superuser_token(test_superuser: User) -> str:
+async def superuser_token(test_superuser: User) -> str:
     """
     Gera token JWT para superuser de teste
     """
@@ -218,7 +218,7 @@ def superuser_token(test_superuser: User) -> str:
 
 
 @pytest.fixture(scope="function")
-def auth_headers(user_token: str) -> dict:
+async def auth_headers(user_token: str) -> dict:
     """
     Headers de autenticação para requisições
     """
@@ -226,7 +226,7 @@ def auth_headers(user_token: str) -> dict:
 
 
 @pytest.fixture(scope="function")
-def admin_headers(superuser_token: str) -> dict:
+async def admin_headers(superuser_token: str) -> dict:
     """
     Headers de autenticação para superuser
     """
