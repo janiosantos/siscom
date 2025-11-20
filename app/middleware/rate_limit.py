@@ -40,11 +40,32 @@ def get_identifier(request: Request) -> str:
     return identifier
 
 
+# Determina storage URI (usa memory:// se Redis não disponível)
+def get_storage_uri() -> str:
+    """Retorna URI de storage, usando memory:// se Redis não disponível"""
+    if not hasattr(settings, 'REDIS_URL') or not settings.REDIS_URL:
+        return "memory://"
+
+    # Verifica se Redis está disponível
+    try:
+        import redis
+        r = redis.from_url(settings.REDIS_URL, socket_connect_timeout=1)
+        r.ping()
+        logger.info("Using Redis for rate limiting", extra={"redis_url": settings.REDIS_URL})
+        return settings.REDIS_URL
+    except Exception as e:
+        logger.warning(
+            "Redis not available, using in-memory storage for rate limiting",
+            extra={"error": str(e)}
+        )
+        return "memory://"
+
+
 # Cria o limiter
 limiter = Limiter(
     key_func=get_identifier,
     default_limits=["200 per minute", "5000 per hour"],  # Limites padrão
-    storage_uri=settings.REDIS_URL if hasattr(settings, 'REDIS_URL') else "memory://",
+    storage_uri=get_storage_uri(),
     strategy="fixed-window",
     headers_enabled=True,  # Adiciona headers X-RateLimit-* nas respostas
 )
