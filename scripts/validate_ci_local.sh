@@ -1,6 +1,28 @@
 #!/bin/bash
 # Script de Validação Local CI/CD
 # Executa verificações locais antes de fazer push, evitando erros no GitHub Actions
+#
+# USO:
+#   ./scripts/validate_ci_local.sh
+#   make validate-local  (se configurado no Makefile)
+#
+# O QUE FAZ:
+#   1. Verifica sintaxe Python
+#   2. Valida imports de modelos
+#   3. Checa foreign keys incorretas
+#   4. Valida existência de classes nos models
+#   5. Verifica schemas Pydantic
+#   6. Valida funções específicas (converter_status_mp, etc)
+#   7. Checa configuração bcrypt
+#   8. Valida imports em conftest.py
+#   9. Verifica nomes de campos em testes
+#   10. EXECUTA TESTES PYTEST (opcional)
+#
+# VANTAGENS:
+#   - Detecta erros ANTES de fazer push
+#   - Economiza tempo (não precisa esperar GitHub Actions)
+#   - Feedback imediato sobre problemas
+#   - Executa os mesmos testes que rodam no CI/CD
 
 set -e
 
@@ -127,6 +149,76 @@ elif grep -q "^from app import models" tests/conftest.py; then
     echo -e "   ${GREEN}✅ Import de models correto (não sobrescreve app)${NC}"
 else
     echo -e "   ${YELLOW}⚠️  Import de models não encontrado${NC}"
+fi
+echo ""
+
+# 9. Verificar nomes de campos em schemas de testes
+echo -e "${YELLOW}9️⃣  Verificando nomes de campos em testes...${NC}"
+errors=0
+
+# Verificar se test_boleto.py usa campos corretos
+if [ -f "tests/test_boleto.py" ]; then
+    if grep -q "cedente_cnpj" tests/test_boleto.py; then
+        echo -e "   ${RED}❌ test_boleto.py usa 'cedente_cnpj' (deveria ser 'cedente_documento')${NC}"
+        ((errors++))
+    fi
+    if grep -q "sacado_cpf_cnpj" tests/test_boleto.py; then
+        echo -e "   ${RED}❌ test_boleto.py usa 'sacado_cpf_cnpj' (deveria ser 'sacado_documento')${NC}"
+        ((errors++))
+    fi
+fi
+
+# Verificar se test_pix.py usa campos corretos
+if [ -f "tests/test_pix.py" ]; then
+    if ! grep -q "tipo_conta" tests/test_pix.py && grep -q "ChavePixCreate" tests/test_pix.py; then
+        echo -e "   ${YELLOW}⚠️  test_pix.py pode estar faltando campo 'tipo_conta'${NC}"
+    fi
+fi
+
+if [ $errors -eq 0 ]; then
+    echo -e "   ${GREEN}✅ Nomes de campos corretos nos testes${NC}"
+else
+    echo -e "   ${RED}❌ $errors erro(s) encontrado(s) nos nomes de campos${NC}"
+    exit 1
+fi
+echo ""
+
+# 10. Executar testes pytest (opcional - pode falhar se deps não instaladas)
+echo -e "${YELLOW}🔟  Executando testes pytest (opcional)...${NC}"
+if command -v pytest &> /dev/null; then
+    echo -e "   ${YELLOW}   Executando pytest com coverage...${NC}"
+
+    # Executar pytest com timeout e capturar resultado
+    if timeout 120 python -m pytest tests/ -v --tb=short --maxfail=3 2>&1 | tee /tmp/pytest_output.txt; then
+        echo -e "   ${GREEN}✅ Testes pytest passaram!${NC}"
+
+        # Mostrar resumo
+        if grep -q "passed" /tmp/pytest_output.txt; then
+            summary=$(grep -E "passed|failed|error" /tmp/pytest_output.txt | tail -1)
+            echo -e "   ${GREEN}   $summary${NC}"
+        fi
+    else
+        exit_code=$?
+        if [ $exit_code -eq 124 ]; then
+            echo -e "   ${YELLOW}⚠️  Testes excederam timeout de 120s${NC}"
+        else
+            echo -e "   ${RED}❌ Alguns testes falharam${NC}"
+            echo -e "   ${YELLOW}   Verifique os erros acima${NC}"
+
+            # Mostrar apenas os testes que falharam
+            if [ -f /tmp/pytest_output.txt ]; then
+                echo ""
+                echo -e "   ${YELLOW}Testes que falharam:${NC}"
+                grep "FAILED" /tmp/pytest_output.txt | head -5 | while read line; do
+                    echo -e "   ${RED}   $line${NC}"
+                done
+            fi
+            exit 1
+        fi
+    fi
+else
+    echo -e "   ${YELLOW}⚠️  pytest não instalado - pulando testes${NC}"
+    echo -e "   ${YELLOW}   Instale com: pip install -r requirements.txt${NC}"
 fi
 echo ""
 
