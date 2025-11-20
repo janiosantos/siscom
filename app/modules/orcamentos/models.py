@@ -26,7 +26,7 @@ class Orcamento(Base):
         ForeignKey("clientes.id"), nullable=True, index=True
     )
     vendedor_id: Mapped[int] = mapped_column(
-        ForeignKey("usuarios.id"), nullable=False, index=True
+        ForeignKey("users.id"), nullable=False, index=True
     )
     data_orcamento: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, nullable=False, index=True
