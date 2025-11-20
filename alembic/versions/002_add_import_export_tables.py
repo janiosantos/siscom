@@ -1,7 +1,7 @@
 """add import export tables
 
 Revision ID: 002_import_export
-Revises: 001_add_integration_fields_to_transacao_pix
+Revises: 001
 Create Date: 2025-11-20 14:00:00.000000
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers
 revision = '002_import_export'
-down_revision = '001_add_integration_fields_to_transacao_pix'
+down_revision = '001'
 branch_labels = None
 depends_on = None
 
