@@ -3,7 +3,7 @@ Configuração de testes com pytest
 """
 import pytest
 import asyncio
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Optional
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from httpx import AsyncClient
 
