@@ -453,7 +453,7 @@ async def test_full_payment_flow(mock_client, cielo_client, mock_credit_card_res
 
     # 2. Capturar pagamento
     capture_result = await cielo_client.capture_payment(payment_id)
-    assert capture_result["Status"] == 2
+    assert capture_result["Payment"]["Status"] == 2
 
     # 3. Consultar pagamento
     query_result = await cielo_client.query_payment(payment_id)
