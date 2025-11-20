@@ -2,9 +2,11 @@
 Configuração global do Pytest
 Fixtures compartilhadas entre todos os testes
 """
+from __future__ import annotations
+
 import pytest
 import asyncio
-from typing import AsyncGenerator, Generator
+from typing import AsyncGenerator, Generator, Optional
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.pool import NullPool
