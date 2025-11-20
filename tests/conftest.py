@@ -72,6 +72,21 @@ async def async_db_session(async_db_engine) -> AsyncGenerator[AsyncSession, None
 
 
 @pytest.fixture(scope="function")
+async def db_session(async_db_engine) -> AsyncGenerator[AsyncSession, None]:
+    """
+    Alias para async_db_session para compatibilidade com testes existentes
+    """
+    async_session_maker = async_sessionmaker(
+        async_db_engine,
+        class_=AsyncSession,
+        expire_on_commit=False
+    )
+
+    async with async_session_maker() as session:
+        yield session
+
+
+@pytest.fixture(scope="function")
 async def override_get_db(async_db_session: AsyncSession):
     """
     Override da dependency get_db para usar banco de teste
