@@ -212,6 +212,12 @@ try:
 except ImportError:
     pass
 
+try:
+    from app.integrations.pagseguro_router import router as pagseguro_router
+    app.include_router(pagseguro_router, prefix="/api/v1/integrations", tags=["Integrações"])
+except ImportError:
+    pass
+
 # Integrações de Frete (Fase 4)
 try:
     from app.integrations.frete_router import router as frete_router
