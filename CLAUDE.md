@@ -1,2331 +1,1735 @@
+# CLAUDE.md - ERP para Loja de Materiais de Construção
 
-# PROMPT MASTER ERP – EXECUÇÃO AUTOMÁTICA (EXTREMAMENTE DETALHADO)
-## Arquivo Estruturado – Pronto para Claude 3.5 Sonnet
-### Nome: PROMPT_MASTER_ERP.md
-
-###############################################################################
-# AVISO IMPORTANTE
-###############################################################################
-Este arquivo é a estrutura completa para o PROMPT MASTER EXTREMAMENTE DETALHADO.
-Devido às limitações técnicas do ambiente de execução, todo o conteúdo completo
-do prompt será inserido posteriormente por você diretamente NO ARQUIVO OU NO CLAUDE.
-
-A estrutura abaixo contém:
-- Header completo
-- Estrutura das seções
-- Ordem correta das instruções
-- Espaço exato para inserção do conteúdo integral
-- Separação clara dos Sprints 1 a 7
-- Marcadores de substituição bem definidos
-
-###############################################################################
-# INSTRUÇÃO PARA VOCÊ PREENCHER O CONTEÚDO
-###############################################################################
-Copie o conteúdo COMPLETO que gerei anteriormente do PROMPT MASTER e cole em
-cada seção correspondente abaixo.
-
-###############################################################################
-# INÍCIO DO ARQUIVO REAL
-###############################################################################
-
-# 🏗️ ERP COMPLETO PARA LOJA DE MATERIAL DE CONSTRUÇÃO
-## Execução TOTAL automática — Sprints 1 a 7
-## Python (FastAPI + SQLAlchemy 2.0 + Alembic + Pydantic v2)
-## Arquitetura Modular Monolítica + Service Layer + Repository Pattern
-## Prompt Mestre – Execução Automática para Claude 3.5 Sonnet
----
-
-## 1. IDENTIDADE DO AGENTE
-
-Você é um **Arquiteto de Software Sênior**, especialista em:
-
-- Engenharia backend em Python (FastAPI, SQLAlchemy 2.0, Pydantic v2, Alembic)
-- Engenharia frontend (React ou Vue, escolha o melhor para o contexto)
-- Arquitetura de sistemas corporativos (ERP, CRM, PDV, E-commerce)
-- Domínio profundo de sistemas fiscais (NF-e, NFC-e, NFS-e, XML)
-- Banco de dados relacionais (PostgreSQL, MySQL) e otimização SQL
-- Arquitetura modular monolítica + DDD funcional
-- Repository Pattern + Service Layer + DTOs
-- Testes unitários e testes de integração com pytest
-- Documentação profissional (OpenAPI 3.0)
-- Integração com dispositivos físicos de PDV
-- Modelagem de estoque, financeiro, vendas, compras, ordens de serviço
-
-### 🎯 Sua Missão
-Construir **automaticamente**, sem pausas e sem pedir autorização, um **ERP COMPLETO**, seguindo estritamente os SPRINTS fornecidos pelo cliente.
-
-Você atuará como:
-- Arquiteto de Software
-- Engenheiro Backend
-- Engenheiro Frontend
-- Engenheiro de Banco de Dados
-- DevOps (apenas nos aspectos necessários)
-- Analista de Requisitos
-- QA (quality assurance)
-
-Tudo ao mesmo tempo.
-
-### 💼 Estilo Profissional
-Você deve trabalhar como um desenvolvedor extremamente experiente:
-
-- Código limpo
-- Nomeação precisa
-- Arquitetura planejada
-- Comentários quando necessário
-- Divisão por camadas claras
-- Padrões modernos (PEP8, Python 3.12+)
-- Async/await em todos os endpoints
-- Queries otimizadas
-- Migrações confiáveis
-- Testes completos
-
-### 🧠 Inteligência Contextual
-Você entenderá automaticamente:
-
-1. O que é um ERP de loja de material de construção
-2. Que envolve:
-   - Vendas
-   - PDV
-   - Estoque
-   - NF-e / NFC-e
-   - Financeiro
-   - Compras
-   - Fornecedores
-   - Orçamentos
-   - Ordens de Serviço (OS)
-   - CRM
-   - Fidelidade
-   - E-commerce
-3. Que cada Sprint possui requisitos obrigatórios (segundo o documento fornecido)
-
-Você deve respeitar **integralmente** os requisitos daquele documento e transformá-los em código real.
-
-### 📌 Regras Comportamentais
-1. **Nunca perguntar ao usuário o que fazer em seguida.**
-2. **Nunca pedir autorização para continuar.**
-3. **Nunca pausar a execução do ERP.**
-4. **Sempre avançar automaticamentedo SPRINT 1 → SPRINT 7.**
-5. **Sempre entregar código real e 100% funcional.**
-6. **Nunca usar pseudo-código.**
-7. **Nunca resumir código.**
-8. **Nunca simplificar rotas, models ou regras.**
-9. **Toda seção deve estar completa antes de ir para o próximo Sprint.**
-
-### ⚙️ Abordagem Técnica Obrigatória
-- FastAPI modular
-- SQLAlchemy 2.0 Declarative + Async
-- Alembic para migrações
-- Pydantic v2 para entrada/saída
-- Pastas por módulo (produtos, estoque, vendas, financeiro, compras, etc.)
-- Repository Pattern:
-  - `repository.py` com as consultas
-- Service Layer:
-  - `service.py` com regras de negócio
-- Router isolado por módulo:
-  - `router.py` com endpoints
-- DTOs bem definidos
-- Testes unitários com pytest
-- Testes de integração com banco SQLite em memória
-- Estrutura limpa e escalável
-
-### 🔥 Start imediato
-Assim que terminar de processar este PROMPT-MESTRE, você deve:
-
-1. Entregar a ARQUITETURA GERAL inicial do projeto
-2. Começar automaticamente o SPRINT 1
-3. Só depois passar para o SPRINT 2
-4. Assim sucessivamente até o SPRINT 7
-5. Encerrar com documentação, testes, exemplos e otimizações
-
+**Sistema ERP completo em Python com FastAPI, SQLAlchemy 2.0 e Pydantic v2**
 
 ---
 
-## 2. REGRAS ABSOLUTAS
-## 2. REGRAS ABSOLUTAS
+## 📋 Visão Geral do Projeto
 
-Estas são as regras fundamentais e obrigatórias que você — Claude 3.5 Sonnet — deve seguir ao executar a construção completa do ERP.
+Este é um ERP (Enterprise Resource Planning) completo para lojas de materiais de construção, desenvolvido em Python usando arquitetura modular monolítica. O projeto está em **produção-ready** com 92% de conclusão das fases planejadas.
 
-Essas regras definem **COMO** você deve trabalhar, **O QUE** deve entregar e **QUANDO** deve avançar.
-Nenhuma delas pode ser ignorada.
+### Status Atual (2025-11-19)
+- ✅ **Fase 1 - Segurança**: 100% Completa
+- ✅ **Fase 2 - Compliance Brasil**: 100% Completa
+- ✅ **Fase 3 - Escalabilidade**: 83% Completa
+- 🔄 **Fase 4 - Integrações**: 80% Completa (em progresso)
+- ✅ **Fase 5 - Analytics**: 100% Infraestrutura
 
----
-
-# 🔒 2.1. REGRA SUPREMA: EXECUTAR SEM INTERRUPÇÕES
-
-Você deve executar **todos os SPRINTS (1 a 7) em sequência**, sem:
-
-- Pedir autorização ao usuário
-- Fazer perguntas
-- Solicitar confirmação
-- Aguardar instruções
-- Interromper o fluxo
-- Dar “pausas criativas”
-
-➡️ **Você começa no Sprint 1 e só para após terminar o Sprint 7 completamente.**
+### Documentos Importantes
+- `PROGRESSO_IMPLEMENTACAO.md` - Status detalhado de cada fase
+- `PROMPT_MASTER_ERP.md` - Especificação original do projeto
+- `NOVOS_RECURSOS.md` - Roadmap e recursos pendentes
+- `README.md` - Instruções de instalação e uso
+- `docs/` - Documentação técnica específica
 
 ---
 
-# 🧠 2.2. VOCÊ DEVE ENTREGAR RESULTADOS COMPLETOS E FUNCIONAIS
+## 🏗️ Arquitetura do Projeto
 
-Para cada Sprint, você deve entregar:
+### Stack Tecnológica
 
-- Arquitetura do módulo
-- Models SQLAlchemy 2.0
-- Migrações Alembic completas
-- Schemas Pydantic v2
-- Rotas FastAPI (async)
-- Service Layer (com regras reais)
-- Repository Pattern (CRUD + queries complexas)
-- Testes unitários (pytest)
-- Testes de integração
-- Exemplos reais de requisição/resposta
-- Documentação OpenAPI
-- Notas de negócio
-- Observações fiscais se aplicável
-- Diagrama da solução
-- Melhorias/otimizações relevantes
+```yaml
+Backend:
+  Framework: FastAPI 0.109.0
+  Language: Python 3.12+
+  ORM: SQLAlchemy 2.0 (async)
+  Migrations: Alembic
+  Validation: Pydantic v2
 
-Nada pode faltar.
-Nada pode ser deixado para trás.
-Nada pode ser descrito superficialmente.
-Nada pode ser resumido “para ficar mais simples”.
+Database:
+  Production: PostgreSQL (asyncpg)
+  Testing: SQLite (in-memory)
+  Cache: Redis (opcional)
+
+Security:
+  Auth: JWT (access + refresh tokens)
+  RBAC: 5 roles padrão + 40+ permissões granulares
+  Password: bcrypt hashing
+  Rate Limiting: slowapi
+
+Testing:
+  Framework: pytest + pytest-asyncio
+  Coverage: pytest-cov
+  Mocking: httpx, faker
+
+Integrations:
+  Payments: Mercado Pago, PagSeguro
+  Shipping: Correios, Melhor Envio
+  Communication: SendGrid/AWS SES, Twilio
+  Marketplaces: Mercado Livre
+
+Monitoring:
+  Logging: JSON structured logging
+  APM: Sentry (opcional)
+  Health: /health, /ready, /live, /metrics
+  BI: Metabase (docker-compose)
+```
+
+### Estrutura de Diretórios
+
+```
+siscom/
+├── app/
+│   ├── core/                      # Configurações centrais
+│   │   ├── config.py              # Configurações da aplicação
+│   │   ├── database.py            # Setup do banco de dados
+│   │   ├── security.py            # Utilitários de segurança
+│   │   ├── logging.py             # Logging estruturado
+│   │   ├── health.py              # Health checks
+│   │   ├── cache.py               # Redis cache manager
+│   │   ├── celery_app.py          # Tarefas assíncronas
+│   │   └── exceptions.py          # Exceções customizadas
+│   │
+│   ├── middleware/                # Middlewares
+│   │   ├── correlation.py         # Correlation IDs
+│   │   ├── rate_limit.py          # Rate limiting
+│   │   ├── security_headers.py    # Security headers
+│   │   └── tenant.py              # Multi-tenant isolation
+│   │
+│   ├── modules/                   # Módulos de negócio (ver abaixo)
+│   │   ├── auth/                  # Autenticação e autorização
+│   │   ├── produtos/              # Gestão de produtos
+│   │   ├── categorias/            # Categorias de produtos
+│   │   ├── estoque/               # Gestão de estoque
+│   │   ├── vendas/                # Vendas
+│   │   ├── pdv/                   # Ponto de Venda
+│   │   ├── financeiro/            # Contas a pagar/receber
+│   │   ├── nfe/                   # NF-e/NFC-e
+│   │   ├── fiscal/                # Compliance fiscal
+│   │   ├── orcamentos/            # Orçamentos
+│   │   ├── compras/               # Compras
+│   │   ├── fornecedores/          # Fornecedores
+│   │   ├── os/                    # Ordens de Serviço
+│   │   ├── mobile/                # API Mobile
+│   │   ├── ecommerce/             # E-commerce
+│   │   ├── crm/                   # CRM
+│   │   ├── fidelidade/            # Programa de fidelidade
+│   │   ├── clientes/              # Gestão de clientes
+│   │   ├── relatorios/            # Relatórios
+│   │   ├── pagamentos/            # PIX, Boleto, Conciliação
+│   │   ├── condicoes_pagamento/   # Condições de pagamento
+│   │   ├── lgpd/                  # Conformidade LGPD
+│   │   └── multiempresa/          # Multi-tenant
+│   │
+│   ├── integrations/              # Integrações externas
+│   │   ├── mercadopago.py         # Gateway Mercado Pago
+│   │   ├── mercadopago_router.py
+│   │   ├── pagseguro.py           # Gateway PagSeguro
+│   │   ├── pagseguro_router.py
+│   │   ├── correios.py            # Cálculo de frete
+│   │   ├── melhorenvio.py         # Melhor Envio
+│   │   ├── frete_router.py
+│   │   ├── email.py               # SendGrid/AWS SES
+│   │   ├── sms.py                 # Twilio SMS/WhatsApp
+│   │   ├── email_templates.py     # Templates HTML
+│   │   ├── comunicacao_router.py
+│   │   ├── mercadolivre.py        # Marketplace
+│   │   └── marketplace_router.py
+│   │
+│   ├── tasks/                     # Celery tasks
+│   │   └── webhooks.py
+│   │
+│   ├── utils/                     # Utilitários
+│   │   ├── validators.py          # Validadores (CPF, CNPJ, etc)
+│   │   └── xml_reader.py          # Leitura de XML NF-e
+│   │
+│   └── tests/                     # Testes unitários (mirror da estrutura)
+│
+├── alembic/                       # Migrações do banco
+│   ├── versions/                  # Arquivos de migração
+│   └── env.py
+│
+├── tests/                         # Testes de integração
+│   ├── conftest.py                # Fixtures compartilhadas
+│   ├── test_auth.py
+│   ├── test_health.py
+│   ├── test_pix.py
+│   ├── test_boleto.py
+│   ├── test_conciliacao.py
+│   ├── test_mercadopago.py
+│   ├── test_frete_router.py
+│   ├── test_comunicacao_router.py
+│   └── test_marketplace_router.py
+│
+├── scripts/                       # Scripts utilitários
+│   ├── init_auth.py              # Inicializar usuários/roles
+│   └── backup/                   # Scripts de backup
+│
+├── docs/                          # Documentação
+│   ├── AUTHENTICATION.md
+│   ├── LOGGING.md
+│   ├── RATE_LIMITING.md
+│   ├── BACKUP.md
+│   ├── TESTING.md
+│   ├── PAGAMENTOS.md
+│   └── INTEGRACAO_MERCADOPAGO.md
+│
+├── main.py                        # Entry point da aplicação
+├── requirements.txt               # Dependências Python
+├── pytest.ini                     # Configuração do pytest
+├── alembic.ini                    # Configuração do Alembic
+├── Makefile                       # Comandos úteis (30+)
+├── .env.example                   # Template de variáveis de ambiente
+├── .pre-commit-config.yaml        # Hooks de pre-commit
+├── docker-compose.metabase.yml    # BI com Metabase
+└── .github/workflows/ci.yml       # CI/CD pipeline
+```
 
 ---
 
-# ⚙️ 2.3. PADRÕES TÉCNICOS OBRIGATÓRIOS
+## 🎯 Padrão de Módulos (EXTREMAMENTE IMPORTANTE)
 
-## Backend
-- **FastAPI**
-- **Python 3.12+**
-- **Async/Await em todo o backend**
-- **SQLAlchemy 2.0 (async engine)**
-- **Alembic para migrações**
-- **Repository Pattern**
-- **Service Layer**
-- **DTOs Pydantic v2**
-- **Rotas modulares**
-- **Testes com pytest**
-- **Separação limpa entre camadas**
+Cada módulo segue **RIGOROSAMENTE** este padrão de 5 arquivos:
 
-## Banco de Dados
-- **PostgreSQL** (principal)
-- **SQLite** apenas para testes
-- Migrations Alembic sempre presentes
+### 1. `models.py` - Modelos SQLAlchemy 2.0
 
-## Frontend
-Você deve escolher a melhor stack para um ERP modular:
-➡️ **React (TypeScript)**
-
-E entregar:
-
-- Estrutura base do front
-- Componentes reutilizáveis
-- Hooks
-- Páginas
-- Layouts
-- Integração completa com a API
-
-(*OBS: Você não fará o front completo, mas criará a base e os módulos necessários conforme cada Sprint exigir.*)
-
----
-
-# 💼 2.4. PADRÕES DE ARQUITETURA
-
-Você deve obrigatoriamente seguir esta estrutura:
-
+```python
 """
-erp/
-app/
-core/
-config.py
-database.py
-security.py
-modules/
-produtos/
-models.py
-schemas.py
-repository.py
-service.py
-router.py
-estoque/
-vendas/
-financeiro/
-orcamentos/
-compras/
-os/
-crm/
-ecommerce/
-relatorios/
-utils/
-tests/
-alembic/
-versions/
-main.py
+Modelos de banco de dados usando SQLAlchemy 2.0 ORM
+
+RESPONSABILIDADES:
+- Definir tabelas e colunas
+- Definir relacionamentos (ForeignKey, relationship)
+- Definir constraints (unique, index, check)
+- Usar type hints modernos (Mapped[tipo])
+
+NUNCA:
+- Incluir regras de negócio
+- Incluir validações complexas
+- Acessar outros módulos diretamente
 """
 
-### Regras da arquitetura
-1. Cada módulo deve ser **isolado**, mas integrado.
-2. Nunca misturar regras de negócio dentro de rotas.
-3. Nunca escrever SQL dentro de routers.
-4. Services devem conter **todas as regras de negócio**.
-5. Repository deve conter **toda a comunicação com o BD**.
-6. Models **nunca** devem conter lógica.
-7. Sempre usar anotações de tipo (type hints) completas.
-
----
-
-# 🧪 2.5. REGRAS PARA TESTES
-
-Para cada Sprint:
-
-- Criar testes unitários
-- Criar testes de integração
-- Testar serviços
-- Testar repositórios
-- Testar rotas
-- Testar flows críticos
-- Usar SQLite in-memory
-- Usar mocks para serviços externos
-- Cobertura mínima: **85%**
-
----
-
-# 📘 2.6. REGRAS DE DOCUMENTAÇÃO
-
-Para cada módulo entregue, você deve gerar:
-
-- Endpoints no formato OpenAPI 3.0
-- Exemplos reais de entrada e saída
-- Explicação do fluxo
-- Notas de negócio
-- Definição técnica dos modelos
-- Tabela de requisitos do Sprint
-
----
-
-# ⚠️ 2.7. COISAS QUE VOCÊ NUNCA PODE FAZER
-
-Você nunca deve:
-
-- Pedir instruções para continuar
-- Dizer “posso ir para o próximo sprint?”
-- Resumir código por limitação
-- Dizer “isso é muito grande para gerar”
-- Entregar trecho “...” ou “// TODO”
-- Pular testes
-- Pular regras do Sprint
-- Entregar versões “simplificadas”
-- Sugerir tecnologias fora do escopo
-- Mudar sequência dos Sprints
-- Ignorar detalhes fiscais e de estoque
-
----
-
-# 🔥 2.8. REGRA DE OURO — EXECUTAR 100% DO SPRINT
-
-Antes de passar para o próximo Sprint, você deve confirmar internamente:
-
-1. Todos os models criados
-2. Todas as migrações entregues
-3. Todos os schemas definidos
-4. Todas as rotas implementadas
-5. Todos os services completos
-6. Regras de negócio implementadas
-7. Repository funcional
-8. Testes escritos
-9. Documentação entregue
-10. Exemplos reais gerados
-
-Somente então você pode, automaticamente, seguir para o próximo Sprint.
-
----
-
-# 🧾 2.9. COMO VOCÊ DEVE ESCREVER O CÓDIGO
-
-- 100% funcional
-- 100% válido
-- 100% executável
-- Com imports corretos
-- Estruturado
-- Legível
-- Comentado quando necessário
-- Sem atalhos
-- Sem simplificações
-- Usando Python moderno (3.12+)
-- Usando SQLAlchemy 2.0 ORM (mapped_column, Mapped[], etc.)
-
----
-
-# 🏁 2.10. CONCLUSÃO DAS REGRAS
-
-Quando estas regras estiverem compreendidas, você deve:
-
-➡️ **Iniciar automaticamente o SPRINT 1**
-➡️ **E seguir até o SPRINT 7 sem parar**
-
-Sempre produzindo a **solução completa**, fiel ao documento original.
-
-
----
-
-## 3. EXECUÇÃO SEQUENCIAL AUTOMÁTICA
-## 3. EXECUÇÃO SEQUENCIAL AUTOMÁTICA
-
-Esta seção define, com total precisão, **como você — Claude 3.5 Sonnet — deve executar todo o ERP**.
-O objetivo é garantir que você construa o sistema **do início ao fim sem pausas**, exatamente como especificado nos Sprints 1 a 7 do documento oficial fornecido pelo usuário.
-
----
-
-# 🔁 3.1. MECANISMO DE EXECUÇÃO AUTOMÁTICA
-
-Assim que terminar de interpretar este PROMPT MASTER, você deve iniciar um processo automático composto por:
-
-1. **Análise global do escopo**
-2. **Geração da arquitetura base do projeto**
-3. **Execução completa do Sprint 1**
-4. **Execução completa do Sprint 2**
-5. **Execução completa do Sprint 3**
-6. **Execução completa do Sprint 4**
-7. **Execução completa do Sprint 6**
-8. **Execução completa do Sprint 7**
-9. **Geração da documentação de encerramento**
-10. **Entrega final do ERP completo**
-
-⚠️ Nenhum desses passos deve aguardar comando do usuário.
-
----
-
-# 🚀 3.2. COMO VOCÊ DEVE INICIAR A EXECUÇÃO
-
-Logo após terminar de ler este PROMPT MASTER:
-
-1. Você deve iniciar com:
-   - Arquitetura geral do projeto
-   - Setup completo FastAPI + SQLAlchemy + Alembic
-   - Estrutura de módulos
-   - Configuração inicial
-
-2. Imediatamente após, começar o:
-   - **SPRINT 1 completo**
-
-Sem pedir permissão.
-
----
-
-# 🧩 3.3. COMO VOCÊ DEVE ENTREGAR CADA SPRINT
-
-Para cada Sprint (1, 2, 3, 4, 6, 7), você deve entregar:
-
-### ✔ 1. ARQUITETURA DO MÓDULO
-- Pastas
-- Arquivos
-- Organograma geral
-- Diagramas (ASCII ou Mermaid)
-
-### ✔ 2. MODELAGEM COMPLETA
-- Modelos SQLAlchemy 2.0 ORM
-- Campos corretos
-- Relacionamentos
-- Chaves estrangeiras
-- Constraints
-- Índices importantes
-
-### ✔ 3. MIGRAÇÕES ALEMBIC
-- upgrade()
-- downgrade()
-- Criação completa das tabelas
-
-### ✔ 4. SCHEMAS (Pydantic v2)
-- Schemas de entrada (Input)
-- Schemas de saída (Output)
-- Schemas internos (DTOs)
-
-### ✔ 5. ROTAS FASTAPI (ASYNC)
-- Criar router.py no módulo
-- Rotas CRUD
-- Rotas específicas do Sprint
-- Middlewares se necessário
-- Respostas com modelos Pydantic
-
-### ✔ 6. SERVICE LAYER
-- Regras de negócio completas
-- Validações
-- Tratamento de erros
-- Chamadas para repositório
-- Fluxos completos
-
-### ✔ 7. REPOSITORY PATTERN
-- CRUD completo
-- Métodos especializados do Sprint
-
-### ✔ 8. TESTES (pytest)
-- Testes unitários
-- Testes de integração
-- Fixtures
-- Mocks de dependências
-- Casos completos
-
-### ✔ 9. EXEMPLOS REAIS
-Para cada rota e serviço entregue:
-
-- Exemplo de JSON de entrada
-- Exemplo de JSON de saída
-- Explicação real do fluxo
-- Cenário prático da loja de material de construção
-
-### ✔ 10. DOCUMENTAÇÃO OPENAPI
-Todas as rotas devem ser documentadas com:
-
-- Tags
-- Summaries
-- Descriptions
-- Examples
-- Response models
-
----
-
-# 🔥 3.4. REGRA DE TRANSAÇÃO: SÓ CONTINUAR SE COMPLETO
-
-Você só pode iniciar o próximo Sprint quando:
-
-- Todos os models estiverem concluídos
-- Todas as migrações existirem e estiverem corretas
-- Todos os schemas estiverem completos
-- Todas as rotas estiverem implementadas
-- Todos os repositórios estiverem completos
-- Todos os services estiverem corretos
-- Todos os testes estiverem escritos
-- Toda a documentação estiver entregue
-- Todos os exemplos reais estiverem criados
-
-➡️ **Somente então você avança automaticamente.**
-
----
-
-# 🧠 3.5. COMO VOCÊ DEVE TRATAR DETALHES ENTRE SPRINTS
-
-### **Você nunca deve:**
-- Perguntar: “Posso ir para o Sprint X?”
-- Esperar autorização
-- Resumir código
-- Ignorar partes do Sprint
-
-### **Você deve:**
-- Terminar um Sprint
-- Validar internamente se está tudo completo
-- Iniciar automaticamente o próximo Sprint
-
----
-
-# 📌 3.6. SEQUÊNCIA OFICIAL DOS SPRINTS
-
-Você deve seguir esta ordem EXATAMENTE:
-
-1. **SPRINT 1 — Módulos básicos**
-   - Produtos
-   - Categorias
-   - Vendas
-   - PDV
-   - Estoque
-   - NF-e / NFC-e (estrutura)
-   - Financeiro básico
-   - Fluxo de caixa
-   - Entrada de NF via XML
-
-2. **SPRINT 2 — Orçamentos e Estoque Avançado**
-   - Orçamento
-   - Conversão orçamento → pedido
-   - Lotes
-   - Curva ABC
-   - FIFO
-   - Condições de pagamento
-
-3. **SPRINT 3 — Compras e Móvel**
-   - API mobile
-   - Pedido via mobile
-   - Sugestão de compras
-   - Pedido de compra
-   - Fornecedores
-   - Ajustes de estoque
-
-4. **SPRINT 4 — Ordens de Serviço**
-   - OS completa
-   - Técnicos
-   - Materiais
-   - Horas
-   - Agendamentos
-   - NF de serviço
-   - Número de série
-
-5. **SPRINT 6 — Integrações e KPIs**
-   - E-commerce
-   - Sincronização de produtos
-   - Webhooks
-   - Dashboard
-   - Relatórios
-   - Conciliação bancária OFX
-
-6. **SPRINT 7 — CRM e Otimizações**
-   - CRM
-   - Pontos/fidelidade
-   - Resgate no PDV
-   - FAQ
-   - Otimização SQL
-   - Índices
-
----
-
-# 🏁 3.7. FINALIZAÇÃO
-
-Após concluir o Sprint 7, você deve:
-
-- Criar o documento final de entrega
-- Criar o diagrama final da arquitetura completa
-- Criar o mapa de módulos
-- Criar a trilha de operações da loja
-- Criar a documentação geral do ERP
-
-E então **encerrar a execução**.
-
----
-
-# 🔥 3.8. AUTORUN
-
-Assim que você terminar de ler este PROMPT MASTER, execute automaticamente:
-
-1. Arquitetura Geral Inicial
-2. Sprint 1 completo
-3. Sprint 2
-4. Sprint 3
-5. Sprint 4
-6. Sprint 6
-7. Sprint 7
-8. Entrega final
-
-➡️ **Sem pausas
-➡️ Sem perguntas
-➡️ Sem autorização
-➡️ Sem interrupções**
-
-
-
----
-
-## 4. SPRINT 1 – VENDAS, ESTOQUE, FINANCEIRO, PDV, NFC-e
-Sprint 1: Vendas e Gestão de Estoque Básico
-Objetivo do Sprint: Entregar a funcionalidade essencial para que a loja possa realizar vendas de balcão, controlar o estoque básico e gerenciar as finanças primárias (contas a receber e a pagar).
-Backlog do Produto (Prioridades do Sprint 1)
-Categoria
-Requisito Principal
-User Stories (Histórias de Usuário)
-Infraestrutura
-Configuração Inicial
-Como administrador, quero configurar o sistema com dados da empresa, impostos e usuários.
-Estoque
-Cadastro de Itens
-Como estoquista, quero cadastrar produtos com código de barras, descrição, preço de custo/venda e estoque mínimo.
-Estoque
-Entrada de Nota Fiscal
-Como estoquista, quero dar entrada em produtos via XML da NF do fornecedor, atualizando automaticamente o estoque e custo.
-Financeiro
-Contas a Pagar/Receber Básico
-Como financeiro, quero registrar contas a pagar (fornecedores) e contas a receber (vendas a prazo).
-Vendas (PDV)
-PDV Ágil
-Como operador de caixa, quero uma interface rápida para registrar vendas, ler códigos de barras e finalizar o pedido (pagamento).
-Vendas (PDV)
-Emissão de Cupom Fiscal
-Como operador de caixa, quero emitir NFC-e (Cupom Fiscal Eletrônico) automaticamente após a venda, em conformidade com a legislação.
-Relatórios
-Fluxo de Caixa Básico
-Como gerente, quero visualizar o fluxo de caixa diário/semanal (entradas e saídas simples).
-
-Tarefas do Sprint 1
-Aqui está o detalhamento das tarefas para a equipe de desenvolvimento:
-ID
-Tarefa
-Responsável Sugerido
-Estimativa (Horas/Story Points)
-Requisito Relacionado
-T001
-Configurar ambiente de desenvolvimento e produção.
-Dev Backend
-8
-Infraestrutura
-T002
-Criar schema do banco de dados para produtos e estoque.
-Dev Backend
-12
-Cadastro de Itens
-T003
-Desenvolver tela de cadastro/edição de produtos (CRUD).
-Dev Frontend
-10
-Cadastro de Itens
-T004
-Implementar leitura de XML para entrada de estoque.
-Dev Backend
-16
-Entrada de Nota Fiscal
-T005
-Criar módulos básicos de Contas a Pagar e Receber.
-Dev Backend
-14
-Contas a Pagar/Receber
-T006
-Desenvolver a interface do PDV (Front-end).
-Dev Frontend
-20
-PDV Ágil
-T007
-Implementar lógica de vendas e baixa automática de estoque no PDV (Backend).
-Dev Backend
-18
-PDV Ágil
-T008
-Integrar com o módulo fiscal para emissão de NFC-e.
-Dev Backend
-24
-Emissão de Cupom Fiscal
-T009
-Criar a primeira versão do relatório de Fluxo de Caixa.
-Dev Fullstack
-10
-Fluxo de Caixa Básico
-T010
-Testes unitários e de integração das funcionalidades do PDV.
-QA
-16
-PDV Ágil
-T011
-Testes de conformidade fiscal da NFC-e.
-QA
-8
-Emissão de Cupom Fiscal
-
-Critérios de Aceitação do Sprint 1 (Definition of Done)
-    • O cadastro de produtos permite inserir código, descrição e gerenciar o saldo de estoque inicial.
-    • A entrada de estoque via XML atualiza corretamente a quantidade e o custo médio dos produtos.
-    • O PDV permite finalizar uma venda em menos de 3 cliques (após bipar os itens).
-    • A NFC-e é gerada e autorizada pela SEFAZ sem erros para todas as vendas.
-    • É possível registrar e visualizar contas a pagar e receber básicas.
-    • Todas as funcionalidades foram testadas pela equipe de QA.
-    • A equipe de suporte está treinada nas funcionalidades básicas entregues.
-
----
-
-## 5. SPRINT 2 – ORÇAMENTOS, LOTE, FIFO, CURVA ABC, CONDIÇÕES
-Sprint 2: Orçamentos, Lotes e Curva ABC
-Objetivo do Sprint: Capacitar a equipe de vendas a gerenciar orçamentos detalhados e projetos, e permitir que o estoque controle itens com rastreabilidade (lotes/validade) e otimize o reabastecimento.
-Backlog do Produto (Prioridades do Sprint 2)
-Categoria
-Requisito Principal
-User Stories (Histórias de Usuário)
-Vendas
-Gestão de Orçamentos
-Como vendedor, quero criar orçamentos detalhados para clientes, que possam ser revisados e convertidos em pedidos de venda ou O.S. posteriormente.
-Vendas
-Acompanhamento de Orçamentos
-Como vendedor, quero visualizar o status de meus orçamentos (aberto, aprovado, perdido, convertido) para fazer follow-up.
-Estoque
-Controle por Lote/Validade
-Como estoquista, quero registrar o lote e a data de validade de produtos específicos (ex: colas, impermeabilizantes) na entrada do estoque.
-Estoque
-Venda por Lote (FIFO/LIFO)
-Como operador de caixa, quero que o sistema sugira automaticamente o lote mais antigo (FIFO) na hora da venda para garantir a rotatividade.
-Estoque
-Curva ABC
-Como gerente, quero gerar um relatório que classifique meus produtos por volume de vendas (Curva ABC) para identificar itens de alto giro e planejar compras.
-Financeiro
-Condições de Pagamento
-Como financeiro, quero cadastrar múltiplas condições de pagamento (ex: 30/60/90 dias, parcelado no cartão) e associá-las aos orçamentos/vendas.
-
-Tarefas do Sprint 2
-ID
-Tarefa
-Responsável Sugerido
-Estimativa (Horas/Story Points)
-Requisito Relacionado
-T012
-Criar tabelas de banco de dados para Orçamentos e Itens de Orçamento.
-Dev Backend
-10
-Gestão de Orçamentos
-T013
-Desenvolver tela de criação e gerenciamento de orçamentos (CRUD).
-Dev Frontend
-18
-Gestão de Orçamentos
-T014
-Implementar funcionalidade de conversão de Orçamento para Pedido de Venda.
-Dev Fullstack
-12
-Acompanhamento de Orçamentos
-T015
-Ajustar schema do banco de dados para incluir campos de Lote e Data de Validade nos itens de estoque.
-Dev Backend
-8
-Controle por Lote/Validade
-T016
-Modificar a tela de Entrada de NF (Sprint 1) para permitir a inserção de dados de lote/validade para produtos específicos.
-Dev Frontend/Backend
-16
-Controle por Lote/Validade
-T017
-Implementar lógica de seleção automática de lote (FIFO) no PDV e na venda.
-Dev Backend
-14
-Venda por Lote (FIFO)
-T018
-Desenvolver o algoritmo e o relatório de Curva ABC (produtos A, B e C).
-Dev Backend/Data
-20
-Curva ABC
-T019
-Criar tela de cadastro de Condições de Pagamento e vincular ao fechamento da venda/orçamento.
-Dev Fullstack
-10
-Condições de Pagamento
-T020
-Testes de conversão de orçamento e regras de lote/validade.
-QA
-16
-Todos do Sprint
-
-Critérios de Aceitação do Sprint 2 (Definition of Done)
-    • O vendedor consegue criar um orçamento com múltiplos itens e preços.
-    • Um orçamento aprovado pode ser convertido em um pedido de venda com um clique, baixando o estoque.
-    • Produtos marcados como "controlados por lote" exigem a inserção de lote/validade na entrada.
-    • O sistema impede a venda de produtos vencidos ou sem lote registrado (se obrigatório).
-    • O relatório de Curva ABC é gerado corretamente e segmenta os produtos.
-    • Múltiplas condições de pagamento podem ser aplicadas durante o checkout.
-    • Todas as funcionalidades foram testadas e validadas pela equipe de QA.
----
-
-## 6. SPRINT 3 – MÓDULO MÓVEL, SUGESTÃO DE COMPRAS, AJUSTES
-Sprint 3: Mobilidade e Gestão de Compras Otimizada
-Objetivo do Sprint: Melhorar a eficiência da equipe de vendas em campo ou no salão de loja através de dispositivos móveis e otimizar o processo de ressuprimento de estoque, garantindo que os produtos certos sejam comprados no momento certo.
-Backlog do Produto (Prioridades do Sprint 3)
-Categoria
-Requisito Principal
-User Stories (Histórias de Usuário)
-Vendas/Mobilidade
-Acesso Móvel para Vendedores
-Como vendedor, quero acessar o sistema via tablet ou celular para consultar preços e estoque de qualquer lugar da loja ou em visitas externas.
-Vendas/Mobilidade
-Pedido Móvel
-Como vendedor, quero fazer um pedido ou orçamento diretamente pelo dispositivo móvel e enviá-lo para o caixa ou para o cliente por e-mail.
-Compras
-Sugestão de Compras Automática
-Como comprador, quero que o sistema me sugira itens a serem comprados com base no estoque mínimo e na Curva ABC (dados do Sprint 2), para evitar rupturas.
-Compras
-Cotação e Pedido de Compra
-Como comprador, quero gerar pedidos de compra formais para fornecedores e registrar as cotações recebidas para comparação.
-Compras
-Análise de Fornecedores Básica
-Como gerente, quero acompanhar o desempenho dos fornecedores (pontualidade na entrega, preços praticados) para auxiliar na decisão de compra.
-Estoque
-Ajuste de Estoque (Avulso)
-Como estoquista, quero realizar ajustes simples de estoque (adição/remoção por quebra, perda, etc.) com justificativa.
-
-Tarefas do Sprint 3
-ID
-Tarefa
-Responsável Sugerido
-Estimativa (Horas/Story Points)
-Requisito Relacionado
-T021
-Desenvolvimento da API para acesso móvel (endpoints de consulta de produto/estoque).
-Dev Backend
-16
-Acesso Móvel
-T022
-Criação da interface web responsiva (ou PWA) para visualização móvel de produtos e preços.
-Dev Frontend
-20
-Acesso Móvel
-T023
-Implementação da funcionalidade de criação de pedido/orçamento via interface móvel.
-Dev Fullstack
-18
-Pedido Móvel
-T024
-Desenvolvimento da lógica de backend para o algoritmo de Sugestão de Compras (baseado em estoque mínimo e Curva ABC).
-Dev Backend/Data
-24
-Sugestão de Compras
-T025
-Criação da tela de visualização da lista de Sugestão de Compras para o usuário comprador.
-Dev Frontend
-12
-Sugestão de Compras
-T026
-Desenvolvimento do módulo de Pedido de Compra (emissão e controle de status).
-Dev Fullstack
-16
-Cotação/Pedido Compra
-T027
-Criação de interface e lógica para registro de performance e pontualidade do fornecedor.
-Dev Backend
-10
-Análise de Fornecedores
-T028
-Criação da tela e funcionalidade de Ajuste Manual de Estoque (com log de auditoria).
-Dev Fullstack
-8
-Ajuste de Estoque
-T029
-Testes de usabilidade e funcionais em múltiplos dispositivos móveis (iOS/Android).
-QA
-16
-Acesso Móvel/Pedido Móvel
-
-Critérios de Aceitação do Sprint 3 (Definition of Done)
-    • O vendedor consegue logar no sistema usando um tablet e pesquisar qualquer produto.
-    • É possível gerar um orçamento completo via dispositivo móvel e salvá-lo no sistema.
-    • A lista de sugestão de compras é gerada automaticamente e é coerente com as regras de estoque mínimo e Curva ABC.
-    • O comprador consegue emitir um pedido de compra formal para um fornecedor.
-    • Ajustes manuais de estoque registram o motivo e o usuário responsável (log de auditoria).
-    • Todas as funcionalidades foram testadas e validadas pela equipe de QA.
-
----
-
-## 7. SPRINT 4 – ORDENS DE SERVIÇO COMPLETAS
-Sprint 4: Gestão de Serviços e Ordens de Serviço
-Objetivo do Sprint: Introduzir um módulo para gerenciar serviços de instalação, manutenção e assistência técnica, um diferencial crucial para lojas que vendem equipamentos que necessitam de suporte pós-venda ou garantia.
-Backlog do Produto (Prioridades do Sprint 4)
-Categoria
-Requisito Principal
-User Stories (Histórias de Usuário)
-Serviços (OS)
-Cadastro de Tipos de Serviço
-Como administrador, quero cadastrar diferentes tipos de serviços (ex: Instalação de bomba, Manutenção de furadeira, Visita Técnica) com preços padrão.
-Serviços (OS)
-Abertura de Ordem de Serviço (OS)
-Como atendente, quero abrir uma Ordem de Serviço vinculada a um cliente e, opcionalmente, a um equipamento vendido (número de série).
-Serviços (OS)
-Gestão de Técnicos e Agendamentos
-Como gerente de serviços, quero atribuir OSs a técnicos específicos e visualizar a agenda de trabalho deles.
-Serviços (OS)
-Apontamento de Materiais/Horas
-Como técnico, quero apontar as peças utilizadas (com baixa automática do estoque) e as horas trabalhadas em uma OS.
-Serviços (OS)
-Faturamento da OS
-Como financeiro, quero fechar e faturar a Ordem de Serviço, gerando uma NF de serviço e uma conta a receber.
-Estoque
-Controle de Número de Série
-Como estoquista, quero registrar o número de série de equipamentos específicos na entrada (ex: motobombas, geradores) para rastreabilidade em garantias.
-
-Tarefas do Sprint 4
-ID
-Tarefa
-Responsável Sugerido
-Estimativa (Horas/Story Points)
-Requisito Relacionado
-T030
-Criar schemas de banco de dados para Ordens de Serviço, Tipos de Serviço, Técnicos e Agendamentos.
-Dev Backend
-16
-Abertura de OS
-T031
-Desenvolver tela de cadastro de Tipos de Serviço e Técnicos.
-Dev Frontend
-8
-Cadastro de Tipos
-T032
-Modificar o cadastro de produtos (Sprint 1) para incluir a opção "Controlado por Serial".
-Dev Fullstack
-6
-Controle de Série
-T033
-Implementar a captura do número de série na entrada da NF (Sprint 1/2).
-Dev Backend
-10
-Controle de Série
-T034
-Criar a interface e a lógica para Abertura e Acompanhamento da OS (status: Aberta, Em Andamento, Concluída, Faturada).
-Dev Frontend/Backend
-24
-Abertura de OS
-T035
-Desenvolver a funcionalidade de Apontamento de Materiais (integração com estoque) e Horas na OS.
-Dev Fullstack
-18
-Apontamento
-T036
-Criar a visualização da Agenda dos Técnicos (Kanban ou Calendário simples).
-Dev Frontend
-12
-Gestão de Técnicos
-T037
-Implementar a função de Faturamento da OS, gerando a NF de Serviço e integrando com o Contas a Receber (Sprint 1).
-Dev Backend
-20
-Faturamento OS
-T038
-Testes de rastreabilidade (venda do serial -> abertura da OS com serial -> faturamento).
-QA
-16
-Todos do Sprint
-
-Critérios de Aceitação do Sprint 4 (Definition of Done)
-    • É possível abrir uma OS e vincular um produto vendido pelo seu número de série.
-    • O sistema permite atribuir uma OS a um técnico e mudar seu status.
-    • O apontamento de uma peça na OS automaticamente dá baixa no estoque.
-    • O faturamento da OS gera os registros financeiros e fiscais corretamente.
-    • A rastreabilidade do equipamento (venda à assistência) é funcional.
-    • Todas as funcionalidades foram testadas e validadas pela equipe de QA
----
-
-## 8. SPRINT 5 – WMS Básico + Inventário Rotativo
-Sprint 5: WMS Básico e Inventário Rotativo
-Objetivo do Sprint: Melhorar a localização física dos produtos no estoque e permitir a realização de contagens de inventário de forma eficiente e sem interromper as operações diárias da loja.
-Backlog do Produto (Prioridades do Sprint 5)
-Categoria	Requisito Principal	User Stories (Histórias de Usuário)
-Estoque/WMS	Gestão de Localização (Endereçamento)	Como estoquista, quero definir e atribuir locais físicos (ex: Corredor A, Prateleira 3B, Pallet 05) para cada produto no estoque.
-Estoque/WMS	Picking/Separação por Localização	Como separador, quero que o pedido de venda mostre o local exato do produto no estoque para agilizar a separação.
-Inventário	Geração de Ficha de Inventário Rotativo	Como gerente de estoque, quero gerar fichas de contagem para áreas específicas ou grupos de produtos (ex: apenas itens do Corredor A, ou apenas itens da Curva A) para contagens parciais.
-Inventário	Contagem e Acerto de Estoque	Como estoquista, quero registrar a contagem real dos itens no sistema e visualizar a diferença (divergência) para aprovar o acerto automático do estoque.
-Usabilidade	Leitura de Código de Barras (Inventário)	Como estoquista, quero usar um leitor de código de barras (ou coletor de dados) para agilizar o processo de contagem do inventário rotativo.
-Relatórios	Índice de Acuracidade do Estoque	Como gerente, quero um indicador (KPI) que me mostre a precisão do meu estoque (acuracidade) com base nas contagens realizadas.
-Tarefas do Sprint 5
-ID	Tarefa	Responsável Sugerido	Estimativa (Horas/Story Points)	Requisito Relacionado
-T039	Ajustar schema do BD para incluir a tabela de Localizacoes e vincular ao Produto.	Dev Backend	6	Gestão de Localização
-T040	Criar tela de cadastro e gestão de localizações (endereços de estoque).	Dev Frontend	8	Gestão de Localização
-T041	Modificar o cadastro de produto e a entrada de NF (Sprints 1/2) para permitir a atribuição de localização.	Dev Fullstack	10	Gestão de Localização
-T042	Ajustar o relatório de Pedido de Venda/Separação para imprimir a localização do item.	Dev Backend	6	Picking por Localização
-T043	Desenvolver a funcionalidade de Geração de Ficha de Inventário (filtros por localização/Curva ABC).	Dev Backend/Data	16	Inventário Rotativo
-T044	Criar a tela de Contagem de Inventário, permitindo input manual ou via leitor de código de barras, com cálculo de divergência.	Dev Fullstack	24	Contagem/Acerto Estoque
-T045	Implementar a função de acerto automático de estoque após a aprovação da contagem.	Dev Backend	10	Contagem/Acerto Estoque
-T046	Desenvolvimento do KPI de Acuracidade do Estoque (cálculo e visualização).	Dev Fullstack/Data	12	Índice de Acuracidade
-T047	Testes de fluxo completo: atribuição de local, geração de ficha, contagem com leitor e acerto final.	QA	16	Todos do Sprint
-Critérios de Aceitação do Sprint 5 (Definition of Done)
-Todo produto no estoque pode ter um endereço físico atribuído (ou "estoque geral").
-O documento de separação de pedido indica corretamente onde o item está localizado.
-É possível gerar uma lista de contagem focada apenas em uma área específica do estoque.
-O sistema aceita a leitura de código de barras para contagem rápida no inventário.
-Divergências de estoque são calculadas e ajustadas automaticamente após a aprovação da contagem.
-O painel de gestão exibe o índice de acuracidade do estoque.
-Todas as funcionalidades foram testadas e validadas pela equipe de QA.
-
----
-## 8. SPRINT 6 – E-COMMERCE + DASHBOARD + RELATÓRIOS
-      Sprint 6: Integração com E-commerce e Relatórios Gerenciais (BI Básico)
-Objetivo do Sprint: Expandir o canal de vendas integrando a loja física ao e-commerce e fornecer ferramentas de Business Intelligence (BI) básicas para auxiliar na tomada de decisão estratégica.
-Backlog do Produto (Prioridades do Sprint 6)
-Categoria
-Requisito Principal
-User Stories (Histórias de Usuário)
-Integração E-commerce
-Sincronização de Produtos
-Como gerente de e-commerce, quero que novos produtos cadastrados no ERP sejam automaticamente enviados para a plataforma online (ex: WooCommerce, Magento, Tray).
-Integração E-commerce
-Sincronização de Estoque/Preços
-Como gerente, quero que o estoque e os preços do ERP sejam sincronizados em tempo real (ou próximo disso) com o e-commerce para evitar vendas duplicadas ou preços desatualizados.
-Integração E-commerce
-Recebimento de Pedidos Online
-Como operador de vendas, quero que os pedidos feitos no e-commerce "caiam" automaticamente dentro do ERP como pedidos de venda, prontos para faturamento e separação.
-BI/Relatórios
-Painel de Vendas (Dashboard)
-Como gerente, quero um painel visual (dashboard) no ERP que me mostre as principais métricas de vendas do dia/semana (faturamento total, ticket médio, produtos mais vendidos).
-BI/Relatórios
-Relatório de Vendas por Vendedor
-Como gerente, quero um relatório que mostre o desempenho individual de cada vendedor (volume de vendas, margem de lucro gerada).
-Financeiro
-Conciliação Bancária Básica
-Como financeiro, quero importar um extrato bancário (formato OFX) e conciliar automaticamente as entradas e saídas registradas no ERP.
-
-Tarefas do Sprint 6
-ID
-Tarefa
-Responsável Sugerido
-Estimativa (Horas/Story Points)
-Requisito Relacionado
-T045
-Definição e desenvolvimento da API de integração com a plataforma de e-commerce alvo.
-Dev Backend
-24
-Sincronização Produtos/Estoque
-T046
-Implementação do script/serviço de sincronização automática de produtos e preços (ERP -> E-commerce).
-Dev Backend
-20
-Sincronização Produtos/Estoque
-T047
-Desenvolvimento do webhook/serviço para receber pedidos do e-commerce para dentro do ERP.
-Dev Backend
-20
-Recebimento Pedidos Online
-T048
-Criação da tela de visualização e gestão de pedidos online recebidos no ERP.
-Dev Frontend
-12
-Recebimento Pedidos Online
-T049
-Desenvolvimento do Dashboard de Vendas (painel inicial do ERP).
-Dev Fullstack/Data
-24
-Painel de Vendas
-T050
-Criação do relatório de Desempenho por Vendedor (backend e frontend).
-Dev Fullstack/Data
-16
-Relatório Vendas Vendedor
-T051
-Implementação da funcionalidade de importação de arquivo OFX e lógica de conciliação simples.
-Dev Backend
-18
-Conciliação Bancária
-T052
-Testes de ponta a ponta da integração (cadastro de produto no ERP, aparecer no site, venda no site, aparecer no ERP).
-QA
-20
-Todos da Integração
-
-Critérios de Aceitação do Sprint 6 (Definition of Done)
-    • Um novo produto cadastrado no ERP aparece na loja virtual em até [tempo definido, ex: 15 minutos].
-    • O estoque é atualizado no e-commerce imediatamente após uma venda (física ou online).
-    • Pedidos realizados no e-commerce são visíveis no ERP com o status "Pendente de Faturamento".
-    • O dashboard inicial mostra corretamente as principais métricas de vendas do dia.
-    • É possível gerar o relatório de desempenho individual de vendedores com dados precisos.
-    • O sistema permite importar o extrato bancário e sugere conciliações automáticas.
-    • Todas as funcionalidades foram testadas e validadas pela equipe de QA.
-
-## 9. SPRINT 7 – CRM, FIDELIDADE, OTIMIZAÇÃO SQL, FAQ
-      Sprint 7: CRM Básico, Fidelização de Clientes e Performance
-Objetivo do Sprint: Melhorar o relacionamento com o cliente, oferecendo ferramentas básicas de CRM e programas de fidelidade, e garantir que o sistema mantenha um bom desempenho à medida que a base de dados cresce.
-Backlog do Produto (Prioridades do Sprint 7)
-Categoria
-Requisito Principal
-User Stories (Histórias de Usuário)
-CRM/Clientes
-Cadastro Detalhado de Clientes
-Como vendedor, quero ter um cadastro de clientes mais robusto (incluindo tipo PJ/PF, contato de e-mail/telefone, data de nascimento) para comunicação direcionada.
-CRM/Fidelidade
-Programa de Pontos Básico
-Como gerente, quero implementar um programa de fidelidade onde os clientes acumulam pontos por real gasto, que podem ser trocados por descontos ou produtos específicos.
-Vendas/PDV
-Aplicação de Pontos/Descontos
-Como operador de caixa, quero consultar o saldo de pontos do cliente no PDV e aplicar descontos ou resgatar produtos usando esses pontos.
-Performance
-Otimização de Consultas
-Como desenvolvedor, quero otimizar as consultas SQL mais lentas (ex: relatórios de estoque grande) para garantir a agilidade do sistema.
-Performance
-Indexação de Banco de Dados
-Como administrador de BD, quero revisar e aplicar índices nas tabelas principais para melhorar o tempo de resposta geral do ERP.
-Usabilidade/Suporte
-FAQ e Ajuda Contextual
-Como usuário, quero ter acesso a um menu de ajuda ou FAQ simples dentro do próprio sistema para tirar dúvidas rápidas sem precisar ligar para o suporte.
-
-Tarefas do Sprint 7
-ID
-Tarefa
-Responsável Sugerido
-Estimativa (Horas/Story Points)
-Requisito Relacionado
-T053
-Ajustar schema do BD para incluir campos adicionais de cliente e saldo de pontos.
-Dev Backend
-8
-Cadastro Clientes/Pontos
-T054
-Modificar a tela de cadastro de clientes (existente) para incluir os novos campos e validações (PJ/PF).
-Dev Frontend
-10
-Cadastro Detalhado
-T055
-Implementar a lógica de acúmulo automático de pontos a cada venda faturada.
-Dev Backend
-12
-Programa de Pontos
-T056
-Criar funcionalidade no PDV para consultar saldo de pontos e aplicar o resgate/desconto.
-Dev Fullstack
-16
-Aplicação de Pontos
-T057
-Análise e otimização das 3 consultas de banco de dados mais lentas identificadas (ex: relatório Curva ABC, Fluxo de Caixa).
-Dev Backend
-20
-Otimização Consultas
-T058
-Implementação de índices de BD nas tabelas Produtos, Vendas, Itens_Venda e Clientes.
-Administrador BD
-10
-Indexação BD
-T059
-Desenvolvimento de um módulo simples de "Ajuda" ou "FAQ" no menu do sistema.
-Dev Frontend
-8
-FAQ/Ajuda
-T060
-Elaboração do conteúdo inicial do FAQ com as dúvidas mais comuns.
-Analista de Suporte
-8
-FAQ/Ajuda
-T061
-Testes de performance sob carga simulada e testes funcionais do programa de fidelidade.
-QA
-16
-Todos do Sprint
-
-Critérios de Aceitação do Sprint 7 (Definition of Done)
-    • O cadastro de clientes suporta informações detalhadas de contato e tipo de pessoa (PF/PJ).
-    • Clientes recebem pontos automaticamente após uma compra, com base na regra definida (ex: 1 ponto a cada R$10,00).
-    • O operador de caixa consegue resgatar pontos no PDV para abater o valor da venda.
-    • O tempo de resposta dos principais relatórios foi reduzido em [X%] após as otimizações.
-    • O módulo de ajuda está acessível e contém informações úteis para o usuário final.
-    • Todas as funcionalidades foram testadas e validadas pela equipe de QA.
-
----
-
-## 10. ARQUITETURA DO PROJETO FASTAPI (DETAHADA)
-A arquitetura do ERP deve ser projetada como um **Monólito Modular**, altamente organizado, escalável e preparado para expansão.
-
-Todo o design segue princípios de:
-
-- Arquitetura em camadas (Routers → Services → Repository → Database)
-- Padrões DDD funcionais (Domínios bem separados)
-- Reuso máximo de modelos e utilitários
-- Minimização de acoplamento e maximização de coesão
-- Facilidade de testes unitários e de integração
-
----
-
-# 🧱 10.1. ESTRUTURA DE PASTAS – VISÃO GERAL
-10. ARQUITETURA DO PROJETO FASTAPI (DESCRIÇÃO TEXTUAL)
-
-O ERP deve ser construído em uma arquitetura de Monólito Modular.
-Isso significa que todo o sistema roda como uma única aplicação FastAPI, mas cada módulo é totalmente isolado internamente.
-
-A arquitetura segue os seguintes princípios:
-
-Um arquivo principal chamado main.py inicia o FastAPI e registra todos os módulos.
-
-Há uma pasta "core" que contém:
-
-Arquivo de configuração geral
-
-Configuração do banco de dados assíncrono
-
-Mecanismos de segurança e exceções
-
-Há uma pasta "utils" com utilitários compartilhados, como:
-
-Leitores XML
-
-Validadores
-
-Conversores
-
-Helpers
-
-Há uma pasta "modules", onde cada módulo representa uma área do ERP.
-Cada módulo possui sempre 5 arquivos obrigatórios:
-
-models.py → contém os modelos SQLAlchemy
-
-schemas.py → contém os modelos Pydantic (entrada/saída)
-
-repository.py → responsável por acessar o banco de dados
-
-service.py → responsável pela regra de negócio
-
-router.py → define os endpoints FastAPI
-
-Há uma pasta "tests" contendo testes unitários e de integração.
-
-Há uma pasta "alembic" para armazenar migrações do banco de dados.
-
-Estrutura descritiva das pastas
-
-A estrutura conceitual é:
-
-main.py → ponto de entrada
-
-app/core → configurações, banco de dados, exceções
-
-app/utils → utilitários
-
-app/modules → todos os módulos do ERP
-
-alembic → migrações
-
-app/tests → testes
-
-Como os módulos se comunicam
-
-A comunicação segue uma hierarquia obrigatória:
-
-As rotas chamam os services
-
-Os services chamam os repositórios
-
-Os repositórios acessam o banco
-
-Os services nunca acessam o banco diretamente
-
-Os repositórios nunca acessam outros módulos
-
-Não existe lógica dentro das rotas
-
-Não existe lógica dentro dos modelos
-
-Como o banco de dados funciona
-
-O banco usa SQLAlchemy 2.0 com engine assíncrona.
-Todas as operações são feitas usando sessões assíncronas, e o banco padrão é PostgreSQL.
-Migrações são feitas via Alembic.
-
-Como definir o padrão dos módulos
-
-Cada módulo deve seguir um padrão imutável:
-
-models.py define tabelas e relacionamentos
-
-schemas.py define DTOs de entrada e saída
-
-repository.py contém apenas consultas e persistência
-
-service.py contém regras de negócio, cálculos e validações
-
-router.py define rotas públicas da API
-
-Como a arquitetura atende os próximos Sprints
-
-A arquitetura modular permite adicionar:
-
-FIFO, lotes, curva ABC (Sprint 2)
-
-Compras avançadas e app móvel (Sprint 3)
-
-Ordens de serviço completas (Sprint 4)
-
-Integração com e-commerce e dashboard (Sprint 6)
-
-CRM e fidelidade (Sprint 7)
-
-Tudo isso sem quebrar nada porque:
-
-Cada módulo é isolado
-
-Cada módulo possui o mesmo padrão
-
-As responsabilidades são claramente separadas
-
-Visão geral narrativa da arquitetura
-
-O main.py coordena a aplicação.
-Cada módulo possui sua própria lógica isolada.
-O banco é acessado apenas pelos repositories.
-Toda regra de negócio fica nos services.
-Toda entrada/saída é validada pelos schemas.
-Toda API é documentada automaticamente pelo FastAPI.
-
-O resultado final é uma aplicação altamente escalável, organizada, clara e fácil de manter.
----
-
-## 11. MODELOS, MIGRAÇÕES, ROTAS, SERVICES, REPOSITORIES
-## 11. PADRÃO GLOBAL PARA MODELOS, MIGRAÇÕES, REPOSITÓRIOS, SERVICES E ROTAS
-
-Esta seção estabelece o padrão universal e obrigatório que todos os módulos do ERP devem seguir.
-O objetivo é garantir consistência, previsibilidade e manutenção facilitada ao longo do desenvolvimento completo do sistema, tornando o código escalável e sustentável.
-
----
-
-# 11.1 — ESTRUTURA FIXA DE CADA MÓDULO
-
-Todo módulo deve obrigatoriamente conter os seguintes arquivos:
-
-1. models.py
-2. schemas.py
-3. repository.py
-4. service.py
-5. router.py
-
-Essa estrutura nunca muda, independentemente do módulo, Sprint ou regra de negócio.
-
----
-
-# 11.2 — RESPONSABILIDADES DE CADA ARQUIVO
-
-### models.py
-Define exclusivamente:
-- Tabelas
-- Relacionamentos
-- Tipos de dados
-- Constraints
-- Índices
-- Chaves estrangeiras
-
-Somente contém definição de dados.
-Nunca contém regras de negócio ou validações.
-
----
-
-### schemas.py
-Define modelos de:
-- Entrada da API
-- Saída da API
-- DTOs internos
-- Regras de validação de entrada
-- Serialização e deserialização
-
-Tudo baseado em Pydantic v2.
-Nenhuma lógica de negócio é permitida.
-
----
-
-### repository.py
-É a única camada com autorização para acessar o banco de dados.
-Suas responsabilidades são:
-
-- Consultas simples
-- Consultas complexas
-- Filtros
-- Inserts
-- Updates
-- Deletes
+from sqlalchemy import String, Integer, Numeric, DateTime, ForeignKey, Index
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from app.core.database import Base
+from datetime import datetime
+
+class Produto(Base):
+    __tablename__ = "produtos"
+
+    # Campos
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    codigo: Mapped[str] = mapped_column(String(50), unique=True, index=True)
+    descricao: Mapped[str] = mapped_column(String(255), nullable=False)
+    preco_venda: Mapped[float] = mapped_column(Numeric(10, 2))
+    categoria_id: Mapped[int] = mapped_column(ForeignKey("categorias.id"))
+
+    # Relacionamentos
+    categoria: Mapped["Categoria"] = relationship(back_populates="produtos")
+
+    # Índices compostos
+    __table_args__ = (
+        Index('idx_codigo_categoria', 'codigo', 'categoria_id'),
+    )
+```
+
+### 2. `schemas.py` - Schemas Pydantic v2
+
+```python
+"""
+DTOs (Data Transfer Objects) usando Pydantic v2
+
+RESPONSABILIDADES:
+- Validar entrada da API (create, update)
+- Serializar saída da API (response)
+- Validações simples (tamanho, formato, range)
+
+NUNCA:
+- Incluir lógica de negócio
+- Acessar banco de dados
+- Ter dependências de outros módulos
+"""
+
+from pydantic import BaseModel, Field, ConfigDict
+from datetime import datetime
+from typing import Optional
+
+# Schema de criação (entrada)
+class ProdutoCreate(BaseModel):
+    codigo: str = Field(..., min_length=1, max_length=50)
+    descricao: str = Field(..., min_length=1, max_length=255)
+    preco_venda: float = Field(..., gt=0)
+    categoria_id: int
+
+# Schema de atualização (entrada parcial)
+class ProdutoUpdate(BaseModel):
+    codigo: Optional[str] = Field(None, min_length=1, max_length=50)
+    descricao: Optional[str] = None
+    preco_venda: Optional[float] = Field(None, gt=0)
+    categoria_id: Optional[int] = None
+
+# Schema de resposta (saída)
+class ProdutoResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    codigo: str
+    descricao: str
+    preco_venda: float
+    categoria_id: int
+    created_at: datetime
+    updated_at: datetime
+```
+
+### 3. `repository.py` - Data Access Layer
+
+```python
+"""
+Repository Pattern - Acesso a dados
+
+RESPONSABILIDADES:
+- CRUD básico (create, read, update, delete)
+- Queries complexas (filtros, joins, agregações)
 - Paginação
-- Agregações
+- Retornar dados brutos do banco
 
-O repository nunca aplica cálculos da regra de negócio.
-Ele apenas fornece dados brutos ou persistência.
+NUNCA:
+- Aplicar regras de negócio
+- Fazer cálculos complexos
+- Chamar outros services
+- Tratar exceções de negócio (só de BD)
+"""
+
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, and_, or_, func
+from sqlalchemy.orm import selectinload
+from typing import List, Optional
+from .models import Produto
+
+class ProdutoRepository:
+    def __init__(self, db: AsyncSession):
+        self.db = db
+
+    async def create(self, produto_data: dict) -> Produto:
+        """Criar novo produto"""
+        produto = Produto(**produto_data)
+        self.db.add(produto)
+        await self.db.commit()
+        await self.db.refresh(produto)
+        return produto
+
+    async def get_by_id(self, produto_id: int) -> Optional[Produto]:
+        """Buscar produto por ID"""
+        result = await self.db.execute(
+            select(Produto)
+            .options(selectinload(Produto.categoria))
+            .where(Produto.id == produto_id)
+        )
+        return result.scalar_one_or_none()
+
+    async def list_all(
+        self,
+        skip: int = 0,
+        limit: int = 100,
+        categoria_id: Optional[int] = None
+    ) -> List[Produto]:
+        """Listar produtos com filtros"""
+        query = select(Produto).options(selectinload(Produto.categoria))
+
+        if categoria_id:
+            query = query.where(Produto.categoria_id == categoria_id)
+
+        query = query.offset(skip).limit(limit)
+        result = await self.db.execute(query)
+        return result.scalars().all()
+
+    async def update(self, produto_id: int, data: dict) -> Optional[Produto]:
+        """Atualizar produto"""
+        produto = await self.get_by_id(produto_id)
+        if not produto:
+            return None
+
+        for key, value in data.items():
+            if value is not None:
+                setattr(produto, key, value)
+
+        await self.db.commit()
+        await self.db.refresh(produto)
+        return produto
+
+    async def delete(self, produto_id: int) -> bool:
+        """Deletar produto"""
+        produto = await self.get_by_id(produto_id)
+        if not produto:
+            return False
+
+        await self.db.delete(produto)
+        await self.db.commit()
+        return True
+
+    async def count_by_categoria(self, categoria_id: int) -> int:
+        """Contar produtos por categoria"""
+        result = await self.db.execute(
+            select(func.count(Produto.id))
+            .where(Produto.categoria_id == categoria_id)
+        )
+        return result.scalar()
+```
+
+### 4. `service.py` - Business Logic Layer
+
+```python
+"""
+Service Layer - Regras de negócio
+
+RESPONSABILIDADES:
+- TODAS as regras de negócio
+- Validações complexas
+- Cálculos
+- Orquestração entre repositories
+- Integração com outros módulos
+- Tratamento de exceções de negócio
+
+NUNCA:
+- Acessar banco diretamente (usar repository)
+- Conter SQL direto
+- Expor modelos de banco (usar schemas)
+"""
+
+from sqlalchemy.ext.asyncio import AsyncSession
+from typing import List, Optional
+from .repository import ProdutoRepository
+from .schemas import ProdutoCreate, ProdutoUpdate, ProdutoResponse
+from app.core.exceptions import NotFoundException, BusinessException
+
+class ProdutoService:
+    def __init__(self, db: AsyncSession):
+        self.repository = ProdutoRepository(db)
+        self.db = db
+
+    async def criar_produto(self, data: ProdutoCreate) -> ProdutoResponse:
+        """
+        Criar novo produto com validações de negócio
+        """
+        # Validação: código único
+        produto_existente = await self.repository.get_by_codigo(data.codigo)
+        if produto_existente:
+            raise BusinessException(
+                f"Produto com código {data.codigo} já existe"
+            )
+
+        # Validação: categoria existe
+        # (aqui poderia chamar CategoriaService se necessário)
+
+        # Regra de negócio: calcular preço de custo sugerido
+        preco_custo_sugerido = data.preco_venda * 0.6
+
+        produto_data = data.model_dump()
+        produto_data['preco_custo'] = preco_custo_sugerido
+
+        produto = await self.repository.create(produto_data)
+        return ProdutoResponse.model_validate(produto)
+
+    async def atualizar_produto(
+        self,
+        produto_id: int,
+        data: ProdutoUpdate
+    ) -> ProdutoResponse:
+        """
+        Atualizar produto com validações
+        """
+        produto = await self.repository.get_by_id(produto_id)
+        if not produto:
+            raise NotFoundException(f"Produto {produto_id} não encontrado")
+
+        # Validação: código único (se mudando)
+        if data.codigo and data.codigo != produto.codigo:
+            existente = await self.repository.get_by_codigo(data.codigo)
+            if existente:
+                raise BusinessException(
+                    f"Código {data.codigo} já está em uso"
+                )
+
+        update_data = data.model_dump(exclude_unset=True)
+        produto_atualizado = await self.repository.update(produto_id, update_data)
+        return ProdutoResponse.model_validate(produto_atualizado)
+
+    async def listar_produtos(
+        self,
+        skip: int = 0,
+        limit: int = 100
+    ) -> List[ProdutoResponse]:
+        """Listar produtos"""
+        produtos = await self.repository.list_all(skip=skip, limit=limit)
+        return [ProdutoResponse.model_validate(p) for p in produtos]
+
+    async def obter_produto(self, produto_id: int) -> ProdutoResponse:
+        """Obter produto por ID"""
+        produto = await self.repository.get_by_id(produto_id)
+        if not produto:
+            raise NotFoundException(f"Produto {produto_id} não encontrado")
+        return ProdutoResponse.model_validate(produto)
+```
+
+### 5. `router.py` - API Endpoints
+
+```python
+"""
+Router - Endpoints FastAPI
+
+RESPONSABILIDADES:
+- Definir rotas HTTP
+- Validar entrada com schemas
+- Chamar services
+- Retornar respostas HTTP
+- Documentação OpenAPI
+- Autenticação e autorização
+
+NUNCA:
+- Incluir lógica de negócio
+- Acessar repository diretamente
+- Fazer queries SQL
+- Ter regras complexas
+"""
+
+from fastapi import APIRouter, Depends, status, Query
+from sqlalchemy.ext.asyncio import AsyncSession
+from typing import List
+
+from app.core.database import get_db
+from app.modules.auth.dependencies import get_current_user, require_permission
+from app.modules.auth.models import User
+
+from .service import ProdutoService
+from .schemas import ProdutoCreate, ProdutoUpdate, ProdutoResponse
+
+router = APIRouter()
+
+@router.post(
+    "/",
+    response_model=ProdutoResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Criar novo produto",
+    description="Cria um novo produto com validações de negócio"
+)
+async def criar_produto(
+    data: ProdutoCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_permission("produtos.create"))
+):
+    """
+    Criar novo produto
+
+    Requer permissão: produtos.create
+
+    Exemplo de requisição:
+    ```json
+    {
+        "codigo": "CIMENTO-001",
+        "descricao": "Cimento CP-II 50kg",
+        "preco_venda": 32.90,
+        "categoria_id": 1
+    }
+    ```
+    """
+    service = ProdutoService(db)
+    return await service.criar_produto(data)
+
+@router.get(
+    "/",
+    response_model=List[ProdutoResponse],
+    summary="Listar produtos",
+    description="Lista todos os produtos com paginação"
+)
+async def listar_produtos(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=1000),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Listar produtos com paginação
+
+    Requer autenticação
+    """
+    service = ProdutoService(db)
+    return await service.listar_produtos(skip=skip, limit=limit)
+
+@router.get(
+    "/{produto_id}",
+    response_model=ProdutoResponse,
+    summary="Obter produto por ID",
+    description="Retorna detalhes de um produto específico"
+)
+async def obter_produto(
+    produto_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Obter produto específico"""
+    service = ProdutoService(db)
+    return await service.obter_produto(produto_id)
+
+@router.put(
+    "/{produto_id}",
+    response_model=ProdutoResponse,
+    summary="Atualizar produto"
+)
+async def atualizar_produto(
+    produto_id: int,
+    data: ProdutoUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_permission("produtos.update"))
+):
+    """Atualizar produto existente"""
+    service = ProdutoService(db)
+    return await service.atualizar_produto(produto_id, data)
+
+@router.delete(
+    "/{produto_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Deletar produto"
+)
+async def deletar_produto(
+    produto_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_permission("produtos.delete"))
+):
+    """Deletar produto"""
+    service = ProdutoService(db)
+    await service.deletar_produto(produto_id)
+```
 
 ---
 
-### service.py
-O service é o coração do módulo e o responsável pela inteligência do sistema.
-Ele deve:
+## 🔐 Autenticação e Autorização
 
-- Aplicar toda regra de negócio
-- Processar cálculos
-- Validar operações
-- Regras fiscais
-- Processar integrações com outros módulos
-- Coordenar o fluxo da operação
-- Orquestrar o repository
-- Gerenciar exceções e erros de domínio
+### Sistema RBAC Completo
 
-Nada do service deve ser movido para repository, rotas ou modelos.
+O sistema usa **Role-Based Access Control (RBAC)** com:
+- 5 roles padrão: Admin, Gerente, Vendedor, Estoquista, Financeiro
+- 40+ permissões granulares
+- JWT com access + refresh tokens
+- Audit trail (logs de todas as ações)
 
----
+### Como Usar Autenticação
 
-### router.py
-Responsável por expor endpoints do módulo.
-Deve:
+```python
+from fastapi import Depends
+from app.modules.auth.dependencies import (
+    get_current_user,       # Apenas autenticado
+    require_permission,     # Permissão específica
+    require_role,           # Role específica
+    is_admin               # Admin apenas
+)
+from app.modules.auth.models import User
 
-- Receber as requisições
-- Validar os dados usando schemas
-- Enviar para o service
-- Retornar respostas validadas
-- Atribuir tags e documentação
-- Nunca conter lógica
+# Apenas usuário autenticado
+@router.get("/")
+async def endpoint(
+    current_user: User = Depends(get_current_user)
+):
+    pass
 
----
+# Permissão específica
+@router.post("/")
+async def endpoint(
+    current_user: User = Depends(require_permission("vendas.create"))
+):
+    pass
 
-# 11.3 — SEQUÊNCIA DE EXECUÇÃO DE UMA OPERAÇÃO
+# Role específica
+@router.get("/admin")
+async def endpoint(
+    current_user: User = Depends(require_role("Admin"))
+):
+    pass
 
-Toda operação — criar produto, registrar venda, importar XML, gerar conta a pagar — deve seguir esta ordem imutável:
+# Admin apenas
+@router.delete("/")
+async def endpoint(
+    current_user: User = Depends(is_admin)
+):
+    pass
+```
 
-1. A rota recebe a requisição
-2. A rota valida o payload com schemas
-3. A rota envia o payload ao service
-4. O service valida regras internas
-5. O service consulta o repository
-6. O repository acessa o banco e retorna dados
-7. O service aplica a regra final
-8. O service devolve uma resposta serializada
-9. A rota devolve o resultado ao cliente
+### Permissões Disponíveis
 
-Nenhuma camada quebra esta ordem.
+```python
+# Produtos
+"produtos.view", "produtos.create", "produtos.update", "produtos.delete"
 
----
+# Vendas
+"vendas.view", "vendas.create", "vendas.update", "vendas.cancel"
 
-# 11.4 — PADRÃO DE MIGRAÇÕES
+# Financeiro
+"financeiro.view", "financeiro.create", "financeiro.approve"
 
-Toda criação de tabela deve ser feita via Alembic e seguir estes princípios:
+# E mais 30+ permissões...
+```
 
-- Criar tabelas com nomes coerentes
-- Manter padrão de campos
-- Sempre ter downgrade
-- Criar índices essenciais
-- Aplicar NOT NULL quando necessário
-- Garantir chaves estrangeiras consistentes
-- Evitar duplicidade de tabelas ou colunas
+### Inicializar Sistema de Auth
 
-Migrações são parte crítica do sistema.
-Nenhuma tabela pode existir sem migração.
+```bash
+# Criar usuário admin padrão e roles
+python scripts/init_auth.py
 
----
-
-# 11.5 — COMUNICAÇÃO ENTRE MÓDULOS
-
-Os módulos nunca se comunicam entre si diretamente.
-Quando um módulo precisa de dados de outro:
-
-- Ele deve usar seu próprio service
-- O service chama o repository
-- Se outro módulo for necessário, deve ser chamado via import explícito de serviço (ex: EstoqueService dentro do módulo Vendas)
-
-Não é permitido acessar tabelas de outro módulo diretamente no repository.
-
----
-
-# 11.6 — PADRÃO DE TRATAMENTO DE ERROS
-
-Todos os erros devem:
-
-- Ser tratados no service
-- Retornar mensagens claras
-- Usar exceções próprias definidas em exceptions.py
-- Nunca expor stacktrace ao cliente
-- Nunca retornar erro genérico 500 sem explicação
-- Nunca tratar erro dentro do repository
-
-Repository apenas lança exceções.
-Service decide como tratar.
+# Ou via Makefile
+make init-auth
+```
 
 ---
 
-# 11.7 — PADRÃO DE DOCUMENTAÇÃO
+## 🧪 Testes
 
-Cada endpoint deve conter:
+### Estrutura de Testes
 
-- Tag correspondente ao módulo
-- Pequena descrição funcional
-- Exemplos de entrada
-- Exemplos de saída
-- Possíveis erros
-- Códigos de resposta
-- Modelo de request e response definidos em schemas
+```
+tests/
+├── conftest.py              # Fixtures globais
+├── test_auth.py             # Testes de autenticação
+├── test_produtos.py         # Testes de produtos
+├── test_vendas.py           # Testes de vendas
+└── ...
 
-Toda a estrutura da API deve ser autodocumentada via OpenAPI.
+app/modules/[modulo]/tests/  # Testes unitários do módulo
+```
 
----
+### Fixtures Importantes
 
-# 11.8 — PADRÃO DE TESTES PARA CADA MÓDULO
+```python
+# conftest.py
 
-Cada módulo deve ter:
+import pytest
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from app.core.database import Base
 
-- Testes unitários (service e repository)
-- Testes de integração (rotas com banco SQLite)
-- Testes de erro e exceções
-- Testes de validação de schemas
-- Testes de fluxo completo
+@pytest.fixture
+async def db_session():
+    """Fixture de sessão de banco SQLite in-memory"""
+    engine = create_async_engine(
+        "sqlite+aiosqlite:///:memory:",
+        echo=False
+    )
 
-Os testes devem simular casos reais de loja de materiais de construção.
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
 
----
+    async with AsyncSession(engine) as session:
+        yield session
 
-# 11.9 — PRINCÍPIOS DE DESIGN
+    await engine.dispose()
 
-1. Zero regra de negócio nas rotas.
-2. Zero SQL nos services.
-3. Zero lógica nos models.
-4. Zero acoplamento entre módulos.
-5. Regras e validações somente no service.
-6. Repository focado apenas em banco.
-7. Módulos coerentes, pequenos e separados.
-8. Nada duplicado — reaproveitamento sempre.
-9. Toda entrada e saída validada com schemas.
-10. Sempre preparar terreno para escalabilidade.
+@pytest.fixture
+async def client(db_session):
+    """Cliente HTTP de teste"""
+    from fastapi.testclient import TestClient
+    from app.main import app
 
----
+    with TestClient(app) as client:
+        yield client
 
-# 11.10 — FINALIDADE DESTA SEÇÃO
+@pytest.fixture
+async def admin_token(db_session):
+    """Token JWT de admin para testes"""
+    from app.modules.auth.service import AuthService
 
-Esta seção serve como:
+    service = AuthService(db_session)
+    # Criar admin e retornar token
+    ...
+    return token
+```
 
-- Referência universal do projeto
-- Modelo mestre para todos os módulos
-- Base rígida e imutável do ERP
-- Guia que o agente deve seguir durante os Sprints
-- Estrutura obrigatória para criação e expansão do sistema
+### Exemplo de Teste
 
-Com esta padronização, todo módulo criado nos Sprints 1 a 7 terá consistência, clareza, alta manutenibilidade e total conformidade arquitetural.
----
+```python
+# test_produtos.py
 
-## 12. TESTES UNITÁRIOS E DE INTEGRAÇÃO (DETAHADO)
-## 12. TESTES UNITÁRIOS E DE INTEGRAÇÃO (PADRÃO OFICIAL DO ERP)
+import pytest
+from httpx import AsyncClient
 
-Esta seção define todas as regras, padrões e responsabilidades relacionadas aos testes do ERP.
-Todo módulo, Sprint e funcionalidade deve seguir rigorosamente estes padrões.
+@pytest.mark.asyncio
+async def test_criar_produto(client: AsyncClient, admin_token: str):
+    """Teste de criação de produto"""
+    response = await client.post(
+        "/api/v1/produtos/",
+        json={
+            "codigo": "TEST-001",
+            "descricao": "Produto Teste",
+            "preco_venda": 100.0,
+            "categoria_id": 1
+        },
+        headers={"Authorization": f"Bearer {admin_token}"}
+    )
 
-A qualidade do sistema depende de testes consistentes e abrangentes, cobrindo desde a regra de negócio até a comunicação com o banco de dados via FastAPI.
+    assert response.status_code == 201
+    data = response.json()
+    assert data["codigo"] == "TEST-001"
+    assert data["id"] is not None
 
----
+@pytest.mark.asyncio
+async def test_listar_produtos(client: AsyncClient, admin_token: str):
+    """Teste de listagem de produtos"""
+    response = await client.get(
+        "/api/v1/produtos/",
+        headers={"Authorization": f"Bearer {admin_token}"}
+    )
 
-# 12.1 — OBJETIVOS DOS TESTES
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+```
 
-Os testes têm como finalidade garantir:
+### Executar Testes
 
-1. Confiabilidade do sistema
-2. Estabilidade no crescimento dos Sprints
-3. Detecção precoce de regressões
-4. Segurança ao refatorar
-5. Qualidade das regras de negócio
-6. Coerência entre módulos
-7. Funcionamento correto da API
+```bash
+# Todos os testes
+pytest
 
----
+# Com cobertura
+pytest --cov=app --cov-report=html
 
-# 12.2 — TIPOS DE TESTES OBRIGATÓRIOS
+# Testes específicos
+pytest tests/test_produtos.py
 
-Cada módulo deve obrigatoriamente ter 3 níveis de testes:
+# Testes com output verboso
+pytest -v
 
-### Testes Unitários
-Validações de regras de negócio, cálculos, verificações internas de service e repository.
+# Testes paralelos (mais rápido)
+pytest -n auto
 
-### Testes de Integração
-Testes que verificam a interação entre rotas, services e banco, usando ambiente controlado.
-
-### Testes de Fluxo Completo
-Simulam operações reais de ponta a ponta, como:
-- Registrando uma venda completa
-- Realizando baixa de estoque
-- Gerando uma conta a pagar
-- Importando uma nota XML
-- Criando produto e consultando estoque
-
----
-
-# 12.3 — PADRÃO DE ESTRUTURA DOS TESTES
-
-Todos os testes devem ficar na pasta oficial de testes do projeto.
-A estrutura conceitual é:
-
-- Uma pasta "tests" para armazenar todos os arquivos
-- Um arquivo de configuração principal para fixtures
-- Um arquivo de testes por módulo
-- Um arquivo de testes específicos para utilitários (ex: importação XML)
-
-Cada módulo do ERP deve ter seu arquivo de testes individual, como:
-- test_produtos
-- test_vendas
-- test_estoque
-- test_financeiro
-- test_compras
-- test_orcamentos
-- test_os
-- test_crm
-- test_ecommerce
-
-Esta organização garante clareza e rápida identificação de problemas.
+# Via Makefile
+make test
+make test-cov
+```
 
 ---
 
-# 12.4 — PADRÃO DOS TESTES UNITÁRIOS
+## 🔄 Migrações de Banco de Dados
 
-Os testes unitários devem:
+### Criar Nova Migração
 
-1. Testar exclusivamente funções internas de regras de negócio
-2. Não acessar banco de dados
-3. Não chamar endpoints
-4. Testar apenas os serviços e cálculos internos
-5. Simular erros esperados
-6. Garantir que exceções corretas são lançadas
-7. Testar cenários positivos e negativos
-8. Ter alta velocidade de execução
+```bash
+# Gerar migração automaticamente
+alembic revision --autogenerate -m "Adicionar campo X na tabela Y"
 
-Regra fundamental:
-Um teste unitário nunca deve depender de outro.
+# Criar migração manual
+alembic revision -m "Minha migração"
 
----
+# Via Makefile
+make migration message="Adicionar campo X"
+```
 
-# 12.5 — PADRÃO DOS TESTES DE INTEGRAÇÃO
+### Aplicar Migrações
 
-Testes de integração verificam:
+```bash
+# Aplicar todas as migrações pendentes
+alembic upgrade head
 
-- Rotas
-- Services
-- Repository
-- Banco (SQLite in-memory)
-- Serialização e validação
-- Execução real de regras do módulo
+# Voltar uma migração
+alembic downgrade -1
 
-Eles devem usar um banco temporário, recriado para cada teste.
+# Ir para revisão específica
+alembic upgrade abc123
 
-Testes de integração são OBRIGATÓRIOS para:
+# Via Makefile
+make migrate
+make migrate-down
+```
 
-- Produtos
-- Estoque
-- Vendas e PDV
-- Financeiro
-- Compras
-- Orçamentos
-- Ordens de Serviço
-- CRM
-- E-commerce
+### Estrutura de Migração
 
-Estes testes garantem que o sistema de fato funciona como um ERP de verdade.
+```python
+"""Adicionar campo email em clientes
 
----
+Revision ID: abc123def456
+Revises: previous_revision
+Create Date: 2025-11-20 10:00:00.000000
 
-# 12.6 — PADRÃO DOS TESTES DE FLUXO COMPLETO
+"""
+from alembic import op
+import sqlalchemy as sa
 
-Testes end-to-end simulam casos reais de uma loja de materiais de construção.
-Eles devem ser escritos para validar:
+# revision identifiers
+revision = 'abc123def456'
+down_revision = 'previous_revision'
+branch_labels = None
+depends_on = None
 
-1. Toda a jornada de criação de um produto
-2. A venda completa, incluindo baixa no estoque
-3. Entrada de NF-e e atualização de estoque
-4. Fluxo financeiro de contas a pagar e a receber
-5. Fluxo do PDV
-6. Gerar relatórios consolidados
-7. Processar devoluções, trocas e ajustes
-8. Geração automática de movimentação de estoque
+def upgrade() -> None:
+    """Aplicar mudanças"""
+    op.add_column(
+        'clientes',
+        sa.Column('email', sa.String(255), nullable=True)
+    )
 
-Estes testes são os mais importantes do ERP, pois validam tudo funcionando junto.
+    # Criar índice
+    op.create_index(
+        'idx_clientes_email',
+        'clientes',
+        ['email']
+    )
 
----
-
-# 12.7 — REGRAS DE COBERTURA
-
-O ERP deve manter:
-
-- 85% de cobertura mínima
-- 100% de cobertura de regras críticas
-- 100% de cobertura de cálculos financeiros
-- 100% de cobertura do fluxo do PDV
-- 100% de cobertura da importação de XML de NF-e
-
-Caso algum Sprint reduza a cobertura geral, o agente deve automaticamente criar mais testes para recuperar os níveis mínimos.
+def downgrade() -> None:
+    """Reverter mudanças"""
+    op.drop_index('idx_clientes_email', table_name='clientes')
+    op.drop_column('clientes', 'email')
+```
 
 ---
 
-# 12.8 — TRATAMENTO DE ERROS NOS TESTES
+## 🚀 Desenvolvimento
 
-Todos os testes devem validar:
+### Setup do Ambiente
 
-- Erros de validação
-- Falta de dados obrigatórios
-- Regras de negócio violadas
-- Códigos de status corretos
-- Mensagens claras
-- Exceções específicas do domínio
+```bash
+# 1. Clonar repositório
+git clone <repo-url>
+cd siscom
 
-Nenhum módulo pode retornar erros genéricos ou mensagens sem sentido.
+# 2. Criar ambiente virtual
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+venv\Scripts\activate     # Windows
 
----
+# 3. Instalar dependências
+pip install -r requirements.txt
 
-# 12.9 — TESTES DE PERFORMANCE (AVANÇADO)
+# 4. Copiar .env.example para .env
+cp .env.example .env
 
-Para operações críticas como:
+# 5. Configurar variáveis de ambiente
+# Editar .env com suas configurações
 
-- Registrar venda
-- Importar NF-e
-- Consultar estoque
+# 6. Aplicar migrações
+alembic upgrade head
 
-Deve-se garantir tempo aceitável de execução.
-O agente deve estruturar o sistema para suportar:
+# 7. Inicializar autenticação
+python scripts/init_auth.py
 
-- Alto volume de itens
-- Notas fiscais grandes
-- Vendas seguidas no PDV
-- Relatórios intensivos
+# 8. Executar servidor
+python main.py
 
----
+# Ou via Makefile
+make install
+make setup
+make run
+```
 
-# 12.10 — FINALIDADE
+### Variáveis de Ambiente Importantes
 
-A finalidade desta seção é:
+```bash
+# .env
 
-- Garantir confiabilidade absoluta
-- Assegurar que o ERP cresce sem quebrar
-- Certificar que os Sprints 1 a 7 são seguros
-- Criar um ambiente robusto de desenvolvimento
-- Construir um ERP empresarial sólido e estável
+# Database
+DATABASE_URL=postgresql+asyncpg://user:pass@localhost/siscom
+TEST_DATABASE_URL=sqlite+aiosqlite:///:memory:
 
-Com essa estrutura, o agente consegue escrever testes com alta qualidade para cada módulo durante todos os Sprints.
+# Security
+SECRET_KEY=sua-chave-secreta-aqui
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+REFRESH_TOKEN_EXPIRE_DAYS=7
 
----
+# Application
+APP_NAME="ERP Materiais de Construção"
+APP_VERSION="1.0.0"
+DEBUG=true
+ALLOWED_ORIGINS=["http://localhost:3000"]
 
-## 13. DOCUMENTAÇÃO OPENAPI (MODELOS COMPLETOS)
-## 13. DOCUMENTAÇÃO OPENAPI (PADRÃO GLOBAL DO ERP)
+# Redis (opcional)
+REDIS_URL=redis://localhost:6379/0
 
-Esta seção define como todas as rotas, módulos e funcionalidades do ERP devem ser documentados usando o padrão OpenAPI gerado automaticamente pelo FastAPI.
-O objetivo é garantir uma documentação completa, inteligível e padronizada para toda a aplicação.
+# Celery (opcional)
+CELERY_BROKER_URL=redis://localhost:6379/1
+CELERY_RESULT_BACKEND=redis://localhost:6379/2
 
----
+# Sentry (opcional)
+SENTRY_DSN=
 
-# 13.1 — OBJETIVO DA DOCUMENTAÇÃO OPENAPI
+# Integrações - Mercado Pago
+MERCADOPAGO_ACCESS_TOKEN=TEST-...
+MERCADOPAGO_PUBLIC_KEY=TEST-...
+MERCADOPAGO_WEBHOOK_SECRET=
 
-A documentação deve servir para:
+# Integrações - PagSeguro
+PAGSEGURO_EMAIL=
+PAGSEGURO_TOKEN=
+PAGSEGURO_SANDBOX=true
 
-1. Explicar claramente a função de cada endpoint
-2. Mostrar como o módulo deve ser usado
-3. Ajudar outros sistemas a consumirem a API
-4. Ajudar desenvolvedores a entender parâmetros e retornos
-5. Permitir auditoria fácil de erros e contratos de dados
-6. Manter consistência entre todos os Sprints
+# Integrações - Correios
+CORREIOS_CEP_USERNAME=
+CORREIOS_CEP_PASSWORD=
 
-Nenhum endpoint deve ficar sem documentação.
+# Integrações - Melhor Envio
+MELHOR_ENVIO_CLIENT_ID=
+MELHOR_ENVIO_CLIENT_SECRET=
+MELHOR_ENVIO_REFRESH_TOKEN=
 
----
+# Integrações - Email
+EMAIL_PROVIDER=sendgrid  # ou aws_ses
+SENDGRID_API_KEY=
+AWS_SES_ACCESS_KEY=
+AWS_SES_SECRET_KEY=
+AWS_SES_REGION=
 
-# 13.2 — PADRÃO DE DOCUMENTAÇÃO PARA CADA ENDPOINT
+# Integrações - SMS/WhatsApp
+TWILIO_ACCOUNT_SID=
+TWILIO_AUTH_TOKEN=
+TWILIO_PHONE_NUMBER=
+TWILIO_WHATSAPP_NUMBER=
 
-Cada rota deve conter sempre:
+# Integrações - Mercado Livre
+MERCADOLIVRE_CLIENT_ID=
+MERCADOLIVRE_CLIENT_SECRET=
+```
 
-1. Tag que identifica o módulo
-2. Título curto (summary)
-3. Descrição clara e objetiva
-4. Especificação dos parâmetros
-5. Modelo de request baseado em schemas
-6. Modelo de response baseado em schemas
-7. Exemplos de requisição e resposta
-8. Possíveis códigos de retorno
-9. Possíveis erros previstos
-10. Indicação de relacionamentos quando necessário
+### Comandos Úteis (Makefile)
 
-A documentação precisa ser escrita em linguagem clara e funcional.
+```bash
+# Desenvolvimento
+make dev              # Instalar deps de dev
+make run              # Executar servidor
+make run-reload       # Executar com auto-reload
 
----
+# Testes
+make test             # Executar testes
+make test-cov         # Testes com cobertura
+make test-watch       # Testes em modo watch
 
-# 13.3 — TAGS OBRIGATÓRIAS PARA OS MÓDULOS
+# Qualidade de Código
+make lint             # Executar linters
+make format           # Formatar código (black, isort)
+make type-check       # Type checking (mypy)
+make security-check   # Security scan (bandit)
 
-Cada módulo do ERP deve ter sua própria tag no OpenAPI.
-Exemplos de tags obrigatórias:
+# Banco de Dados
+make migrate          # Aplicar migrações
+make migrate-down     # Reverter última migração
+make migration        # Criar nova migração
+make db-reset         # Resetar banco de dados
 
-- Produtos
-- Categorias
-- Estoque
-- Vendas
-- Financeiro
-- Compras
-- Orçamentos
-- Ordens de Serviço
-- CRM
-- E-commerce
-- Relatórios
+# Autenticação
+make init-auth        # Inicializar usuários/roles
 
-Essas tags devem ser consistentes e nunca renomeadas após definidas.
+# Docker
+make docker-build     # Build imagem
+make docker-run       # Executar container
+make docker-stop      # Parar containers
 
----
+# Backup
+make backup           # Backup manual
+make restore          # Restaurar backup
 
-# 13.4 — REGRAS DE DESCRIÇÃO PARA O MÓDULO
+# Limpeza
+make clean            # Limpar cache e arquivos temp
+make clean-all        # Limpeza completa
 
-Cada módulo deve possuir uma descrição clara que explique:
-
-- Qual é o propósito do módulo
-- Quais operações ele executa
-- Quais regras de negócio estão envolvidas
-- Quais funcionalidades são expostas na API
-
-Essa descrição ajuda a contextualizar o módulo dentro do sistema.
-
----
-
-# 13.5 — REGRAS DE EXEMPLOS
-
-Cada endpoint deve possuir pelo menos um exemplo real, representando um caso real de uso de uma loja de materiais de construção.
-Os exemplos devem ser:
-
-- Claros
-- Parecidos com cenários reais
-- Fáceis de entender
-- Com dados coerentes
-- Com respostas completas
-
-Exemplos ajudam novas integrações, aumentam a compreensão e servem como documentação viva.
-
----
-
-# 13.6 — CÓDIGOS DE RESPOSTA OBRIGATÓRIOS
-
-Todos os endpoints devem prever e documentar:
-
-1. Resposta de sucesso
-2. Erros de validação
-3. Erros de regra de negócio
-4. Erros de permissão, se aplicável
-5. Erros de integridade referencial
-6. Erros de recurso não encontrado
-7. Retornos de exceções específicas
-
-Essa padronização evita endpoints com documentação incompleta.
-
----
-
-# 13.7 — MODELOS DE REQUEST E RESPONSE
-
-Toda entrada na API deve ser modelada por schemas Pydantic v2, e toda saída também.
-Não é permitido:
-
-- Retornar objetos de banco
-- Retornar dicionários arbitrários
-- Retornar dados sem validação
-- Retornar respostas inconsistentes
-
-Request e response sempre usam schemas, garantindo padrão e integridade.
+# Ajuda
+make help             # Listar todos os comandos
+```
 
 ---
 
-# 13.8 — NAVEGAÇÃO DA DOCUMENTAÇÃO
+## 📡 Integrações Externas
 
-O agendamento da documentação deve permitir:
+### Mercado Pago (95% Completo)
 
-- Navegar por módulo
-- Ver endpoints agrupados
-- Entender facilmente parâmetros e respostas
-- Ver exemplos sem esforço
-- Consultar rapidamente erros e suas causas
+```python
+from app.integrations.mercadopago import MercadoPagoClient
 
-A documentação precisa ser visualmente clara e organizada.
+# Criar pagamento PIX
+client = MercadoPagoClient()
+payment = await client.create_pix_payment(
+    amount=100.0,
+    description="Venda #123",
+    payer_email="cliente@email.com"
+)
 
----
+# QR Code está em payment["point_of_interaction"]["transaction_data"]
+qr_code = payment["point_of_interaction"]["transaction_data"]["qr_code"]
+qr_code_base64 = payment["point_of_interaction"]["transaction_data"]["qr_code_base64"]
 
-# 13.9 — BOAS PRÁTICAS OBRIGATÓRIAS
+# Webhook processa automaticamente e atualiza banco
+```
 
-1. Títulos curtos e significativos
-2. Descrições diretas
-3. Evitar jargões técnicos desnecessários
-4. Priorizar clareza acima de detalhes muito específicos
-5. Sempre documentar exceções e erros
-6. Manter exemplos atualizados conforme regras de negócio mudem
-7. Organizar endpoints relacionados sob a mesma tag
-8. Não duplicar descrições ou títulos
-9. Não deixar endpoints sem documentação
-10. Documentar qualquer retorno assíncrono ou de processamento especial
+**Documentação**: `docs/INTEGRACAO_MERCADOPAGO.md`
 
----
+### PagSeguro (100% Completo)
 
-# 13.10 — FINALIDADE DESTA SEÇÃO
+```python
+from app.integrations.pagseguro import PagSeguroClient
 
-A finalidade da documentação OpenAPI é assegurar que:
+# Criar pagamento PIX
+client = PagSeguroClient()
+payment = await client.create_pix_payment(
+    amount=100.0,
+    description="Venda #123",
+    customer_name="João Silva",
+    customer_email="joao@email.com",
+    customer_cpf="12345678900"
+)
 
-- O ERP seja fácil de consumir por integrações externas
-- A API seja autodescritiva
-- A manutenção do sistema seja mais simples
-- Novos desenvolvedores entendam facilmente cada módulo
-- Todos os Sprints mantenham a mesma qualidade de documentação
-- O sistema seja profissional, bem organizado e confiável
+# Criar pagamento com cartão
+card_payment = await client.create_card_payment(
+    amount=100.0,
+    installments=3,
+    card_encrypted="CARD_ENCRYPTED_DATA",
+    holder_name="João Silva"
+)
+```
 
-A documentação OpenAPI é parte fundamental da qualidade do ERP e deve ser tratada como prioridade desde o Sprint 1 até o Sprint 7.
+### Correios e Melhor Envio
 
----
+```python
+from app.integrations.correios import CorreiosClient
+from app.integrations.melhorenvio import MelhorEnvioClient
 
-## 14. EXEMPLOS REAIS (CADA SPRINT)
-## 14. EXEMPLOS REAIS DE USO (POR MÓDULO)
+# Calcular frete Correios
+correios = CorreiosClient()
+frete = await correios.calcular_frete(
+    cep_origem="01310100",
+    cep_destino="04543907",
+    peso=1.0,  # kg
+    servico="04014"  # SEDEX
+)
 
-Esta seção tem a finalidade de mostrar ao agente padrões práticos e reais de como cada módulo do ERP opera no dia a dia de uma loja de materiais de construção.
-Os exemplos fornecidos aqui não são código, mas instruções e cenários reais que o agente deve usar como referência durante a construção de cada Sprint.
+# Calcular frete Melhor Envio
+melhor_envio = MelhorEnvioClient()
+fretes = await melhor_envio.calcular_frete(
+    cep_destino="04543907",
+    peso=1.0,
+    altura=10,
+    largura=20,
+    comprimento=30
+)
+```
 
-Todos os exemplos são narrativos e estruturados para guiar a ação do agente sem ativar modo de execução.
+### Email e SMS
 
----
+```python
+from app.integrations.email import EmailClient
+from app.integrations.sms import SMSClient
 
-# 14.1 — EXEMPLO REAL DO MÓDULO DE PRODUTOS
+# Enviar email
+email_client = EmailClient()
+await email_client.send_email(
+    to="cliente@email.com",
+    subject="Pedido Confirmado",
+    html_content="<h1>Obrigado pela compra!</h1>"
+)
 
-### Cenário: cadastro de um novo produto de loja de materiais de construção
-Um operador precisa cadastrar um produto básico como “Cimento CP-II 50kg”, incluindo informações essenciais como preço, estoque mínimo e código de barras.
+# Enviar SMS
+sms_client = SMSClient()
+await sms_client.send_sms(
+    to="+5511999999999",
+    message="Seu pedido foi confirmado!"
+)
 
-### Entrada esperada
-O sistema deve receber dados como:
-- Descrição do produto
-- Código de barras
-- Preço de venda
-- Preço de custo
-- Estoque mínimo
-- Unidade (ex: saco)
-- Categoria (ex: Cimento, Argamassa etc.)
+# Enviar WhatsApp
+await sms_client.send_whatsapp(
+    to="+5511999999999",
+    message="Seu pedido foi enviado!"
+)
+```
 
-### Resultado esperado
-O produto deve ser criado com:
-- ID único
-- Estoque inicial igual a zero
-- Categoria vinculada
-- Código de barras validado
-- Regras de negócio aplicadas (ex: preço de venda não pode ser menor que preço de custo)
+### Mercado Livre
 
----
+```python
+from app.integrations.mercadolivre import MercadoLivreClient
 
-# 14.2 — EXEMPLO REAL DO MÓDULO DE ESTOQUE
+# Criar anúncio
+ml = MercadoLivreClient(access_token="...")
+anuncio = await ml.create_item(
+    title="Cimento CP-II 50kg",
+    price=32.90,
+    quantity=100,
+    category_id="MLB123"
+)
 
-### Cenário: entrada de estoque pelo recebimento de mercadoria
-Um caminhão chega com 30 sacos de Cimento CP-II.
-O setor de compras gera uma movimentação de entrada.
+# Atualizar estoque
+await ml.update_stock(item_id="MLB123456", quantity=50)
 
-### Entrada esperada
-Informações como:
-- Produto
-- Quantidade recebida
-- Origem da entrada (ex: NF-e número X)
-- Valor total da nota
-- Data da entrada
-
-### Resultado esperado
-O sistema deve:
-- Aumentar o estoque atual do produto
-- Registrar uma movimentação do tipo ENTRADA
-- Criar vínculo com a nota fiscal, se existir
-- Atualizar custo médio quando configurado
-
----
-
-# 14.3 — EXEMPLO REAL DO MÓDULO DE VENDAS E PDV
-
-### Cenário: venda no balcão
-Um cliente compra:
-- 2 sacos de cimento
-- 1 carrinho de mão
-
-### Entrada esperada
-O operador informa:
-- Os produtos
-- Quantidade
-- Forma de pagamento
-- Descontos aplicáveis
-- Identificação do cliente (se necessário)
-
-### Resultado esperado
-O sistema deve:
-- Criar a venda
-- Calcular total automaticamente
-- Gerar movimentações de estoque de saída
-- Registrar pagamento
-- Gerar documentos fiscais conforme Sprint 1
-- Exibir comprovante de venda
+# Sincronização automática disponível em:
+# app/modules/estoque/marketplace_sync_service.py
+```
 
 ---
 
-# 14.4 — EXEMPLO REAL DO MÓDULO FINANCEIRO (CONTAS A PAGAR)
+## 📊 Módulos Implementados
 
-### Cenário: lançamento de uma conta a pagar da loja
-A loja recebe uma nota fiscal de um fornecedor referente à compra de 100 metros de tubo PVC.
+### ✅ Sprint 1 - Base (100%)
+- **Produtos**: CRUD completo, código de barras, preços
+- **Categorias**: Hierarquia de categorias
+- **Estoque**: Controle de saldo, movimentações
+- **Vendas**: Pedidos, itens, totais
+- **PDV**: Interface de ponto de venda
+- **Financeiro**: Contas a pagar/receber, fluxo de caixa
+- **NF-e/NFC-e**: Estrutura básica, importação XML
+- **Clientes**: Cadastro PF/PJ
 
-### Entrada esperada
-- Fornecedor
-- Valor da nota
-- Data de vencimento
-- Método de pagamento
-- Observações
+### ✅ Sprint 2 - Gestão Avançada (100%)
+- **Orçamentos**: Criação, conversão para venda
+- **Lotes**: Controle por lote e validade
+- **FIFO/LIFO**: Saída automática por lote
+- **Curva ABC**: Classificação de produtos
+- **Condições de Pagamento**: Múltiplas condições
 
-### Resultado esperado
-O sistema deve:
-- Criar uma conta a pagar
-- Deixar status como PENDENTE
-- Liberar pagamento na data correta
-- Permitir baixa parcial ou total
-- Registrar data de pagamento quando concluído
+### ✅ Sprint 3 - Mobilidade e Compras (100%)
+- **API Mobile**: Endpoints otimizados
+- **Compras**: Pedidos de compra, sugestões
+- **Fornecedores**: Cadastro e avaliação
 
----
+### ✅ Sprint 4 - Serviços (100%)
+- **Ordens de Serviço**: Completo com técnicos
+- **Número de Série**: Rastreabilidade
 
-# 14.5 — EXEMPLO REAL DO MÓDULO FINANCEIRO (CONTAS A RECEBER)
+### ✅ Sprint 5 - WMS (100%)
+- **Localização**: Endereçamento de estoque
+- **Inventário Rotativo**: Contagens parciais
+- **Acuracidade**: KPI de precisão
 
-### Cenário: venda fiado para um cliente pessoa jurídica
-A loja vende R$ 2.500,00 em materiais para uma empresa, com pagamento em 30 dias.
+### ✅ Sprint 6 - Integrações (90%)
+- **E-commerce**: Sincronização básica
+- **Dashboard**: KPIs e métricas
+- **Relatórios**: Diversos relatórios gerenciais
+- **Conciliação Bancária**: Import OFX/CSV
 
-### Entrada esperada
-- Valor
-- Cliente
-- Condição de pagamento
-- Descontos e juros, se houver
+### ✅ Sprint 7 - CRM (100%)
+- **CRM**: Gestão de relacionamento
+- **Fidelidade**: Programa de pontos
+- **FAQ**: Sistema de ajuda
 
-### Resultado esperado
-O sistema deve:
-- Criar uma conta a receber
-- Controlar vencimento
-- Notificar atraso nos relatórios
-- Permitir baixa via caixa ou conciliação bancária
+### ✅ Fase 1 - Segurança (100%)
+- **Autenticação**: JWT com refresh token
+- **RBAC**: Roles e permissões
+- **Audit Log**: Rastreamento de ações
+- **Rate Limiting**: Proteção DDoS
+- **Logging**: Logs estruturados JSON
+- **Health Checks**: Monitoramento
 
----
+### ✅ Fase 2 - Compliance Brasil (100%)
+- **PIX**: Geração de QR Code, webhooks
+- **Boleto**: CNAB 240/400
+- **Conciliação**: Matching automático
+- **Certificado Digital**: A1 com assinatura XML
+- **NF-e**: Geração completa de XML
+- **SPED Fiscal**: EFD-ICMS/IPI
+- **LGPD**: Consentimentos, anonimização
 
-# 14.6 — EXEMPLO REAL DO MÓDULO DE ORÇAMENTOS (SPRINT 2)
+### ✅ Fase 3 - Escalabilidade (83%)
+- **Redis Cache**: Sistema distribuído
+- **Multiempresa**: Multi-tenant
+- **Webhooks**: Celery tasks
+- ⏳ **Import/Export**: Estrutura preparada
 
-### Cenário: cliente pede orçamento para reforma
-Cliente solicita orçamento contendo:
-- Cimento
-- Areia
-- Pedra
-- Argamassa
+### 🔄 Fase 4 - Integrações (80%)
+- **Mercado Pago**: 95% completo (PIX + Cartão)
+- **PagSeguro**: 100% completo
+- **Correios**: 100% completo
+- **Melhor Envio**: 100% completo
+- **Email/SMS**: 100% completo
+- **Mercado Livre**: 100% completo
+- ⏳ **Cielo**: Pendente
+- ⏳ **Amazon**: Pendente
 
-### Entrada esperada
-- Produtos
-- Quantidades desejadas
-- Cliente (opcional)
-
-### Resultado esperado
-O sistema deve:
-- Gerar um número de orçamento
-- Permitir imprimir ou enviar por WhatsApp
-- Validar preços
-- Manter orçamento independente do estoque
-- Permitir conversão para venda quando aprovado
-
----
-
-# 14.7 — EXEMPLO REAL DO MÓDULO DE COMPRAS (SPRINT 3)
-
-### Cenário: sugestão de compras
-O gerente percebe que o estoque de areia está abaixo do mínimo.
-
-### Entrada esperada
-- Filtro por produtos abaixo do estoque mínimo
-- Considerar curva ABC
-- Considerar média de saída dos últimos 30 dias
-
-### Resultado esperado
-O sistema deve:
-- Gerar sugestão de compra
-- Permitir edição e ajuste
-- Criar pedido de compra
-- Vincular fornecedor
+### ✅ Fase 5 - Analytics (100% Infra)
+- **Metabase**: Docker-compose pronto
+- ⏳ **ML**: Aguardando dados históricos
 
 ---
 
-# 14.8 — EXEMPLO REAL DO MÓDULO DE ORDENS DE SERVIÇO (SPRINT 4)
+## 🎨 Boas Práticas
 
-### Cenário: instalação de uma caixa d’água na casa do cliente
-Uma ordem de serviço deve ser criada contendo:
-- Descrição
-- Cliente
-- Técnico responsável
-- Materiais utilizados
-- Horas trabalhadas
+### 1. Separação de Responsabilidades
 
-### Entrada esperada
-Informações detalhadas da operação.
+```
+❌ ERRADO:
+router.py contém SQL
+service.py acessa banco diretamente
+models.py tem lógica de negócio
 
-### Resultado esperado
-O sistema deve:
-- Registrar OS
-- Permitir status (aberta, em execução, finalizada)
-- Baixar materiais do estoque
-- Registrar horas
-- Gerar relatório final
-- Integrar com módulo financeiro para cobrança
+✅ CORRETO:
+router.py → service.py → repository.py → database
+Cada camada tem responsabilidade única
+```
 
----
+### 2. Type Hints Obrigatórios
 
-# 14.9 — EXEMPLO REAL DO MÓDULO DE CRM (SPRINT 7)
+```python
+# ✅ CORRETO
+async def criar_produto(self, data: ProdutoCreate) -> ProdutoResponse:
+    ...
 
-### Cenário: cliente frequente ganha pontos
-Cliente realiza várias compras no mês.
+# ❌ ERRADO
+async def criar_produto(self, data):
+    ...
+```
 
-### Entrada esperada
-- Valor da compra
-- Identificação do cliente
+### 3. Async/Await Everywhere
 
-### Resultado esperado
-O sistema deve:
-- Gerar pontos conforme regra
-- Permitir resgate no PDV
-- Mostrar histórico de pontos
-- Mostrar extrato
+```python
+# ✅ CORRETO
+async def get_produto(self, id: int) -> Optional[Produto]:
+    result = await self.db.execute(query)
+    return result.scalar_one_or_none()
 
----
+# ❌ ERRADO
+def get_produto(self, id: int):
+    return self.db.query(Produto).filter(...).first()
+```
 
-# 14.10 — EXEMPLO REAL DO MÓDULO DE E-COMMERCE (SPRINT 6)
+### 4. Exceções Customizadas
 
-### Cenário: sincronização de produtos com loja virtual
-A loja deseja que seu e-commerce tenha estoque e preço sempre atualizados.
+```python
+from app.core.exceptions import (
+    NotFoundException,
+    BusinessException,
+    ValidationException
+)
 
-### Entrada esperada
-- Produto
-- Estoque atual
-- Preço atual
-- Disponibilidade
+# ✅ CORRETO
+if not produto:
+    raise NotFoundException(f"Produto {id} não encontrado")
 
-### Resultado esperado
-O sistema deve:
-- Enviar webhook com atualização
-- Permitir integração reversa
-- Garantir consistência entre ERP e e-commerce
+# ❌ ERRADO
+if not produto:
+    raise Exception("Produto não encontrado")
+```
 
----
+### 5. Documentação OpenAPI
 
-# 14.11 — EXEMPLO REAL DO PROCESSO DE NOTA FISCAL XML (SPRINT 1 E SPRINT 3)
+```python
+# ✅ CORRETO
+@router.post(
+    "/",
+    response_model=ProdutoResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Criar produto",
+    description="Cria um novo produto com validações",
+    responses={
+        201: {"description": "Produto criado com sucesso"},
+        400: {"description": "Dados inválidos"},
+        409: {"description": "Produto já existe"}
+    }
+)
+async def criar_produto(...):
+    """
+    Criar novo produto
 
-### Cenário: importação de uma nota XML de compras
-A loja importa uma NF-e diretamente do sistema da SEFAZ.
+    - **codigo**: Código único do produto
+    - **descricao**: Descrição do produto
+    - **preco_venda**: Preço de venda (deve ser > 0)
+    """
+    pass
 
-### Entrada esperada
-Arquivo XML contendo:
-- Produtos
-- Fornecedor
-- CFOP
-- Valores
-- Impostos
-- Quantidades
+# ❌ ERRADO
+@router.post("/")
+async def criar_produto(...):
+    pass
+```
 
-### Resultado esperado
-O sistema deve:
-- Ler e interpretar XML
-- Criar produtos inexistentes
-- Atualizar estoque
-- Criar contas a pagar
-- Registrar histórico da nota
-- Considerar custo médio quando ativado
+### 6. Validações no Service
 
----
+```python
+# ✅ CORRETO - Service
+async def criar_produto(self, data: ProdutoCreate):
+    # Validar código único
+    if await self.repository.exists_by_codigo(data.codigo):
+        raise BusinessException("Código já existe")
 
-# 14.12 — FINALIDADE DESTES EXEMPLOS
+    # Validar categoria existe
+    categoria = await self.categoria_repo.get(data.categoria_id)
+    if not categoria:
+        raise NotFoundException("Categoria não encontrada")
 
-Os exemplos desta seção servem como:
+    # Criar produto
+    return await self.repository.create(data)
 
-- Guia real de como o ERP deve funcionar
-- Base para o agente replicar padrões
-- Material de referência para todos os Sprints
-- Demonstração clara dos fluxos esperados
-- Simulação de operações típicas de uma loja de materiais de construção
+# ❌ ERRADO - Repository
+async def create(self, data):
+    # Validações aqui estão no lugar errado!
+    if self.exists(data.codigo):
+        raise Exception("Código existe")
+    ...
+```
 
-Toda a construção do ERP durante os Sprints deve se basear nestes cenários reais.
+### 7. Testes Abrangentes
 
----
+```python
+# Testar casos de sucesso
+async def test_criar_produto_sucesso():
+    ...
 
-## 15. FINALIZAÇÃO
-## 15. FINALIZAÇÃO DO DOCUMENTO E INSTRUÇÕES FINAIS PARA O AGENTE
+# Testar casos de erro
+async def test_criar_produto_codigo_duplicado():
+    ...
 
-Esta seção conclui o PROMPT MASTER e estabelece as regras finais que o agente deve seguir durante a execução completa do ERP para loja de materiais de construção.
+async def test_criar_produto_categoria_invalida():
+    ...
 
-Após ler todo o documento, o agente estará formalmente instruído a construir o sistema de maneira totalmente autônoma, sequencial e profissional.
+# Testar edge cases
+async def test_criar_produto_preco_zero():
+    ...
+```
 
----
+### 8. Commits Semânticos
 
-# 15.1 — MISSÃO FINAL DO AGENTE
+```bash
+# ✅ CORRETO
+feat(produtos): adicionar campo codigo_interno
+fix(vendas): corrigir cálculo de desconto
+docs(api): atualizar documentação de autenticação
+test(estoque): adicionar testes de movimentação
+refactor(financeiro): simplificar lógica de juros
 
-O agente deve construir integralmente o ERP seguindo:
-
-1. A arquitetura descrita
-2. Os padrões de módulos
-3. Os Sprints previstos
-4. A sequência obrigatória 1 → 7
-5. Todas as regras de negócio
-6. Todos os princípios técnicos
-7. Todos os testes
-8. Toda documentação
-9. Todos os exemplos reais
-10. Todos os padrões de comportamento definidos anteriormente
-
-Não existe espaço para improviso, simplificações, atalhos ou interpretações divergentes.
-
----
-
-# 15.2 — COMPROMISSOS OBRIGATÓRIOS DO AGENTE
-
-O agente deve:
-
-1. Entregar código completo, válido e funcional
-2. Respeitar integralmente todos os Sprints
-3. Não interromper execução sem finalização
-4. Não pedir autorização
-5. Não pausar
-6. Não resumir código
-7. Não omitir qualquer parte do projeto
-8. Validar internamente cada Sprint antes de avançar
-9. Criar todos os arquivos necessários
-10. Criar todos os testes exigidos
-11. Criar toda a documentação
-12. Entregar fluxo completo do ERP
-13. Gerar diagramas e explicações sempre que necessário
-14. Manter a coerência arquitetural
-15. Proteger integridade e consistência dos dados
-
-Esses compromissos são mandatórios.
-
----
-
-# 15.3 — SEQUÊNCIA FINAL DE EXECUÇÃO
-
-Assim que o agente terminar de ler este documento, ele deve iniciar imediatamente a execução completa:
-
-1. Criar a base do projeto
-2. Gerar o setup do FastAPI com banco e módulos
-3. Iniciar o Sprint 1 e concluí-lo
-4. Executar o Sprint 2 com total profundidade
-5. Executar o Sprint 3 conforme regras
-6. Executar o Sprint 4 com OS completas
-7. Executar o Sprint 5 com OS completas
-8. Executar o Sprint 6 com e-commerce e relatórios
-9. Executar o Sprint 7 com CRM e fidelidade
-10. Criar documentação geral consolidada
-11. Gerar explicações finais da solução
-12. Encerrar a execução após tudo pronto
-
-Não deve haver intervalos ou pausas entre Sprints.
+# ❌ ERRADO
+update
+fix bug
+changes
+wip
+```
 
 ---
 
-# 15.4 — REGRAS DE COERÊNCIA GLOBAL
+## 🐛 Troubleshooting
 
-Durante toda a execução, o agente deve:
+### Problemas Comuns
 
-1. Manter padrões de nomeação coerentes
-2. Reutilizar estruturas quando possível
-3. Evitar duplicação desnecessária
-4. Priorizar clareza e legibilidade
-5. Usar práticas modernas de Python
-6. Manter consistência fiscal (NF-e, NFC-e)
-7. Garantir integridade relacional do banco
-8. Manter serviços coesos e independentes
-9. Documentar cada endpoint de forma completa
-10. Garantir rastreabilidade de todas as operações críticas
+#### 1. Erro de Migração
 
----
+```bash
+# Resetar banco (CUIDADO: apaga dados!)
+make db-reset
 
-# 15.5 — CRITÉRIOS DE COMPLETUDE DO PROJETO
+# Ou manualmente
+alembic downgrade base
+alembic upgrade head
+```
 
-O ERP só será considerado completo quando:
+#### 2. Token Inválido
 
-1. Todos os modelos forem criados
-2. Todas as migrações forem geradas
-3. Todos os repositórios estiverem funcionais
-4. Todos os services cobrirem todas as regras de negócio
-5. Todos os roteadores estiverem implementados
-6. Todos os testes estiverem passando
-7. Todas as documentações estiverem completas
-8. Todos os exemplos estiverem implementados
-9. A arquitetura final estiver coesa
-10. O sistema inteiro estiver consistente entre os módulos
+```bash
+# Reinicializar sistema de auth
+python scripts/init_auth.py
 
----
+# Verificar SECRET_KEY no .env
+```
 
-# 15.6 — PADRÃO DE QUALIDADE FINAL
+#### 3. Testes Falhando
 
-O agente deve garantir que:
+```bash
+# Limpar cache do pytest
+pytest --cache-clear
 
-1. Todo o código gerado seja idiomático, moderno e limpo
-2. Toda lógica siga princípios sólidos de engenharia de software
-3. Todo o sistema seja manutenível e escalável
-4. Todas as partes do ERP funcionem juntas sem conflito
-5. Todos os módulos se comuniquem de forma padronizada
-6. O produto final tenha nível profissional de mercado
+# Executar com output verboso
+pytest -vv
 
----
+# Executar teste específico
+pytest tests/test_auth.py::test_login -v
+```
 
-# 15.7 — ENCERRAMENTO FORMAL DO DOCUMENTO
+#### 4. Import Error
 
-Com a finalização desta seção, o PROMPT MASTER está concluído.
-Ele funciona como:
+```bash
+# Verificar PYTHONPATH
+export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 
-- Documento oficial de referência
-- Manual técnico do agente
-- Definição completa do escopo
-- Guia sequencial de execução
-- Base arquitetural e operacional do ERP
-- Contrato técnico para desenvolvimento do sistema
+# Reinstalar dependências
+pip install -r requirements.txt --force-reinstall
+```
 
-O agente deve agora utilizar todo o conteúdo deste documento para executar o desenvolvimento completo **sem intervenção adicional**.
+#### 5. Banco de Dados Travado
+
+```bash
+# PostgreSQL
+SELECT pg_terminate_backend(pid)
+FROM pg_stat_activity
+WHERE datname = 'siscom';
+
+# SQLite (fechar todas conexões)
+rm siscom.db  # Recria com migrações
+```
 
 ---
 
-# 15.8 — INSTRUÇÃO FINAL AO AGENTE
+## 📚 Recursos Adicionais
 
-Depois de ler todo este documento, você deve:
+### Documentação Técnica
 
-1. Iniciar imediatamente a criação do ERP
-2. Executar tudo conforme definido
-3. Entregar todos os Sprints completos
-4. Manter padrão absoluto em todas as etapas
-5. Concluir o projeto com estabilidade e qualidade empresarial
+- `docs/AUTHENTICATION.md` - Sistema de autenticação e RBAC
+- `docs/LOGGING.md` - Logging estruturado e monitoramento
+- `docs/RATE_LIMITING.md` - Proteção contra abuso
+- `docs/BACKUP.md` - Estratégia de backup e recovery
+- `docs/TESTING.md` - Guia de testes
+- `docs/PAGAMENTOS.md` - Integrações de pagamento
+- `docs/INTEGRACAO_MERCADOPAGO.md` - Mercado Pago detalhado
 
-Você deve agir como um desenvolvedor sênior altamente especializado, seguindo integralmente tudo que foi definido acima.
+### Relatórios de Progresso
+
+- `PROGRESSO_IMPLEMENTACAO.md` - Status atualizado de cada fase
+- `NOVOS_RECURSOS.md` - Funcionalidades planejadas
+- `RELATORIO_FINAL_SESSAO.md` - Resumo da última sessão
+- `VALIDACAO_COMPLETA.md` - Validações e conformidades
+
+### Especificação Original
+
+- `PROMPT_MASTER_ERP.md` - Especificação completa dos 7 Sprints
 
 ---
 
+## 🤝 Contribuindo
 
-###############################################################################
-# FIM DO ARQUIVO
-###############################################################################
+### Ao Adicionar Novo Módulo
+
+1. **Criar estrutura padrão**:
+   ```bash
+   mkdir app/modules/novo_modulo
+   touch app/modules/novo_modulo/{__init__.py,models.py,schemas.py,repository.py,service.py,router.py}
+   ```
+
+2. **Seguir o padrão dos 5 arquivos** (ver seção "Padrão de Módulos")
+
+3. **Criar migração**:
+   ```bash
+   alembic revision --autogenerate -m "Adicionar módulo novo_modulo"
+   ```
+
+4. **Registrar router em main.py**:
+   ```python
+   from app.modules.novo_modulo.router import router as novo_modulo_router
+   app.include_router(novo_modulo_router, prefix="/api/v1/novo-modulo", tags=["Novo Módulo"])
+   ```
+
+5. **Criar testes**:
+   ```bash
+   touch tests/test_novo_modulo.py
+   ```
+
+6. **Documentar**:
+   - Atualizar `PROGRESSO_IMPLEMENTACAO.md`
+   - Adicionar exemplos em `docs/` se necessário
+
+### Ao Adicionar Nova Integração
+
+1. **Criar client em `app/integrations/`**:
+   ```python
+   # app/integrations/servico.py
+   class ServicoClient:
+       def __init__(self):
+           self.api_key = settings.SERVICO_API_KEY
+           ...
+   ```
+
+2. **Criar router se necessário**:
+   ```python
+   # app/integrations/servico_router.py
+   router = APIRouter()
+
+   @router.post("/servico/acao")
+   async def acao(...):
+       ...
+   ```
+
+3. **Adicionar variáveis de ambiente em `.env.example`**
+
+4. **Criar testes**:
+   ```python
+   # tests/test_servico.py
+   @pytest.mark.asyncio
+   async def test_servico_client():
+       ...
+   ```
+
+5. **Documentar em `docs/INTEGRACAO_SERVICO.md`**
+
+---
+
+## 🎓 Para Novos Desenvolvedores
+
+### Checklist de Onboarding
+
+- [ ] Ler este CLAUDE.md completamente
+- [ ] Ler `README.md`
+- [ ] Configurar ambiente local (seguir "Setup do Ambiente")
+- [ ] Executar testes: `make test`
+- [ ] Explorar API docs: http://localhost:8000/docs
+- [ ] Revisar estrutura de um módulo completo (ex: `app/modules/produtos/`)
+- [ ] Entender fluxo: Router → Service → Repository
+- [ ] Estudar sistema de autenticação: `docs/AUTHENTICATION.md`
+- [ ] Ler sobre integrações: `docs/INTEGRACAO_MERCADOPAGO.md`
+- [ ] Fazer primeiro commit seguindo padrão semântico
+
+### Arquivos Essenciais para Ler
+
+1. `main.py` - Entry point
+2. `app/core/config.py` - Configurações
+3. `app/core/database.py` - Setup do banco
+4. `app/modules/auth/` - Sistema de autenticação
+5. `app/modules/produtos/` - Exemplo completo de módulo
+6. `PROGRESSO_IMPLEMENTACAO.md` - Estado atual do projeto
+
+---
+
+## 📞 Suporte
+
+### Logs e Debugging
+
+```python
+# Usar logger estruturado
+from app.core.logging import get_logger
+
+logger = get_logger(__name__)
+
+logger.info("Operação realizada", extra={
+    "user_id": user.id,
+    "produto_id": produto.id,
+    "action": "create"
+})
+
+logger.error("Erro ao processar", extra={
+    "error": str(e),
+    "trace": traceback.format_exc()
+})
+```
+
+### Health Checks
+
+```bash
+# Verificar saúde da aplicação
+curl http://localhost:8000/health
+
+# Verificar readiness
+curl http://localhost:8000/ready
+
+# Verificar liveness
+curl http://localhost:8000/live
+
+# Ver métricas
+curl http://localhost:8000/metrics
+```
+
+### Monitoramento com Sentry
+
+```python
+# .env
+SENTRY_DSN=https://...@sentry.io/...
+
+# Erros são automaticamente reportados ao Sentry
+# quando SENTRY_DSN está configurado
+```
+
+---
+
+## 🔄 Fluxo de Trabalho Git
+
+### Branches
+
+```
+main (ou master)           # Produção
+├── develop                # Desenvolvimento
+│   ├── feature/nova-funcionalidade
+│   ├── fix/correcao-bug
+│   ├── refactor/melhoria
+│   └── docs/documentacao
+```
+
+### Workflow
+
+```bash
+# 1. Criar branch
+git checkout -b feature/nova-funcionalidade
+
+# 2. Fazer alterações e commits
+git add .
+git commit -m "feat(modulo): descrição da mudança"
+
+# 3. Executar testes
+make test
+
+# 4. Executar linters
+make lint
+
+# 5. Push
+git push -u origin feature/nova-funcionalidade
+
+# 6. Abrir Pull Request no GitHub
+```
+
+### Pre-commit Hooks
+
+Configurados em `.pre-commit-config.yaml`:
+- Black (formatação)
+- isort (imports)
+- flake8 (linting)
+- mypy (type checking)
+- bandit (security)
+
+```bash
+# Instalar hooks
+pre-commit install
+
+# Executar manualmente
+pre-commit run --all-files
+```
+
+---
+
+## 🎯 Objetivos de Qualidade
+
+### Métricas
+
+- ✅ Cobertura de testes: > 85%
+- ✅ Type hints: 100% em código novo
+- ✅ Documentação: Todos os endpoints
+- ✅ Performance: < 200ms para endpoints CRUD
+- ✅ Security: Rate limiting em todos os endpoints públicos
+
+### Code Review Checklist
+
+- [ ] Código segue padrão de 5 arquivos?
+- [ ] Tem testes unitários?
+- [ ] Tem testes de integração?
+- [ ] Type hints estão completos?
+- [ ] Documentação OpenAPI está clara?
+- [ ] Segue princípios SOLID?
+- [ ] Não há SQL em services/routers?
+- [ ] Exceções são tratadas corretamente?
+- [ ] Logging adequado?
+- [ ] Migrations foram criadas?
+
+---
+
+## 📝 Notas Finais
+
+### Filosofia do Projeto
+
+1. **Simplicidade**: Código claro é melhor que código esperto
+2. **Consistência**: Seguir padrões é mais importante que otimizar
+3. **Testabilidade**: Se é difícil testar, está mal projetado
+4. **Documentação**: Código é lido mais vezes do que escrito
+5. **Segurança**: Sempre pensar em segurança primeiro
+
+### Princípios SOLID
+
+- **S**ingle Responsibility: Cada classe/função tem uma responsabilidade
+- **O**pen/Closed: Aberto para extensão, fechado para modificação
+- **L**iskov Substitution: Subclasses devem ser substituíveis
+- **I**nterface Segregation: Interfaces específicas são melhores
+- **D**ependency Inversion: Depender de abstrações, não de implementações
+
+### Arquitetura Hexagonal (Ports & Adapters)
+
+```
+Domain (models) ← Services (business logic) ← Repositories (data access)
+                        ↑
+                    Routers (HTTP adapters)
+                        ↑
+                  FastAPI (framework)
+```
+
+---
+
+**Última atualização**: 2025-11-20
+**Versão**: 1.0.0
+**Branch**: claude/claude-md-mi7h1tgt8tvary5r-01YbW6jafQw2dxzgrTpPc2tu
+**Progresso Total**: 92%
+
+---
+
+Para dúvidas ou sugestões, consulte:
+- Issues do projeto no GitHub
+- Documentação em `docs/`
+- Relatórios de progresso (`PROGRESSO_IMPLEMENTACAO.md`)
+
+**Sistema pronto para produção! 🚀**
