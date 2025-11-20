@@ -16,12 +16,14 @@ from sqlalchemy import select
 from fastapi import HTTPException, status
 
 from app.core.logging import get_logger, log_business_event
+from app.core.exceptions import NotFoundException, BusinessException
 from app.modules.pagamentos.models import (
     ChavePix, TransacaoPix, StatusPagamento
 )
 from app.modules.pagamentos.schemas import (
     ChavePixCreate, TransacaoPixCreate, WebhookPixPayload
 )
+from sqlalchemy import func
 
 logger = get_logger(__name__)
 
@@ -354,3 +356,97 @@ class PixService:
         img_base64 = base64.b64encode(buffer.getvalue()).decode()
 
         return f"data:image/png;base64,{img_base64}"
+
+    # =========================================================================
+    # Métodos adicionais para testes
+    # =========================================================================
+
+    async def listar_chaves(self, ativas_apenas: bool = True) -> List[ChavePix]:
+        """
+        Lista chaves PIX (alias para listar_chaves_pix)
+
+        Args:
+            ativas_apenas: Se True, retorna apenas chaves ativas
+
+        Returns:
+            Lista de ChavePix
+        """
+        return await self.listar_chaves_pix(ativa=ativas_apenas if ativas_apenas else None)
+
+    async def buscar_por_txid(self, txid: str) -> Optional[TransacaoPix]:
+        """
+        Busca transação PIX por TXID (alias para consultar_transacao)
+
+        Args:
+            txid: Transaction ID
+
+        Returns:
+            TransacaoPix ou None
+        """
+        return await self.consultar_transacao(txid)
+
+    async def expirar_cobrancas_antigas(self) -> int:
+        """
+        Expira cobranças antigas que não foram pagas (alias para verificar_expiradas)
+
+        Returns:
+            Número de cobranças expiradas
+        """
+        return await self.verificar_expiradas()
+
+    async def desativar_chave(self, chave_id: int) -> ChavePix:
+        """
+        Desativa uma chave PIX
+
+        Args:
+            chave_id: ID da chave PIX
+
+        Returns:
+            ChavePix desativada
+
+        Raises:
+            NotFoundException: Se chave não encontrada
+            BusinessException: Se há transações pendentes
+        """
+        # Buscar chave PIX
+        result = await self.db.execute(
+            select(ChavePix).where(ChavePix.id == chave_id)
+        )
+        chave = result.scalar_one_or_none()
+
+        if not chave:
+            raise NotFoundException(f"Chave PIX {chave_id} não encontrada")
+
+        # Verificar transações pendentes
+        result_transacoes = await self.db.execute(
+            select(func.count(TransacaoPix.id)).where(
+                TransacaoPix.chave_pix_id == chave_id,
+                TransacaoPix.status == StatusPagamento.PENDENTE
+            )
+        )
+        transacoes_pendentes = result_transacoes.scalar()
+
+        if transacoes_pendentes > 0:
+            raise BusinessException(
+                f"Não é possível desativar chave com {transacoes_pendentes} transações pendentes"
+            )
+
+        # Chave já inativa? Aceitar (idempotência)
+        if not chave.ativa:
+            logger.info(f"Chave PIX {chave.chave} já estava inativa")
+            return chave
+
+        # Desativar chave
+        chave.ativa = False
+        await self.db.commit()
+        await self.db.refresh(chave)
+
+        logger.info(f"Chave PIX desativada: {chave.chave}")
+        log_business_event(
+            event_name="chave_pix_desativada",
+            chave_id=chave_id,
+            chave=chave.chave,
+            tipo=chave.tipo.value
+        )
+
+        return chave
