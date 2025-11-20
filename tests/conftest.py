@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sess
 from sqlalchemy.pool import NullPool
 
 from app.core.config import settings
-from app.core.database import Base, get_async_session
+from app.core.database import Base, get_db
 from app.modules.auth.models import User, Role, Permission
 from app.modules.auth.security import get_password_hash, create_access_token
 from main import app
@@ -72,12 +72,12 @@ async def async_db_session(async_db_engine) -> AsyncGenerator[AsyncSession, None
 @pytest.fixture(scope="function")
 async def override_get_db(async_db_session: AsyncSession):
     """
-    Override da dependency get_async_session para usar banco de teste
+    Override da dependency get_db para usar banco de teste
     """
     async def _get_test_db():
         yield async_db_session
 
-    app.dependency_overrides[get_async_session] = _get_test_db
+    app.dependency_overrides[get_db] = _get_test_db
     yield
     app.dependency_overrides.clear()
 
