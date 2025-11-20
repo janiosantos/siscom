@@ -12,6 +12,7 @@ from app.modules.estoque.lote_service import LoteEstoqueService
 from app.modules.estoque.curva_abc_service import CurvaABCService
 from app.modules.estoque.wms_service import WMSService
 from app.modules.estoque.inventario_service import InventarioService
+from app.modules.estoque.marketplace_sync_service import MarketplaceSyncService
 from app.modules.estoque.schemas import (
     EntradaEstoqueCreate,
     SaidaEstoqueCreate,
@@ -1012,3 +1013,139 @@ async def listar_divergencias(ficha_id: int, db: AsyncSession = Depends(get_db))
     """
     service = InventarioService(db)
     return await service.get_divergencias(ficha_id)
+
+
+# ============================================
+# ENDPOINTS DE SINCRONIZAÇÃO COM MARKETPLACES
+# ============================================
+
+@router.post(
+    "/marketplace/sync/{produto_id}",
+    summary="Sincronizar produto com Mercado Livre",
+    description="Atualiza estoque do produto no Mercado Livre"
+)
+async def sincronizar_produto_marketplace(
+    produto_id: int,
+    ml_item_id: str = Query(..., description="ID do anúncio no Mercado Livre"),
+    quantidade: int = Query(..., description="Quantidade em estoque"),
+    access_token: str = Query(..., description="Token OAuth do Mercado Livre"),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Sincroniza estoque de um produto específico com Mercado Livre.
+
+    **Parâmetros:**
+    - produto_id: ID do produto no sistema
+    - ml_item_id: ID do anúncio no Mercado Livre (ex: MLB123456789)
+    - quantidade: Quantidade disponível em estoque
+    - access_token: Token de acesso OAuth2 do Mercado Livre
+
+    **Retorna:**
+    - Confirmação da sincronização
+    - Resposta do Mercado Livre
+    - Status da operação
+
+    **Exemplo de uso:**
+    ```
+    POST /estoque/marketplace/sync/1?ml_item_id=MLB123&quantidade=10&access_token=APP_USR-xxx
+    ```
+    """
+    service = MarketplaceSyncService(db)
+
+    resultado = await service.sincronizar_produto_ml(
+        produto_id=produto_id,
+        quantidade=quantidade,
+        ml_item_id=ml_item_id,
+        access_token=access_token
+    )
+
+    return resultado
+
+
+@router.post(
+    "/marketplace/sync/lote",
+    summary="Sincronizar múltiplos produtos em lote",
+    description="Atualiza estoque de vários produtos no Mercado Livre"
+)
+async def sincronizar_lote_marketplace(
+    produtos: list[dict],
+    access_token: str = Query(...),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Sincroniza estoque de múltiplos produtos em uma única operação.
+
+    **Body (JSON):**
+    ```json
+    [
+        {
+            "produto_id": 1,
+            "ml_item_id": "MLB123456789",
+            "quantidade": 10
+        },
+        {
+            "produto_id": 2,
+            "ml_item_id": "MLB987654321",
+            "quantidade": 5
+        }
+    ]
+    ```
+
+    **Retorna:**
+    - Total de produtos processados
+    - Quantidade de sucessos e falhas
+    - Detalhe de cada sincronização
+
+    **Útil para:**
+    - Sincronização inicial de catálogo
+    - Atualização periódica em massa
+    - Correção de divergências em lote
+    """
+    service = MarketplaceSyncService(db)
+
+    resultado = await service.sincronizar_lote_ml(
+        produtos=produtos,
+        access_token=access_token
+    )
+
+    return resultado
+
+
+@router.post(
+    "/marketplace/webhook/mercadolivre",
+    summary="Webhook do Mercado Livre",
+    description="Processa notificações de vendas do ML e atualiza estoque local"
+)
+async def webhook_mercado_livre(
+    venda: dict,
+    access_token: str = Query(...),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Processa webhooks de vendas do Mercado Livre.
+
+    **Configuração:**
+    1. Configure esta URL no painel do Mercado Livre
+    2. Ative notificações para eventos de vendas
+    3. Sistema atualizará estoque local automaticamente
+
+    **Fluxo:**
+    1. ML envia notificação de venda
+    2. Sistema busca detalhes da venda
+    3. Identifica produtos vendidos
+    4. Atualiza estoque local
+    5. (Opcional) Registra movimentação
+
+    **TODO:**
+    - Implementar mapeamento produto <-> ml_item_id
+    - Integrar com módulo de vendas
+    - Criar movimentação de estoque automática
+    """
+    service = MarketplaceSyncService(db)
+
+    resultado = await service.processar_venda_ml(
+        venda_ml=venda,
+        access_token=access_token
+    )
+
+    return resultado
