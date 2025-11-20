@@ -5,9 +5,9 @@ import requests
 CLAUDE_API_KEY = os.getenv("CLAUDE_API_KEY")
 
 def load_logs():
-    log_files = glob.glob("logs/**/*.txt", recursive=True)
-    combined = "\n\n".join(open(f).read() for f in log_files)
-    return combined[:25000]  # limitar contexto para segurança
+    log_files = glob.glob("logs/**/*.log", recursive=True)
+    combined = "\n\n".join(open(f, "r", errors="ignore").read() for f in log_files)
+    return combined[:25000]  # limite de segurança
 
 def ask_claude(error_logs):
     payload = {
@@ -18,8 +18,8 @@ def ask_claude(error_logs):
                 "role": "system",
                 "content": (
                     "Você é Claude Code. Analise os logs de erro abaixo e gere PATCHES "
-                    "compatíveis com o código do repositório atual. "
-                    "Retorne APENAS um diff patch aplicável via 'git apply'."
+                    "compatíveis com o repositório atual. "
+                    "Retorne APENAS um diff patch aplicável via 'git apply' sem markdown."
                 )
             },
             {
