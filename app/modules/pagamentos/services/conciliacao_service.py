@@ -10,10 +10,11 @@ import csv
 import io
 import base64
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_
+from sqlalchemy import select, and_, func, case
 from fastapi import HTTPException, status
 
 from app.core.logging import get_logger, log_business_event
+from app.core.exceptions import NotFoundException, BusinessException
 from app.modules.pagamentos.models import (
     ExtratoBancario, ConciliacaoBancaria, TransacaoPix, Boleto
 )
@@ -255,3 +256,236 @@ class ConciliacaoService:
         lancamento.conciliado = True
         lancamento.data_conciliacao = datetime.utcnow()
         lancamento.conciliacao_id = conciliacao.id
+
+    # =========================================================================
+    # Métodos adicionais para testes
+    # =========================================================================
+
+    async def obter_estatisticas(
+        self,
+        banco_codigo: str,
+        conta: str,
+        data_inicio: date,
+        data_fim: date
+    ) -> Dict[str, Any]:
+        """
+        Retorna estatísticas de conciliação
+
+        Args:
+            banco_codigo: Código do banco
+            conta: Número da conta
+            data_inicio: Data inicial
+            data_fim: Data final
+
+        Returns:
+            Dict com estatísticas de conciliação
+        """
+        # Query para totalizadores
+        result = await self.db.execute(
+            select(
+                func.count(ExtratoBancario.id).label('total'),
+                func.sum(case((ExtratoBancario.conciliado == True, 1), else_=0)).label('conciliados'),
+                func.sum(case((ExtratoBancario.conciliado == False, 1), else_=0)).label('pendentes'),
+                func.coalesce(
+                    func.sum(case((ExtratoBancario.conciliado == True, ExtratoBancario.valor), else_=0)),
+                    0
+                ).label('valor_conciliado'),
+                func.coalesce(
+                    func.sum(case((ExtratoBancario.conciliado == False, ExtratoBancario.valor), else_=0)),
+                    0
+                ).label('valor_pendente')
+            ).where(
+                ExtratoBancario.banco_codigo == banco_codigo,
+                ExtratoBancario.conta == conta,
+                ExtratoBancario.data >= data_inicio,
+                ExtratoBancario.data <= data_fim
+            )
+        )
+
+        row = result.one()
+
+        total = row.total or 0
+        conciliados = row.conciliados or 0
+        pendentes = row.pendentes or 0
+        taxa_conciliacao = (conciliados / total * 100) if total > 0 else 0.0
+
+        return {
+            "total_lancamentos": total,
+            "conciliados": conciliados,
+            "pendentes": pendentes,
+            "taxa_conciliacao": round(taxa_conciliacao, 2),
+            "valor_total_conciliado": float(row.valor_conciliado or 0),
+            "valor_total_pendente": float(row.valor_pendente or 0)
+        }
+
+    async def gerar_relatorio(
+        self,
+        banco_codigo: str,
+        conta: str,
+        data_inicio: date,
+        data_fim: date
+    ) -> Dict[str, Any]:
+        """
+        Gera relatório completo de conciliação
+
+        Args:
+            banco_codigo: Código do banco
+            conta: Número da conta
+            data_inicio: Data inicial
+            data_fim: Data final
+
+        Returns:
+            Dict com relatório completo
+        """
+        # Obter estatísticas
+        estatisticas = await self.obter_estatisticas(
+            banco_codigo, conta, data_inicio, data_fim
+        )
+
+        # Listar lançamentos pendentes
+        pendentes = await self.listar_pendentes(
+            banco_codigo, conta, data_inicio, data_fim
+        )
+
+        # Buscar conciliações com diferença
+        result = await self.db.execute(
+            select(ConciliacaoBancaria)
+            .join(ExtratoBancario, ExtratoBancario.conciliacao_id == ConciliacaoBancaria.id)
+            .where(
+                ExtratoBancario.banco_codigo == banco_codigo,
+                ExtratoBancario.conta == conta,
+                ExtratoBancario.data >= data_inicio,
+                ExtratoBancario.data <= data_fim,
+                ConciliacaoBancaria.diferenca != 0
+            )
+        )
+        diferencas = list(result.scalars().all())
+
+        return {
+            "periodo": {
+                "data_inicio": data_inicio.isoformat(),
+                "data_fim": data_fim.isoformat()
+            },
+            "conta": {
+                "banco_codigo": banco_codigo,
+                "conta": conta
+            },
+            "estatisticas": estatisticas,
+            "lancamentos_pendentes": [
+                {
+                    "id": p.id,
+                    "data": p.data.isoformat(),
+                    "descricao": p.descricao,
+                    "valor": float(p.valor)
+                }
+                for p in pendentes
+            ],
+            "diferencas": [
+                {
+                    "id": d.id,
+                    "diferenca": float(d.diferenca),
+                    "valor_extrato": float(d.valor_extrato),
+                    "valor_sistema": float(d.valor_sistema)
+                }
+                for d in diferencas
+            ]
+        }
+
+    async def conciliar_manualmente(
+        self,
+        extrato_id: int,
+        transacao_tipo: str,
+        transacao_id: int,
+        observacoes: Optional[str] = None
+    ) -> ConciliacaoBancaria:
+        """
+        Cria conciliação manual entre extrato e transação
+
+        Args:
+            extrato_id: ID do lançamento de extrato
+            transacao_tipo: Tipo de transação ('pix' ou 'boleto')
+            transacao_id: ID da transação PIX ou boleto
+            observacoes: Observações da conciliação manual
+
+        Returns:
+            ConciliacaoBancaria criada
+
+        Raises:
+            NotFoundException: Se extrato ou transação não encontrados
+            BusinessException: Se extrato já conciliado
+        """
+        # Buscar lançamento de extrato
+        result_extrato = await self.db.execute(
+            select(ExtratoBancario).where(ExtratoBancario.id == extrato_id)
+        )
+        extrato = result_extrato.scalar_one_or_none()
+
+        if not extrato:
+            raise NotFoundException(f"Lançamento de extrato {extrato_id} não encontrado")
+
+        if extrato.conciliado:
+            raise BusinessException("Lançamento já está conciliado")
+
+        # Buscar transação conforme tipo
+        if transacao_tipo == 'pix':
+            result_trans = await self.db.execute(
+                select(TransacaoPix).where(TransacaoPix.id == transacao_id)
+            )
+            transacao = result_trans.scalar_one_or_none()
+            if not transacao:
+                raise NotFoundException(f"Transação PIX {transacao_id} não encontrada")
+            valor_sistema = transacao.valor
+            pix_id = transacao_id
+            boleto_id = None
+
+        elif transacao_tipo == 'boleto':
+            result_trans = await self.db.execute(
+                select(Boleto).where(Boleto.id == transacao_id)
+            )
+            transacao = result_trans.scalar_one_or_none()
+            if not transacao:
+                raise NotFoundException(f"Boleto {transacao_id} não encontrado")
+            valor_sistema = transacao.valor
+            pix_id = None
+            boleto_id = transacao_id
+
+        else:
+            raise BusinessException(f"Tipo de transação inválido: {transacao_tipo}")
+
+        # Calcular diferença
+        diferenca = extrato.valor - valor_sistema
+
+        # Criar conciliação MANUAL
+        conciliacao = ConciliacaoBancaria(
+            tipo=transacao_tipo,
+            transacao_pix_id=pix_id,
+            boleto_id=boleto_id,
+            valor_sistema=valor_sistema,
+            valor_extrato=extrato.valor,
+            diferenca=diferenca,
+            automatica=False,  # MANUAL
+            observacoes=observacoes
+        )
+
+        self.db.add(conciliacao)
+
+        # Marcar lançamento como conciliado
+        extrato.conciliado = True
+        extrato.data_conciliacao = datetime.utcnow()
+
+        await self.db.commit()
+        await self.db.refresh(conciliacao)
+
+        logger.info(
+            f"Conciliação manual criada: extrato {extrato_id} → "
+            f"{transacao_tipo} {transacao_id}, diferença: {diferenca}"
+        )
+        log_business_event(
+            event_name="conciliacao_manual",
+            extrato_id=extrato_id,
+            transacao_tipo=transacao_tipo,
+            transacao_id=transacao_id,
+            diferenca=float(diferenca)
+        )
+
+        return conciliacao

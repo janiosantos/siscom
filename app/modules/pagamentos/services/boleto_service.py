@@ -4,14 +4,16 @@ NOTA: Implementação simplificada. Para produção, integrar com biblioteca pyt
 """
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from typing import Optional, List
 from decimal import Decimal
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from fastapi import HTTPException, status
 
 from app.core.logging import get_logger, log_business_event
+from app.core.exceptions import NotFoundException, BusinessException
 from app.modules.pagamentos.models import (
     ConfiguracaoBoleto, Boleto, StatusBoleto
 )
@@ -178,3 +180,143 @@ class BoletoService:
         """
         # Simplificado
         return f"{codigo_barras[:5]}.{codigo_barras[5:10]} {codigo_barras[10:20]} {codigo_barras[20:30]} {codigo_barras[30:44]}"
+
+    # =========================================================================
+    # Métodos adicionais para testes
+    # =========================================================================
+
+    async def buscar_por_id(self, boleto_id: int) -> Optional[Boleto]:
+        """
+        Busca boleto por ID (alias para consultar_boleto)
+
+        Args:
+            boleto_id: ID do boleto
+
+        Returns:
+            Boleto encontrado ou None
+        """
+        return await self.consultar_boleto(boleto_id)
+
+    async def buscar_por_nosso_numero(self, nosso_numero: str) -> Optional[Boleto]:
+        """
+        Busca boleto por nosso número
+
+        Args:
+            nosso_numero: Nosso número do boleto (único)
+
+        Returns:
+            Boleto encontrado ou None
+        """
+        if not nosso_numero:
+            return None
+
+        result = await self.db.execute(
+            select(Boleto)
+            .options(selectinload(Boleto.configuracao))
+            .where(Boleto.nosso_numero == nosso_numero)
+        )
+        return result.scalar_one_or_none()
+
+    async def listar_configuracoes(
+        self,
+        ativas_apenas: bool = True
+    ) -> List[ConfiguracaoBoleto]:
+        """
+        Lista configurações de boleto cadastradas
+
+        Args:
+            ativas_apenas: Se True, retorna apenas configurações ativas
+
+        Returns:
+            Lista de ConfiguracaoBoleto
+        """
+        query = select(ConfiguracaoBoleto)
+
+        if ativas_apenas:
+            query = query.where(ConfiguracaoBoleto.ativa == True)
+
+        query = query.order_by(
+            ConfiguracaoBoleto.banco_codigo,
+            ConfiguracaoBoleto.agencia
+        )
+
+        result = await self.db.execute(query)
+        return list(result.scalars().all())
+
+    async def listar_vencidos(self, dias_atraso: int = 0) -> List[Boleto]:
+        """
+        Lista boletos vencidos e não pagos
+
+        Args:
+            dias_atraso: Dias de atraso mínimo (0 = qualquer atraso)
+
+        Returns:
+            Lista de boletos vencidos
+        """
+        data_limite = date.today()
+
+        if dias_atraso > 0:
+            data_limite = date.today() - timedelta(days=dias_atraso)
+
+        query = (
+            select(Boleto)
+            .options(selectinload(Boleto.configuracao))
+            .where(
+                Boleto.status.in_([StatusBoleto.REGISTRADO, StatusBoleto.ABERTO]),
+                Boleto.data_vencimento < data_limite
+            )
+            .order_by(Boleto.data_vencimento.asc())
+        )
+
+        result = await self.db.execute(query)
+        return list(result.scalars().all())
+
+    async def cancelar_boleto(self, boleto_id: int) -> Boleto:
+        """
+        Cancela um boleto registrado
+
+        Args:
+            boleto_id: ID do boleto a ser cancelado
+
+        Returns:
+            Boleto cancelado
+
+        Raises:
+            NotFoundException: Se boleto não encontrado
+            BusinessException: Se boleto não pode ser cancelado
+        """
+        boleto = await self.consultar_boleto(boleto_id)
+
+        if not boleto:
+            raise NotFoundException(f"Boleto {boleto_id} não encontrado")
+
+        # Validar se pode cancelar
+        if boleto.status == StatusBoleto.PAGO:
+            raise BusinessException(
+                "Não é possível cancelar boleto já pago"
+            )
+
+        if boleto.status == StatusBoleto.CANCELADO:
+            # Idempotência - já está cancelado
+            logger.info(f"Boleto {boleto.nosso_numero} já estava cancelado")
+            return boleto
+
+        # Apenas boletos em aberto ou registrados podem ser cancelados
+        if boleto.status not in [StatusBoleto.ABERTO, StatusBoleto.REGISTRADO]:
+            raise BusinessException(
+                f"Boleto com status {boleto.status.value} não pode ser cancelado"
+            )
+
+        # Cancelar
+        boleto.status = StatusBoleto.CANCELADO
+        await self.db.commit()
+        await self.db.refresh(boleto)
+
+        logger.info(f"Boleto cancelado: {boleto.nosso_numero}")
+        log_business_event(
+            event_name="boleto_cancelado",
+            nosso_numero=boleto.nosso_numero,
+            boleto_id=boleto_id
+        )
+
+        return boleto

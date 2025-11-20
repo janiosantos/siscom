@@ -29,15 +29,8 @@ async def config_boleto_bb(boleto_service: BoletoService):
         carteira="18",
         convenio="1234567",
         cedente_nome="EMPRESA TESTE LTDA",
-        cedente_cnpj="12345678000190",
-        cedente_endereco="Rua Teste, 123",
-        cedente_cidade="São Paulo",
-        cedente_uf="SP",
-        cedente_cep="01234567",
-        juros_mes=Decimal("2.00"),
-        multa_atraso=Decimal("2.00"),
-        dias_protesto=5,
-        ativo=True
+        cedente_documento="12345678000190",
+        cedente_endereco="Rua Teste, 123"
     )
     return await boleto_service.criar_configuracao(config_data)
 
@@ -54,15 +47,8 @@ async def config_boleto_bradesco(boleto_service: BoletoService):
         conta_dv="4",
         carteira="09",
         cedente_nome="EMPRESA TESTE LTDA",
-        cedente_cnpj="12345678000190",
-        cedente_endereco="Av. Teste, 456",
-        cedente_cidade="Rio de Janeiro",
-        cedente_uf="RJ",
-        cedente_cep="20000000",
-        juros_mes=Decimal("1.50"),
-        multa_atraso=Decimal("1.50"),
-        dias_protesto=3,
-        ativo=True
+        cedente_documento="12345678000190",
+        cedente_endereco="Av. Teste, 456"
     )
     return await boleto_service.criar_configuracao(config_data)
 
@@ -82,13 +68,8 @@ class TestConfiguracaoBoleto:
             carteira="18",
             convenio="1234567",
             cedente_nome="EMPRESA TESTE LTDA",
-            cedente_cnpj="12345678000190",
-            cedente_endereco="Rua Teste, 123",
-            cedente_cidade="São Paulo",
-            cedente_uf="SP",
-            cedente_cep="01234567",
-            juros_mes=Decimal("2.00"),
-            multa_atraso=Decimal("2.00")
+            cedente_documento="12345678000190",
+            cedente_endereco="Rua Teste, 123"
         )
 
         config = await boleto_service.criar_configuracao(config_data)
@@ -98,7 +79,7 @@ class TestConfiguracaoBoleto:
         assert config.banco_nome == "Banco do Brasil"
         assert config.carteira == "18"
         assert config.convenio == "1234567"
-        assert config.ativo is True
+        assert config.ativa is True
 
     async def test_criar_configuracao_bradesco(self, boleto_service: BoletoService):
         """Testa criação de configuração para Bradesco"""
@@ -110,11 +91,8 @@ class TestConfiguracaoBoleto:
             conta_dv="4",
             carteira="09",
             cedente_nome="EMPRESA TESTE LTDA",
-            cedente_cnpj="12345678000190",
-            cedente_endereco="Av. Teste, 456",
-            cedente_cidade="Rio de Janeiro",
-            cedente_uf="RJ",
-            cedente_cep="20000000"
+            cedente_documento="12345678000190",
+            cedente_endereco="Av. Teste, 456"
         )
 
         config = await boleto_service.criar_configuracao(config_data)
@@ -129,7 +107,7 @@ class TestConfiguracaoBoleto:
         configs = await boleto_service.listar_configuracoes(ativas_apenas=True)
 
         assert len(configs) > 0
-        assert all(config.ativo for config in configs)
+        assert all(config.ativa for config in configs)
 
 
 class TestGeracaoBoleto:
@@ -145,7 +123,7 @@ class TestGeracaoBoleto:
             data_vencimento=data_vencimento,
             numero_documento="12345",
             sacado_nome="CLIENTE TESTE",
-            sacado_cpf_cnpj="12345678901",
+            sacado_documento="12345678901",
             sacado_endereco="Rua Cliente, 789",
             sacado_cidade="São Paulo",
             sacado_uf="SP",
@@ -180,7 +158,7 @@ class TestGeracaoBoleto:
             data_vencimento=data_vencimento,
             numero_documento="67890",
             sacado_nome="EMPRESA CLIENTE LTDA",
-            sacado_cpf_cnpj="98765432000199",
+            sacado_documento="98765432000199",
             sacado_endereco="Av. Cliente, 999",
             sacado_cidade="Rio de Janeiro",
             sacado_uf="RJ",
@@ -206,7 +184,7 @@ class TestGeracaoBoleto:
             data_vencimento=data_vencimento,
             numero_documento="001",
             sacado_nome="CLIENTE 1",
-            sacado_cpf_cnpj="12345678901"
+            sacado_documento="12345678901"
         )
 
         boleto_data2 = BoletoCreate(
@@ -215,7 +193,7 @@ class TestGeracaoBoleto:
             data_vencimento=data_vencimento,
             numero_documento="002",
             sacado_nome="CLIENTE 2",
-            sacado_cpf_cnpj="98765432109"
+            sacado_documento="98765432109"
         )
 
         boleto1 = await boleto_service.gerar_boleto(boleto_data1)
@@ -243,7 +221,7 @@ class TestPagamentoBoleto:
             data_vencimento=data_vencimento,
             numero_documento="PAG001",
             sacado_nome="CLIENTE TESTE",
-            sacado_cpf_cnpj="12345678901"
+            sacado_documento="12345678901"
         )
         boleto = await boleto_service.gerar_boleto(boleto_data)
 
@@ -271,7 +249,7 @@ class TestPagamentoBoleto:
             data_vencimento=data_vencimento,
             numero_documento="JUR001",
             sacado_nome="CLIENTE TESTE",
-            sacado_cpf_cnpj="12345678901"
+            sacado_documento="12345678901"
         )
         boleto = await boleto_service.gerar_boleto(boleto_data)
 
@@ -298,7 +276,7 @@ class TestPagamentoBoleto:
             data_vencimento=data_vencimento,
             numero_documento="CANC001",
             sacado_nome="CLIENTE TESTE",
-            sacado_cpf_cnpj="12345678901"
+            sacado_documento="12345678901"
         )
         boleto = await boleto_service.gerar_boleto(boleto_data)
 
@@ -318,7 +296,7 @@ class TestPagamentoBoleto:
             data_vencimento=data_vencimento,
             numero_documento="NCANC001",
             sacado_nome="CLIENTE TESTE",
-            sacado_cpf_cnpj="12345678901"
+            sacado_documento="12345678901"
         )
         boleto = await boleto_service.gerar_boleto(boleto_data)
         await boleto_service.marcar_como_pago(boleto.id, Decimal("150.00"), date.today())
@@ -342,7 +320,7 @@ class TestBuscarBoleto:
             data_vencimento=data_vencimento,
             numero_documento="BUSC001",
             sacado_nome="CLIENTE TESTE",
-            sacado_cpf_cnpj="12345678901"
+            sacado_documento="12345678901"
         )
         boleto_criado = await boleto_service.gerar_boleto(boleto_data)
 
@@ -363,7 +341,7 @@ class TestBuscarBoleto:
             data_vencimento=data_vencimento,
             numero_documento="BUSCNN001",
             sacado_nome="CLIENTE TESTE",
-            sacado_cpf_cnpj="12345678901"
+            sacado_documento="12345678901"
         )
         boleto_criado = await boleto_service.gerar_boleto(boleto_data)
 
@@ -385,7 +363,7 @@ class TestBuscarBoleto:
             data_vencimento=data_vencimento,
             numero_documento="VENC001",
             sacado_nome="CLIENTE TESTE",
-            sacado_cpf_cnpj="12345678901"
+            sacado_documento="12345678901"
         )
         await boleto_service.gerar_boleto(boleto_data)
 
@@ -412,7 +390,7 @@ class TestValidacaoBoleto:
             data_vencimento=data_vencimento,
             numero_documento="VAL001",
             sacado_nome="CLIENTE TESTE",
-            sacado_cpf_cnpj="12345678901"
+            sacado_documento="12345678901"
         )
 
         # Deve aceitar (sistema pode gerar boleto vencido se necessário)
@@ -431,7 +409,7 @@ class TestValidacaoBoleto:
             data_vencimento=data_vencimento,
             numero_documento="VALMIN001",
             sacado_nome="CLIENTE TESTE",
-            sacado_cpf_cnpj="12345678901"
+            sacado_documento="12345678901"
         )
 
         # Deve aceitar (validação de valor mínimo é regra de negócio)

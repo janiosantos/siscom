@@ -18,7 +18,7 @@ from app.modules.auth.security import get_password_hash, create_access_token
 from main import app
 
 # Import all models to register them with Base.metadata
-import app.models  # noqa: F401
+from app import models  # noqa: F401
 
 
 # ============================================================================
@@ -38,10 +38,24 @@ def event_loop() -> Generator:
 @pytest.fixture(scope="function")
 async def async_db_engine():
     """
-    Cria engine de banco de dados de teste (SQLite in-memory)
+    Cria engine de banco de dados de teste (SQLite file-based)
+
+    Nota: SQLite :memory: não funciona com async porque cada conexão
+    tem seu próprio banco. Usando arquivo temporário ao invés.
     """
+    # Ensure all models are imported and registered with Base.metadata
+    # This MUST happen before create_all() is called
+    import app.models  # noqa: F401
+
+    import tempfile
+    import os
+
+    # Criar arquivo temporário para o banco de testes
+    db_fd, db_path = tempfile.mkstemp(suffix='.db')
+    os.close(db_fd)  # Fecha o file descriptor, mas mantém o arquivo
+
     engine = create_async_engine(
-        "sqlite+aiosqlite:///:memory:",
+        f"sqlite+aiosqlite:///{db_path}",
         poolclass=NullPool,
         echo=False
     )
@@ -57,6 +71,12 @@ async def async_db_engine():
         await conn.run_sync(Base.metadata.drop_all)
 
     await engine.dispose()
+
+    # Remove o arquivo temporário
+    try:
+        os.unlink(db_path)
+    except Exception:
+        pass
 
 
 @pytest.fixture(scope="function")
