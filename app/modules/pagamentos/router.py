@@ -6,7 +6,7 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_async_session
+from app.core.database import get_db
 from app.core.logging import get_logger
 from app.modules.auth.dependencies import get_current_user, require_permission
 from app.modules.auth.models import User
@@ -39,7 +39,7 @@ router = APIRouter()
 async def criar_chave_pix(
     chave_data: ChavePixCreate,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_session)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Cria uma nova chave PIX
@@ -54,7 +54,7 @@ async def criar_chave_pix(
 async def listar_chaves_pix(
     ativa: bool = None,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_session)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Lista chaves PIX cadastradas
@@ -69,7 +69,7 @@ async def listar_chaves_pix(
 async def criar_cobranca_pix(
     cobranca_data: TransacaoPixCreate,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_session)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Cria uma cobrança PIX com QR Code
@@ -89,7 +89,7 @@ async def criar_cobranca_pix(
 async def consultar_transacao_pix(
     txid: str,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_session)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Consulta status de uma transação PIX
@@ -111,7 +111,7 @@ async def consultar_transacao_pix(
 @router.post("/pix/webhook", status_code=status.HTTP_200_OK)
 async def webhook_pix(
     webhook_data: WebhookPixPayload,
-    db: AsyncSession = Depends(get_async_session)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Webhook para confirmação de pagamento PIX
@@ -129,7 +129,7 @@ async def webhook_pix(
 async def cancelar_cobranca_pix(
     txid: str,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_session)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Cancela uma cobrança PIX pendente
@@ -148,7 +148,7 @@ async def cancelar_cobranca_pix(
 async def criar_configuracao_boleto(
     config_data: ConfiguracaoBoletoCreate,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_session)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Cria configuração de boleto para um banco
@@ -163,7 +163,7 @@ async def criar_configuracao_boleto(
 async def gerar_boleto(
     boleto_data: BoletoCreate,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_session)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Gera um novo boleto bancário
@@ -183,7 +183,7 @@ async def gerar_boleto(
 async def consultar_boleto(
     boleto_id: int,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_session)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Consulta dados de um boleto
@@ -210,7 +210,7 @@ async def consultar_boleto(
 async def importar_extrato_csv(
     import_data: ImportCSVRequest,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_session)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Importa extrato bancário de arquivo CSV
@@ -232,7 +232,7 @@ async def listar_pendentes(
     data_inicio: date = None,
     data_fim: date = None,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_session)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Lista lançamentos de extrato não conciliados
@@ -254,7 +254,7 @@ async def auto_conciliar(
     data_inicio: date,
     data_fim: date,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_session)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Executa conciliação automática
@@ -282,7 +282,7 @@ async def auto_conciliar(
 async def gerar_arquivo_cnab_remessa(
     request_data: schemas.CNABRemessaRequest,
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_session)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Gera arquivo CNAB de remessa (envio de boletos ao banco)
@@ -343,7 +343,7 @@ async def gerar_arquivo_cnab_remessa(
 async def processar_arquivo_cnab_retorno(
     request_data: schemas.CNABRetornoRequest,
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_session)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Processa arquivo CNAB de retorno (resposta do banco)

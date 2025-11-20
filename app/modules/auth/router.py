@@ -5,7 +5,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_async_session
+from app.core.database import get_db
 from app.core.logging import get_logger, log_business_event
 from app.middleware.correlation import get_correlation_id
 from app.modules.auth.models import User
@@ -38,7 +38,7 @@ router = APIRouter()
 async def register(
     user_data: UserCreate,
     request: Request,
-    db: AsyncSession = Depends(get_async_session)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Registra um novo usuário
@@ -67,7 +67,7 @@ async def register(
 async def login(
     login_data: LoginRequest,
     request: Request,
-    db: AsyncSession = Depends(get_async_session)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Autentica um usuário e retorna tokens
@@ -117,7 +117,7 @@ async def login(
 @router.post("/refresh", response_model=Token)
 async def refresh_token(
     refresh_data: RefreshTokenRequest,
-    db: AsyncSession = Depends(get_async_session)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Renova o access token usando refresh token
@@ -143,7 +143,7 @@ async def get_current_user_info(
 async def change_password(
     password_data: UserPasswordChange,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_session)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Altera a senha do usuário autenticado
@@ -181,7 +181,7 @@ async def list_users(
     skip: int = 0,
     limit: int = 100,
     current_user: User = Depends(get_current_superuser),
-    db: AsyncSession = Depends(get_async_session)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Lista todos os usuários (apenas superuser)
@@ -196,7 +196,7 @@ async def list_users(
 async def get_user(
     user_id: int,
     current_user: User = Depends(get_current_superuser),
-    db: AsyncSession = Depends(get_async_session)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Busca um usuário por ID (apenas superuser)
@@ -215,7 +215,7 @@ async def update_user(
     user_id: int,
     user_data: UserUpdate,
     current_user: User = Depends(get_current_superuser),
-    db: AsyncSession = Depends(get_async_session)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Atualiza um usuário (apenas superuser)
@@ -227,7 +227,7 @@ async def update_user(
 async def delete_user(
     user_id: int,
     current_user: User = Depends(get_current_superuser),
-    db: AsyncSession = Depends(get_async_session)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Deleta um usuário (apenas superuser)
@@ -246,7 +246,7 @@ async def assign_roles_to_user(
     user_id: int,
     role_assignment: UserRoleAssignment,
     current_user: User = Depends(get_current_superuser),
-    db: AsyncSession = Depends(get_async_session)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Atribui roles a um usuário (apenas superuser)
@@ -269,7 +269,7 @@ async def assign_roles_to_user(
 async def create_role(
     role_data: RoleCreate,
     current_user: User = Depends(get_current_superuser),
-    db: AsyncSession = Depends(get_async_session)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Cria um novo role (apenas superuser)
@@ -284,7 +284,7 @@ async def create_role(
 @router.get("/roles", response_model=List[RoleWithPermissions])
 async def list_roles(
     current_user: User = Depends(get_current_superuser),
-    db: AsyncSession = Depends(get_async_session)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Lista todos os roles (apenas superuser)
@@ -296,7 +296,7 @@ async def list_roles(
 async def get_role(
     role_id: int,
     current_user: User = Depends(get_current_superuser),
-    db: AsyncSession = Depends(get_async_session)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Busca um role por ID (apenas superuser)
@@ -318,7 +318,7 @@ async def get_role(
 async def create_permission(
     permission_data: PermissionCreate,
     current_user: User = Depends(get_current_superuser),
-    db: AsyncSession = Depends(get_async_session)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Cria uma nova permissão (apenas superuser)
@@ -334,7 +334,7 @@ async def create_permission(
 @router.get("/permissions", response_model=List[PermissionInResponse])
 async def list_permissions(
     current_user: User = Depends(get_current_superuser),
-    db: AsyncSession = Depends(get_async_session)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Lista todas as permissões (apenas superuser)
@@ -354,7 +354,7 @@ async def list_audit_logs(
     skip: int = 0,
     limit: int = 100,
     current_user: User = Depends(get_current_superuser),
-    db: AsyncSession = Depends(get_async_session)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Lista logs de auditoria (apenas superuser)
