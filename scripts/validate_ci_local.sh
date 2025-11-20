@@ -117,6 +117,19 @@ else
 fi
 echo ""
 
+# 8. Verificar import que não sobrescreve app
+echo -e "${YELLOW}8️⃣  Verificando imports em conftest.py...${NC}"
+if grep -q "^import app\\.models" tests/conftest.py; then
+    echo -e "   ${RED}❌ 'import app.models' sobrescreve variável app${NC}"
+    echo -e "   ${YELLOW}   Use 'from app import models' no lugar${NC}"
+    exit 1
+elif grep -q "^from app import models" tests/conftest.py; then
+    echo -e "   ${GREEN}✅ Import de models correto (não sobrescreve app)${NC}"
+else
+    echo -e "   ${YELLOW}⚠️  Import de models não encontrado${NC}"
+fi
+echo ""
+
 echo -e "${BOLD}${GREEN}=================================================="
 echo -e "✅ VALIDAÇÃO COMPLETA - TUDO OK!"
 echo -e "==================================================${NC}"
