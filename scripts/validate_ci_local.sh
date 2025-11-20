@@ -16,7 +16,8 @@
 #   7. Checa configuração bcrypt
 #   8. Valida imports em conftest.py
 #   9. Verifica nomes de campos em testes
-#   10. EXECUTA TESTES PYTEST (opcional)
+#   10. VALIDA MÉTODOS (análise estática - detecta AttributeError)
+#   11. Executa testes pytest (opcional)
 #
 # VANTAGENS:
 #   - Detecta erros ANTES de fazer push
@@ -183,8 +184,23 @@ else
 fi
 echo ""
 
-# 10. Executar testes pytest (opcional - pode falhar se deps não instaladas)
-echo -e "${YELLOW}🔟  Executando testes pytest (opcional)...${NC}"
+# 10. Validar métodos usados nos testes (análise estática)
+echo -e "${YELLOW}🔟  Validando métodos usados nos testes...${NC}"
+if command -v python3 &> /dev/null; then
+    if python3 scripts/validate_test_methods.py 2>&1 | tail -20 | grep -q "❌"; then
+        echo -e "   ${RED}❌ Métodos inexistentes detectados${NC}"
+        python3 scripts/validate_test_methods.py
+        exit 1
+    else
+        echo -e "   ${GREEN}✅ Todos os métodos existem nas classes${NC}"
+    fi
+else
+    echo -e "   ${YELLOW}⚠️  Python3 não instalado${NC}"
+fi
+echo ""
+
+# 11. Executar testes pytest (opcional - pode falhar se deps não instaladas)
+echo -e "${YELLOW}1️⃣1️⃣  Executando testes pytest (opcional)...${NC}"
 if command -v pytest &> /dev/null; then
     echo -e "   ${YELLOW}   Executando pytest com coverage...${NC}"
 
