@@ -2,7 +2,7 @@
 Router para integrações de Comunicação (Email e SMS)
 """
 import logging
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field, EmailStr
 
