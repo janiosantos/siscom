@@ -267,6 +267,13 @@ try:
 except ImportError:
     pass
 
+# Analytics e Machine Learning (Fase 5)
+try:
+    from app.analytics.router import router as analytics_router
+    app.include_router(analytics_router, prefix="/api/v1/analytics", tags=["Analytics & ML"])
+except ImportError:
+    pass
+
 
 @app.get("/", tags=["Root"])
 async def root():
