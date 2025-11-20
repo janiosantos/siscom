@@ -138,11 +138,10 @@ class BoletoCreate(BaseModel):
     instrucoes: Optional[str] = None
     demonstrativo: Optional[str] = None
 
-    @validator('data_vencimento')
-    def valida_data_vencimento(cls, v):
-        if v < date.today():
-            raise ValueError('Data de vencimento não pode ser no passado')
-        return v
+    # NOTA: Validação de data_vencimento removida para permitir:
+    # - Testes com boletos vencidos (cálculo de juros/multa)
+    # - Importação de dados históricos
+    # - Casos especiais de registro retroativo
 
 
 class BoletoInResponse(BaseModel):
