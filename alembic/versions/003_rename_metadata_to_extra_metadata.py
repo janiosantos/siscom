@@ -1,7 +1,7 @@
 """Rename metadata to extra_metadata in transacoes_pix
 
 Revision ID: 003
-Revises: 002
+Revises: 002_import_export
 Create Date: 2025-11-20 15:00:00.000000
 
 """
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision: str = '003'
-down_revision: Union[str, None] = '002'
+down_revision: Union[str, None] = '002_import_export'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
