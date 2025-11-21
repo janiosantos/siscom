@@ -164,7 +164,7 @@ async def receber_pedido(
 
 @router.delete(
     "/{pedido_id}",
-    response_model=PedidoCompraResponse,
+    status_code=status.HTTP_204_NO_CONTENT,
     summary="Cancelar pedido de compra",
     description="Cancela um pedido de compra (não pode cancelar se já foi recebido)",
 )
@@ -179,7 +179,8 @@ async def cancelar_pedido(
     - Não pode cancelar pedido recebido (total ou parcial)
     """
     service = ComprasService(db)
-    return await service.cancelar_pedido(pedido_id)
+    await service.cancelar_pedido(pedido_id)
+    return None
 
 
 @router.get(

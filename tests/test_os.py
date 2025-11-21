@@ -75,6 +75,7 @@ async def setup_os(db_session: AsyncSession):
         estoque_atual=100,
         estoque_minimo=10,
         ativo=True,
+        controla_serie=True,  # Habilita controle de número de série
     )
     db_session.add(produto)
     await db_session.commit()
