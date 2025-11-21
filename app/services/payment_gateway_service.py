@@ -24,6 +24,7 @@ from app.integrations.getnet import GetNetClient, GetNetEnvironment, GetNetPayme
 from app.integrations.mercadopago import MercadoPagoClient
 from app.core.logging import get_logger
 from app.core.exceptions import BusinessRuleException, ValidationException
+from app.utils.retry import with_retry, RETRYABLE_HTTP_EXCEPTIONS
 
 logger = get_logger(__name__)
 
@@ -133,6 +134,12 @@ class PaymentGatewayService:
         else:
             raise BusinessRuleException(f"Gateway não suportado: {gateway}")
 
+    @with_retry(
+        max_attempts=5,
+        initial_delay=2.0,
+        max_delay=30.0,
+        retryable_exceptions=RETRYABLE_HTTP_EXCEPTIONS
+    )
     async def _create_cielo_payment(
         self,
         payment_method: PaymentMethod,
@@ -144,7 +151,7 @@ class PaymentGatewayService:
         capture: bool,
         metadata: Optional[Dict[str, Any]]
     ) -> Dict[str, Any]:
-        """Cria pagamento na Cielo"""
+        """Cria pagamento na Cielo com retry automático"""
 
         if payment_method == PaymentMethod.PIX:
             # Cielo não tem método create_pix_payment ainda
@@ -188,6 +195,12 @@ class PaymentGatewayService:
         # Normaliza resposta
         return self._normalize_response(PaymentGateway.CIELO, result)
 
+    @with_retry(
+        max_attempts=5,
+        initial_delay=2.0,
+        max_delay=30.0,
+        retryable_exceptions=RETRYABLE_HTTP_EXCEPTIONS
+    )
     async def _create_getnet_payment(
         self,
         payment_method: PaymentMethod,
@@ -199,7 +212,7 @@ class PaymentGatewayService:
         capture: bool,
         metadata: Optional[Dict[str, Any]]
     ) -> Dict[str, Any]:
-        """Cria pagamento na GetNet"""
+        """Cria pagamento na GetNet com retry automático"""
 
         if payment_method == PaymentMethod.PIX:
             result = await self.getnet.create_pix_payment(
@@ -248,6 +261,12 @@ class PaymentGatewayService:
         # Normaliza resposta
         return self._normalize_response(PaymentGateway.GETNET, result)
 
+    @with_retry(
+        max_attempts=5,
+        initial_delay=2.0,
+        max_delay=30.0,
+        retryable_exceptions=RETRYABLE_HTTP_EXCEPTIONS
+    )
     async def _create_mercadopago_payment(
         self,
         payment_method: PaymentMethod,
@@ -258,7 +277,7 @@ class PaymentGatewayService:
         installments: int,
         metadata: Optional[Dict[str, Any]]
     ) -> Dict[str, Any]:
-        """Cria pagamento no Mercado Pago"""
+        """Cria pagamento no Mercado Pago com retry automático"""
 
         if not self.mercadopago:
             raise BusinessRuleException("MercadoPago não inicializado. Use initialize_mercadopago()")
@@ -390,6 +409,12 @@ class PaymentGatewayService:
         }
         return mapping.get(mp_status, PaymentStatus.PENDING)
 
+    @with_retry(
+        max_attempts=3,
+        initial_delay=1.0,
+        max_delay=10.0,
+        retryable_exceptions=RETRYABLE_HTTP_EXCEPTIONS
+    )
     async def capture_payment(
         self,
         gateway: PaymentGateway,
@@ -397,7 +422,7 @@ class PaymentGatewayService:
         amount: Optional[Decimal] = None
     ) -> Dict[str, Any]:
         """
-        Captura pagamento pré-autorizado
+        Captura pagamento pré-autorizado com retry automático
 
         Args:
             gateway: Gateway usado
@@ -420,6 +445,12 @@ class PaymentGatewayService:
 
         return self._normalize_response(gateway, result)
 
+    @with_retry(
+        max_attempts=3,
+        initial_delay=1.0,
+        max_delay=10.0,
+        retryable_exceptions=RETRYABLE_HTTP_EXCEPTIONS
+    )
     async def cancel_payment(
         self,
         gateway: PaymentGateway,
@@ -427,7 +458,7 @@ class PaymentGatewayService:
         amount: Optional[Decimal] = None
     ) -> Dict[str, Any]:
         """
-        Cancela/estorna pagamento
+        Cancela/estorna pagamento com retry automático
 
         Args:
             gateway: Gateway usado
@@ -456,13 +487,19 @@ class PaymentGatewayService:
 
         return self._normalize_response(gateway, result)
 
+    @with_retry(
+        max_attempts=3,
+        initial_delay=0.5,
+        max_delay=5.0,
+        retryable_exceptions=RETRYABLE_HTTP_EXCEPTIONS
+    )
     async def query_payment(
         self,
         gateway: PaymentGateway,
         payment_id: str
     ) -> Dict[str, Any]:
         """
-        Consulta status de um pagamento
+        Consulta status de um pagamento com retry automático
 
         Args:
             gateway: Gateway usado
