@@ -109,7 +109,7 @@ class ProdutoRepository:
             return False
 
         produto.ativo = False
-        await self.session.flush()
+        await self.session.commit()
         return True
 
     async def search_by_descricao(
