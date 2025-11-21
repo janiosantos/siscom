@@ -17,10 +17,11 @@ from app.modules.categorias.models import Categoria
 @pytest.fixture
 async def setup_venda(db_session: AsyncSession):
     """Fixture para setup completo de venda (cliente, categoria, produto)"""
+    from app.modules.clientes.models import TipoPessoa
     # Criar cliente
     cliente = Cliente(
         nome="Cliente Teste",
-        tipo_pessoa="F",
+        tipo_pessoa=TipoPessoa.PF,
         cpf_cnpj="12345678900",
         ativo=True,
     )
@@ -55,14 +56,15 @@ async def venda_data(setup_venda: dict):
     """Fixture com dados de venda"""
     return {
         "cliente_id": setup_venda["cliente"].id,
-        "data_venda": "2025-11-20",
-        "status": "pendente",
+        "vendedor_id": 1,  # ID fictício do vendedor
+        "forma_pagamento": "DINHEIRO",
+        "desconto": 0.0,
         "itens": [
             {
                 "produto_id": setup_venda["produto"].id,
                 "quantidade": 10,
                 "preco_unitario": 32.90,
-                "desconto": 0.0,
+                "desconto_item": 0.0,
             }
         ],
     }
@@ -91,8 +93,8 @@ class TestCriarVenda:
         """Não deve criar venda sem itens"""
         venda_sem_itens = {
             "cliente_id": setup_venda["cliente"].id,
-            "data_venda": "2025-11-20",
-            "status": "pendente",
+            "vendedor_id": 1,
+            "forma_pagamento": "DINHEIRO",
             "itens": [],
         }
         response = await client.post("/api/v1/vendas/", json=venda_sem_itens)
@@ -143,7 +145,7 @@ class TestCalculosVenda:
         self, client: AsyncClient, venda_data: dict
     ):
         """Deve aplicar desconto no item"""
-        venda_data["itens"][0]["desconto"] = 10.0  # R$ 10 de desconto
+        venda_data["itens"][0]["desconto_item"] = 10.0  # R$ 10 de desconto
         response = await client.post("/api/v1/vendas/", json=venda_data)
 
         assert response.status_code == 201
@@ -152,7 +154,7 @@ class TestCalculosVenda:
         # Total esperado: (10 * 32.90) - 10 = 319.00
         if "itens" in data and len(data["itens"]) > 0:
             item = data["itens"][0]
-            assert float(item.get("desconto", 0)) == 10.0
+            assert float(item.get("desconto_item", 0)) == 10.0
 
 
 class TestBuscarVenda:
@@ -163,11 +165,15 @@ class TestBuscarVenda:
         self, client: AsyncClient, db_session: AsyncSession, setup_venda: dict
     ):
         """Deve buscar venda por ID"""
+        from app.modules.vendas.models import StatusVenda
+        from datetime import datetime
         # Criar venda primeiro
         venda = Venda(
             cliente_id=setup_venda["cliente"].id,
-            data_venda="2025-11-20",
-            status="pendente",
+            vendedor_id=1,
+            data_venda=datetime.utcnow(),
+            forma_pagamento="DINHEIRO",
+            status=StatusVenda.PENDENTE,
             valor_total=100.0,
         )
         db_session.add(venda)
@@ -191,12 +197,16 @@ class TestListarVendas:
         self, client: AsyncClient, db_session: AsyncSession, setup_venda: dict
     ):
         """Deve listar vendas"""
+        from app.modules.vendas.models import StatusVenda
+        from datetime import datetime
         # Criar 2 vendas
         for i in range(2):
             venda = Venda(
                 cliente_id=setup_venda["cliente"].id,
-                data_venda="2025-11-20",
-                status="pendente",
+                vendedor_id=1,
+                data_venda=datetime.utcnow(),
+                forma_pagamento="DINHEIRO",
+                status=StatusVenda.PENDENTE,
                 valor_total=100.0 * (i + 1),
             )
             db_session.add(venda)
@@ -220,10 +230,14 @@ class TestStatusVenda:
         self, client: AsyncClient, db_session: AsyncSession, setup_venda: dict
     ):
         """Deve confirmar venda pendente"""
+        from app.modules.vendas.models import StatusVenda
+        from datetime import datetime
         venda = Venda(
             cliente_id=setup_venda["cliente"].id,
-            data_venda="2025-11-20",
-            status="pendente",
+            vendedor_id=1,
+            data_venda=datetime.utcnow(),
+            forma_pagamento="DINHEIRO",
+            status=StatusVenda.PENDENTE,
             valor_total=100.0,
         )
         db_session.add(venda)
@@ -243,10 +257,14 @@ class TestStatusVenda:
         self, client: AsyncClient, db_session: AsyncSession, setup_venda: dict
     ):
         """Deve cancelar venda"""
+        from app.modules.vendas.models import StatusVenda
+        from datetime import datetime
         venda = Venda(
             cliente_id=setup_venda["cliente"].id,
-            data_venda="2025-11-20",
-            status="pendente",
+            vendedor_id=1,
+            data_venda=datetime.utcnow(),
+            forma_pagamento="DINHEIRO",
+            status=StatusVenda.PENDENTE,
             valor_total=100.0,
         )
         db_session.add(venda)

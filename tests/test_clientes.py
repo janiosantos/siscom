@@ -15,14 +15,14 @@ async def cliente_pf_data():
     """Fixture com dados de cliente Pessoa Física"""
     return {
         "nome": "João Silva",
-        "tipo_pessoa": "F",
+        "tipo_pessoa": "PF",
         "cpf_cnpj": "12345678900",
         "email": "joao@email.com",
         "telefone": "11999999999",
         "endereco": "Rua Teste, 123",
         "bairro": "Centro",
         "cidade": "São Paulo",
-        "uf": "SP",
+        "estado": "SP",
         "cep": "01310100",
         "ativo": True,
     }
@@ -33,14 +33,14 @@ async def cliente_pj_data():
     """Fixture com dados de cliente Pessoa Jurídica"""
     return {
         "nome": "Empresa LTDA",
-        "tipo_pessoa": "J",
+        "tipo_pessoa": "PJ",
         "cpf_cnpj": "12345678000190",
         "email": "contato@empresa.com",
         "telefone": "1133334444",
         "endereco": "Av Comercial, 456",
         "bairro": "Empresarial",
         "cidade": "São Paulo",
-        "uf": "SP",
+        "estado": "SP",
         "cep": "01310200",
         "ativo": True,
     }
@@ -69,7 +69,7 @@ class TestCriarCliente:
         assert response.status_code == 201
         data = response.json()
         assert data["nome"] == cliente_pf_data["nome"]
-        assert data["tipo_pessoa"] == "F"
+        assert data["tipo_pessoa"] == "PF"
         assert data["cpf_cnpj"] == cliente_pf_data["cpf_cnpj"]
         assert "id" in data
 
@@ -83,7 +83,7 @@ class TestCriarCliente:
         assert response.status_code == 201
         data = response.json()
         assert data["nome"] == cliente_pj_data["nome"]
-        assert data["tipo_pessoa"] == "J"
+        assert data["tipo_pessoa"] == "PJ"
 
     @pytest.mark.asyncio
     async def test_criar_cliente_cpf_duplicado(
@@ -155,11 +155,12 @@ class TestListarClientes:
         self, client: AsyncClient, db_session: AsyncSession
     ):
         """Deve listar clientes com paginação"""
+        from app.modules.clientes.models import TipoPessoa
         # Criar 3 clientes
         for i in range(3):
             cliente = Cliente(
                 nome=f"Cliente {i+1}",
-                tipo_pessoa="F",
+                tipo_pessoa=TipoPessoa.PF,
                 cpf_cnpj=f"1234567890{i}",
                 email=f"cliente{i+1}@test.com",
                 ativo=True,
@@ -182,16 +183,17 @@ class TestListarClientes:
         self, client: AsyncClient, db_session: AsyncSession
     ):
         """Deve filtrar apenas Pessoas Físicas"""
+        from app.modules.clientes.models import TipoPessoa
         # Criar PF e PJ
         pf = Cliente(
             nome="PF Cliente",
-            tipo_pessoa="F",
+            tipo_pessoa=TipoPessoa.PF,
             cpf_cnpj="11111111111",
             ativo=True,
         )
         pj = Cliente(
             nome="PJ Cliente",
-            tipo_pessoa="J",
+            tipo_pessoa=TipoPessoa.PJ,
             cpf_cnpj="22222222222222",
             ativo=True,
         )
@@ -199,13 +201,13 @@ class TestListarClientes:
         db_session.add(pj)
         await db_session.commit()
 
-        response = await client.get("/api/v1/clientes/?tipo_pessoa=F")
+        response = await client.get("/api/v1/clientes/?tipo_pessoa=PF")
 
         # Se endpoint suportar filtro
         if response.status_code == 200:
             data = response.json()
             if isinstance(data, list):
-                assert all(c["tipo_pessoa"] == "F" for c in data)
+                assert all(c["tipo_pessoa"] == "PF" for c in data)
 
 
 class TestAtualizarCliente:
