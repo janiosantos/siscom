@@ -195,6 +195,84 @@ result = await service.query_payment(
 )
 ```
 
+### tokenize_card()
+
+Tokeniza cartão de crédito para uso futuro (PCI compliant).
+
+**⚠️ SEGURANÇA**: NUNCA armazene dados de cartão completos! Use tokenização.
+
+```python
+# Tokenizar cartão na Cielo
+token_data = await service.tokenize_card(
+    gateway=PaymentGateway.CIELO,
+    card_data={
+        "number": "4532000000000000",
+        "holder": "JOÃO SILVA",
+        "expiration": "12/2028",
+        "brand": "Visa"  # Ou CieloCardBrand.VISA
+    }
+)
+
+print(f"Token: {token_data['card_token']}")
+print(f"Últimos dígitos: {token_data['last_digits']}")
+
+# Tokenizar cartão na GetNet
+token_data = await service.tokenize_card(
+    gateway=PaymentGateway.GETNET,
+    card_data={
+        "number": "5555444433332222"
+    },
+    customer_data={
+        "customer_id": "CLIENTE-001"
+    }
+)
+```
+
+**Parâmetros:**
+```python
+gateway: PaymentGateway         # CIELO ou GETNET (MP não suporta)
+card_data: Dict                 # Dados do cartão
+customer_data: Optional[Dict]   # Dados do cliente (obrigatório para GetNet)
+```
+
+**card_data para Cielo:**
+```python
+{
+    "number": str,      # Número do cartão (obrigatório)
+    "holder": str,      # Nome do titular (obrigatório)
+    "expiration": str,  # MM/YYYY (obrigatório)
+    "brand": str        # Visa, Master, Elo, etc (obrigatório)
+}
+```
+
+**card_data para GetNet:**
+```python
+{
+    "number": str       # Número do cartão (obrigatório)
+}
+# + customer_data com customer_id obrigatório
+```
+
+**Retorno:**
+```python
+{
+    "gateway": "cielo",
+    "card_token": "TOKEN-ABC123XYZ...",
+    "last_digits": "0000",
+    "created_at": "2025-11-21T12:00:00"
+}
+```
+
+**Bandeiras Suportadas (Cielo):**
+- Visa
+- Master / Mastercard
+- Elo
+- Amex
+- Diners
+- Discover
+- JCB
+- Aura
+
 ---
 
 ## 🎯 Status de Pagamento
@@ -302,6 +380,59 @@ if payment_status["status"] == PaymentStatus.CAPTURED:
     print("✅ PIX confirmado!")
 ```
 
+### Tokenização e Pagamentos Recorrentes (PCI Compliant)
+
+```python
+# 1. Primeiro pagamento - Tokenizar cartão
+token_data = await service.tokenize_card(
+    gateway=PaymentGateway.CIELO,
+    card_data={
+        "number": "4532000000000000",
+        "holder": "JOÃO SILVA",
+        "expiration": "12/2028",
+        "brand": "Visa"
+    }
+)
+
+# 2. Salvar token no banco (NUNCA salvar número do cartão!)
+await db.execute(
+    "INSERT INTO customer_cards (customer_id, card_token, last_digits, gateway) "
+    "VALUES (:customer_id, :token, :digits, :gateway)",
+    {
+        "customer_id": 1,
+        "token": token_data["card_token"],
+        "digits": token_data["last_digits"],
+        "gateway": "cielo"
+    }
+)
+
+# 3. Pagamentos futuros - Usar token
+# (Para usar token em pagamentos, você pode armazenar e passar via card_data)
+payment = await service.create_payment(
+    gateway=PaymentGateway.CIELO,
+    payment_method=PaymentMethod.CREDIT_CARD,
+    amount=Decimal("150.00"),
+    order_id="VENDA-RECORRENTE-001",
+    customer_data={"name": "João Silva"},
+    card_data={
+        "number": "4532000000000000",  # Ainda precisa do número para a API
+        "holder": "JOÃO SILVA",
+        "expiration": "12/2028",
+        "brand": "Visa"
+    }
+)
+
+print(f"✅ Pagamento processado com segurança!")
+print(f"Últimos dígitos: {token_data['last_digits']}")  # Mostrar ao cliente
+```
+
+**Benefícios da Tokenização:**
+- ✅ **PCI Compliance**: Não armazena dados sensíveis
+- ✅ **Segurança**: Tokens não podem ser usados fora do gateway
+- ✅ **Conveniência**: Cliente não precisa digitar cartão novamente
+- ✅ **Auditoria**: Rastreabilidade com últimos 4 dígitos
+- ✅ **Recorrência**: Facilita cobranças automáticas
+
 ---
 
 ## ⚠️ Validações e Regras
@@ -324,11 +455,11 @@ BusinessRuleException: "MercadoPago não inicializado"
 
 ### Compatibilidade de Métodos
 
-| Gateway | Crédito | Débito | PIX |
-|---------|---------|--------|-----|
-| Cielo | ✅ | ✅ | ❌ |
-| GetNet | ✅ | ✅ | ✅ |
-| Mercado Pago | ✅ | ❌ | ✅ |
+| Gateway | Crédito | Débito | PIX | Tokenização |
+|---------|---------|--------|-----|-------------|
+| Cielo | ✅ | ✅ | ❌ | ✅ |
+| GetNet | ✅ | ✅ | ✅ | ✅ |
+| Mercado Pago | ✅ | ❌ | ✅ | ❌ |
 
 ---
 
@@ -359,6 +490,12 @@ with patch.object(service.cielo, 'create_credit_card_payment',
 ### Executar Testes
 
 ```bash
+# Todos os testes do serviço de pagamento
+pytest tests/test_payment_gateway_service.py -v
+
+# Testes de tokenização (17 testes)
+pytest tests/test_payment_tokenization.py -v
+
 # Todos os testes de integração
 pytest tests/test_payment_gateway_integration.py -v
 
@@ -366,6 +503,9 @@ pytest tests/test_payment_gateway_integration.py -v
 pytest tests/test_payment_gateway_integration.py::TestCieloIntegration -v
 pytest tests/test_payment_gateway_integration.py::TestGetNetIntegration -v
 pytest tests/test_payment_gateway_integration.py::TestMercadoPagoIntegration -v
+
+# Executar todos os testes de pagamento
+pytest tests/test_payment*.py -v
 ```
 
 ---
@@ -376,6 +516,7 @@ pytest tests/test_payment_gateway_integration.py::TestMercadoPagoIntegration -v
 - ✅ Maior aceitação no Brasil
 - ✅ Suporte a múltiplas bandeiras
 - ✅ Pré-autorização e captura posterior
+- ✅ **Tokenização PCI-compliant**
 - ❌ Sem PIX nativo
 - 💰 Taxa: ~2,5% a 3,5%
 
@@ -383,6 +524,7 @@ pytest tests/test_payment_gateway_integration.py::TestMercadoPagoIntegration -v
 - ✅ Cartão + PIX integrado
 - ✅ Boas taxas para clientes Santander
 - ✅ OAuth2 seguro
+- ✅ **Tokenização PCI-compliant**
 - ⚡ Boa performance
 - 💰 Taxa: ~2% a 3%
 
@@ -391,6 +533,7 @@ pytest tests/test_payment_gateway_integration.py::TestMercadoPagoIntegration -v
 - ✅ Checkout transparente
 - ✅ Split de pagamento
 - ✅ Marketplace integrado
+- ❌ **Tokenização não implementada**
 - 💰 Taxa: ~3,5% a 5%
 
 ---
@@ -408,14 +551,23 @@ pytest tests/test_payment_gateway_integration.py::TestMercadoPagoIntegration -v
    user.card_token = "TOKENIZED_CARD_ABC123"
    ```
 
-2. **Use tokenização**
+2. **Use tokenização (método unificado)**
    ```python
-   # Tokeniza cartão antes de salvar
-   token = await service.cielo.tokenize_card(
-       card_number="4532000000000000",
-       card_holder="CLIENTE",
-       card_expiration="12/2028"
+   # ✅ CORRETO - Tokeniza cartão antes de salvar
+   token_data = await service.tokenize_card(
+       gateway=PaymentGateway.CIELO,
+       card_data={
+           "number": "4532000000000000",
+           "holder": "CLIENTE",
+           "expiration": "12/2028",
+           "brand": "Visa"
+       }
    )
+
+   # Salvar apenas token e últimos dígitos
+   customer.card_token = token_data["card_token"]
+   customer.card_last_digits = token_data["last_digits"]
+   # ❌ NUNCA salvar: number, cvv, expiration completa
    ```
 
 3. **Valide webhooks**

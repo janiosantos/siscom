@@ -23,7 +23,7 @@ from app.integrations.cielo import CieloClient, CieloEnvironment, CieloPaymentTy
 from app.integrations.getnet import GetNetClient, GetNetEnvironment, GetNetPaymentType
 from app.integrations.mercadopago import MercadoPagoClient
 from app.core.logging import get_logger
-from app.core.exceptions import BusinessRuleException
+from app.core.exceptions import BusinessRuleException, ValidationException
 
 logger = get_logger(__name__)
 
@@ -484,3 +484,152 @@ class PaymentGatewayService:
             raise BusinessRuleException(f"Gateway {gateway} não suportado")
 
         return self._normalize_response(gateway, result)
+
+    # ============================================
+    # TOKENIZAÇÃO DE CARTÕES (PCI COMPLIANCE)
+    # ============================================
+
+    async def tokenize_card(
+        self,
+        gateway: PaymentGateway,
+        card_data: Dict[str, Any],
+        customer_data: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """
+        Tokeniza cartão de crédito para uso futuro (PCI compliant)
+
+        Permite armazenar token ao invés de dados sensíveis do cartão.
+
+        Args:
+            gateway: Gateway para tokenização
+            card_data: Dados do cartão
+                - number: Número do cartão
+                - holder: Nome do titular (obrigatório para Cielo)
+                - expiration: Data de expiração MM/YYYY (obrigatório para Cielo)
+                - brand: Bandeira do cartão (obrigatório para Cielo)
+            customer_data: Dados do cliente
+                - customer_id: ID do cliente (obrigatório para GetNet)
+
+        Returns:
+            Dict contendo:
+                - gateway: Gateway usado
+                - card_token: Token do cartão
+                - last_digits: Últimos 4 dígitos (se disponível)
+                - created_at: Data/hora da tokenização
+
+        Raises:
+            BusinessRuleException: Se gateway não suportar tokenização
+            ValidationException: Se dados obrigatórios estiverem faltando
+
+        Example:
+            >>> token_data = await service.tokenize_card(
+            ...     gateway=PaymentGateway.CIELO,
+            ...     card_data={
+            ...         "number": "4532000000000000",
+            ...         "holder": "JOÃO SILVA",
+            ...         "expiration": "12/2028",
+            ...         "brand": "Visa"
+            ...     }
+            ... )
+            >>> print(token_data["card_token"])
+        """
+        logger.info(f"Tokenizando cartão - Gateway: {gateway}")
+
+        # Validar dados obrigatórios
+        if not card_data.get("number"):
+            raise ValidationException("Número do cartão é obrigatório")
+
+        if gateway == PaymentGateway.CIELO:
+            token = await self._tokenize_cielo_card(card_data)
+        elif gateway == PaymentGateway.GETNET:
+            token = await self._tokenize_getnet_card(card_data, customer_data)
+        else:
+            raise BusinessRuleException(
+                f"Gateway {gateway} não suporta tokenização de cartão"
+            )
+
+        # Extrair últimos 4 dígitos
+        card_number = card_data["number"].replace(" ", "").replace("-", "")
+        last_digits = card_number[-4:]
+
+        logger.info(
+            f"Cartão tokenizado com sucesso - Gateway: {gateway}",
+            extra={"last_digits": last_digits}
+        )
+
+        return {
+            "gateway": gateway.value,
+            "card_token": token,
+            "last_digits": last_digits,
+            "created_at": datetime.utcnow().isoformat()
+        }
+
+    async def _tokenize_cielo_card(self, card_data: Dict[str, Any]) -> str:
+        """
+        Tokeniza cartão na Cielo
+
+        Requer: number, holder, expiration, brand
+        """
+        # Validar campos obrigatórios
+        required = ["holder", "expiration", "brand"]
+        missing = [f for f in required if not card_data.get(f)]
+        if missing:
+            raise ValidationException(
+                f"Campos obrigatórios para Cielo: {', '.join(missing)}"
+            )
+
+        # Converter brand para enum se string
+        brand = card_data["brand"]
+        if isinstance(brand, str):
+            from app.integrations.cielo import CieloCardBrand
+            try:
+                brand = CieloCardBrand(brand.upper())
+            except ValueError:
+                # Tentar mapear nomes comuns
+                brand_map = {
+                    "VISA": CieloCardBrand.VISA,
+                    "MASTER": CieloCardBrand.MASTER,
+                    "MASTERCARD": CieloCardBrand.MASTER,
+                    "ELO": CieloCardBrand.ELO,
+                    "AMEX": CieloCardBrand.AMEX,
+                    "DINERS": CieloCardBrand.DINERS,
+                    "DISCOVER": CieloCardBrand.DISCOVER,
+                    "JCB": CieloCardBrand.JCB,
+                    "AURA": CieloCardBrand.AURA
+                }
+                brand = brand_map.get(card_data["brand"].upper())
+                if not brand:
+                    raise ValidationException(
+                        f"Bandeira inválida: {card_data['brand']}"
+                    )
+
+        token = await self.cielo.tokenize_card(
+            card_number=card_data["number"],
+            card_holder=card_data["holder"],
+            card_expiration_date=card_data["expiration"],
+            card_brand=brand
+        )
+
+        return token
+
+    async def _tokenize_getnet_card(
+        self,
+        card_data: Dict[str, Any],
+        customer_data: Optional[Dict[str, Any]] = None
+    ) -> str:
+        """
+        Tokeniza cartão na GetNet
+
+        Requer: number, customer_id
+        """
+        if not customer_data or not customer_data.get("customer_id"):
+            raise ValidationException(
+                "customer_id é obrigatório para tokenização GetNet"
+            )
+
+        token = await self.getnet.tokenize_card(
+            card_number=card_data["number"],
+            customer_id=customer_data["customer_id"]
+        )
+
+        return token
