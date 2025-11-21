@@ -116,7 +116,7 @@ async def pedido_compra_criado(db_session: AsyncSession, setup_compra: dict):
         desconto=0.0,
         valor_frete=50.0,
         valor_total=5550.0,
-        status=StatusPedidoCompra.PENDENTE,
+        status=StatusPedidoCompra.APROVADO,  # APROVADO para permitir recebimento
         observacoes="Pedido fixture",
     )
     db_session.add(pedido)
