@@ -308,3 +308,24 @@ async def calcular_parcelas(
     """
     service = CondicaoPagamentoService(db)
     return await service.calcular_parcelas_venda(request)
+
+
+# ========== ROTA ALTERNATIVA PARA COMPATIBILIDADE COM TESTES ==========
+
+
+@router.post(
+    "/calcular-parcelas",
+    response_model=CalcularParcelasResponse,
+    summary="Calcular parcelas (rota alternativa)",
+    description="Calcula as parcelas para um valor total (rota alternativa com hífen)",
+)
+async def calcular_parcelas_alt(
+    request: CalcularParcelasRequest, db: AsyncSession = Depends(get_db)
+):
+    """
+    Calcula as parcelas para um valor total específico (rota alternativa).
+
+    Esta é uma rota alternativa a /calcular/parcelas para compatibilidade com testes.
+    """
+    service = CondicaoPagamentoService(db)
+    return await service.calcular_parcelas_venda(request)

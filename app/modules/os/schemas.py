@@ -3,7 +3,7 @@ Schemas Pydantic para Ordens de Serviço
 """
 from datetime import datetime
 from typing import Optional, List
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 from enum import Enum
 
 
@@ -152,6 +152,21 @@ class ItemOSResponse(ItemOSBase):
 
     model_config = ConfigDict(from_attributes=True)
 
+    @model_validator(mode='before')
+    @classmethod
+    def convert_produto(cls, data):
+        """Converter produto SQLAlchemy para dict"""
+        if hasattr(data, '__dict__'):
+            obj_dict = data.__dict__
+            if 'produto' in obj_dict and obj_dict['produto'] is not None:
+                if not isinstance(obj_dict['produto'], dict):
+                    produto = obj_dict['produto']
+                    obj_dict['produto'] = {
+                        'id': getattr(produto, 'id', None),
+                        'descricao': getattr(produto, 'descricao', None),
+                    }
+        return data
+
 
 # ====================================
 # APONTAMENTO HORAS SCHEMAS
@@ -184,6 +199,21 @@ class ApontamentoHorasResponse(ApontamentoHorasBase):
     tecnico: Optional[dict] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+    @model_validator(mode='before')
+    @classmethod
+    def convert_tecnico(cls, data):
+        """Converter técnico SQLAlchemy para dict"""
+        if hasattr(data, '__dict__'):
+            obj_dict = data.__dict__
+            if 'tecnico' in obj_dict and obj_dict['tecnico'] is not None:
+                if not isinstance(obj_dict['tecnico'], dict):
+                    tecnico = obj_dict['tecnico']
+                    obj_dict['tecnico'] = {
+                        'id': getattr(tecnico, 'id', None),
+                        'nome': getattr(tecnico, 'nome', None),
+                    }
+        return data
 
 
 # ====================================
@@ -245,6 +275,51 @@ class OrdemServicoResponse(OrdemServicoBase):
     apontamentos: List[ApontamentoHorasResponse] = []
 
     model_config = ConfigDict(from_attributes=True)
+
+    @model_validator(mode='before')
+    @classmethod
+    def convert_sqlalchemy_objects(cls, data):
+        """Converter objetos SQLAlchemy para dicts antes da validação"""
+        if hasattr(data, '__dict__'):
+            obj_dict = data.__dict__
+
+            # Cliente
+            if 'cliente' in obj_dict and obj_dict['cliente'] is not None:
+                if not isinstance(obj_dict['cliente'], dict):
+                    cliente = obj_dict['cliente']
+                    obj_dict['cliente'] = {
+                        'id': getattr(cliente, 'id', None),
+                        'nome': getattr(cliente, 'nome', None),
+                    }
+
+            # Técnico
+            if 'tecnico' in obj_dict and obj_dict['tecnico'] is not None:
+                if not isinstance(obj_dict['tecnico'], dict):
+                    tecnico = obj_dict['tecnico']
+                    obj_dict['tecnico'] = {
+                        'id': getattr(tecnico, 'id', None),
+                        'nome': getattr(tecnico, 'nome', None),
+                    }
+
+            # Tipo de Serviço
+            if 'tipo_servico' in obj_dict and obj_dict['tipo_servico'] is not None:
+                if not isinstance(obj_dict['tipo_servico'], dict):
+                    tipo = obj_dict['tipo_servico']
+                    obj_dict['tipo_servico'] = {
+                        'id': getattr(tipo, 'id', None),
+                        'nome': getattr(tipo, 'nome', None),
+                    }
+
+            # Produto
+            if 'produto' in obj_dict and obj_dict['produto'] is not None:
+                if not isinstance(obj_dict['produto'], dict):
+                    produto = obj_dict['produto']
+                    obj_dict['produto'] = {
+                        'id': getattr(produto, 'id', None),
+                        'descricao': getattr(produto, 'descricao', None),
+                    }
+
+        return data
 
 
 class OrdemServicoList(BaseModel):

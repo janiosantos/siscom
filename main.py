@@ -48,6 +48,32 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+
+# ============================================================================
+# Exception Handlers Globais
+# ============================================================================
+from fastapi import Request
+from fastapi.responses import JSONResponse
+from app.core.exceptions import ERPException
+
+@app.exception_handler(ERPException)
+async def erp_exception_handler(request: Request, exc: ERPException):
+    """Handler para todas as exceções customizadas do ERP"""
+    logger.warning(
+        f"ERP Exception: {exc.message}",
+        extra={
+            "path": request.url.path,
+            "method": request.method,
+            "status_code": exc.status_code,
+            "error_message": exc.message,
+        }
+    )
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.message}
+    )
+
+
 # Configuração de Rate Limiting
 setup_rate_limiting(app)
 

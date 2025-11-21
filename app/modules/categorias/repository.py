@@ -83,7 +83,7 @@ class CategoriaRepository:
             return False
 
         categoria.ativa = False
-        await self.session.flush()
+        await self.session.commit()
         return True
 
     async def delete_permanent(self, categoria_id: int) -> bool:

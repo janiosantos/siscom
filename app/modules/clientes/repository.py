@@ -98,7 +98,7 @@ class ClienteRepository:
             return False
 
         cliente.ativo = False
-        await self.session.flush()
+        await self.session.commit()
         return True
 
     async def search_by_nome(

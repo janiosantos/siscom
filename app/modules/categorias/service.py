@@ -130,13 +130,14 @@ class CategoriaService:
         return await self.repository.delete(categoria_id)
 
     async def reativar_categoria(self, categoria_id: int) -> CategoriaResponse:
-        """Reativa uma categoria inativa"""
+        """Reativa uma categoria inativa (idempotente)"""
         categoria = await self.repository.get_by_id(categoria_id)
         if not categoria:
             raise NotFoundException(f"Categoria {categoria_id} não encontrada")
 
+        # Idempotente: se já está ativa, apenas retorna
         if categoria.ativa:
-            raise ValidationException("Categoria já está ativa")
+            return CategoriaResponse.model_validate(categoria)
 
         update_data = CategoriaUpdate(ativa=True)
         categoria_atualizada = await self.repository.update(categoria_id, update_data)

@@ -13,12 +13,12 @@ from datetime import date, timedelta
 async def conta_pagar_data():
     """Fixture com dados de conta a pagar"""
     return {
+        "fornecedor_id": 1,  # ID fictício
         "descricao": "Conta de Energia",
-        "valor": 500.00,
-        "vencimento": (date.today() + timedelta(days=30)).isoformat(),
-        "tipo": "despesa",
-        "categoria": "operacional",
-        "status": "pendente",
+        "valor_original": 500.00,
+        "data_emissao": date.today().isoformat(),
+        "data_vencimento": (date.today() + timedelta(days=30)).isoformat(),
+        "categoria_financeira": "operacional",
     }
 
 
@@ -26,12 +26,12 @@ async def conta_pagar_data():
 async def conta_receber_data():
     """Fixture com dados de conta a receber"""
     return {
+        "cliente_id": 1,  # ID fictício
         "descricao": "Venda a Prazo",
-        "valor": 1000.00,
-        "vencimento": (date.today() + timedelta(days=15)).isoformat(),
-        "tipo": "receita",
-        "categoria": "vendas",
-        "status": "pendente",
+        "valor_original": 1000.00,
+        "data_emissao": date.today().isoformat(),
+        "data_vencimento": (date.today() + timedelta(days=15)).isoformat(),
+        "categoria_financeira": "vendas",
     }
 
 
@@ -51,8 +51,8 @@ class TestContasPagar:
         if response.status_code != 404:
             assert response.status_code == 201
             data = response.json()
-            assert data["tipo"] == "despesa"
             assert "id" in data
+            assert data["descricao"] == "Conta de Energia"
 
     @pytest.mark.asyncio
     async def test_listar_contas_pagar(self, client: AsyncClient):
@@ -106,7 +106,8 @@ class TestContasReceber:
         if response.status_code != 404:
             assert response.status_code == 201
             data = response.json()
-            assert data["tipo"] == "receita"
+            assert "id" in data
+            assert data["descricao"] == "Venda a Prazo"
 
     @pytest.mark.asyncio
     async def test_receber_conta(
@@ -208,7 +209,9 @@ class TestValidacoes:
         self, client: AsyncClient, conta_pagar_data: dict
     ):
         """Deve aceitar data de vencimento no passado (para registro histórico)"""
-        conta_pagar_data["vencimento"] = (date.today() - timedelta(days=10)).isoformat()
+        # Ajustar ambas as datas para o passado (emissão anterior ao vencimento)
+        conta_pagar_data["data_emissao"] = (date.today() - timedelta(days=20)).isoformat()
+        conta_pagar_data["data_vencimento"] = (date.today() - timedelta(days=10)).isoformat()
         response = await client.post(
             "/api/v1/financeiro/contas-pagar", json=conta_pagar_data
         )
