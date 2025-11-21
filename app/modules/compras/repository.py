@@ -5,6 +5,7 @@ from typing import Optional, List
 from datetime import date, datetime
 from sqlalchemy import select, func, and_
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.modules.compras.models import PedidoCompra, ItemPedidoCompra, StatusPedidoCompra
 from app.modules.compras.schemas import (
@@ -67,7 +68,12 @@ class PedidoCompraRepository:
             PedidoCompra ou None se não encontrado
         """
         result = await self.session.execute(
-            select(PedidoCompra).where(PedidoCompra.id == pedido_id)
+            select(PedidoCompra)
+            .options(
+                selectinload(PedidoCompra.fornecedor),
+                selectinload(PedidoCompra.itens).selectinload(ItemPedidoCompra.produto)
+            )
+            .where(PedidoCompra.id == pedido_id)
         )
         return result.scalar_one_or_none()
 
@@ -171,9 +177,9 @@ class PedidoCompraRepository:
             return None
 
         pedido.status = status
-        await self.session.flush()
-        await self.session.refresh(pedido)
-        return pedido
+        await self.session.commit()
+        # Recarregar pedido com todos os relacionamentos após commit
+        return await self.get_by_id(pedido_id)
 
     async def get_por_fornecedor(
         self, fornecedor_id: int, skip: int = 0, limit: int = 100
