@@ -72,8 +72,24 @@ def mock_produto():
 
 
 @pytest.fixture
-def mock_venda():
-    """Mock de venda"""
+def mock_item_venda():
+    """Mock de item de venda completo"""
+    item = Mock(spec=ItemVenda)
+    item.id = 1
+    item.venda_id = 1
+    item.produto_id = 1
+    item.quantidade = Decimal("2.00")
+    item.preco_unitario = Decimal("50.00")
+    item.desconto_item = Decimal("0.00")
+    item.subtotal_item = Decimal("100.00")  # 2 * 50
+    item.total_item = Decimal("100.00")  # subtotal - desconto
+    item.created_at = datetime.utcnow()
+    return item
+
+
+@pytest.fixture
+def mock_venda(mock_item_venda):
+    """Mock de venda completo com itens"""
     venda = Mock(spec=Venda)
     venda.id = 1
     venda.cliente_id = 10
@@ -85,7 +101,7 @@ def mock_venda():
     venda.forma_pagamento = "DINHEIRO"
     venda.status = StatusVenda.PENDENTE
     venda.observacoes = "Teste"
-    venda.itens = []
+    venda.itens = [mock_item_venda]  # Lista com item completo
     venda.created_at = datetime.utcnow()
     venda.updated_at = datetime.utcnow()
     return venda
@@ -264,11 +280,25 @@ class TestVendasServiceFinalizarVenda:
             await vendas_service.finalizar_venda(1)
 
     @pytest.mark.asyncio
-    async def test_finalizar_venda_sucesso(self, vendas_service, mock_venda):
+    async def test_finalizar_venda_sucesso(self, vendas_service, mock_venda, mock_item_venda):
         """Deve finalizar venda com sucesso"""
         mock_venda.status = StatusVenda.PENDENTE
+
+        # Criar mock_venda_finalizada completo (cópia do mock_venda com status alterado)
         mock_venda_finalizada = Mock(spec=Venda)
+        mock_venda_finalizada.id = mock_venda.id
+        mock_venda_finalizada.cliente_id = mock_venda.cliente_id
+        mock_venda_finalizada.vendedor_id = mock_venda.vendedor_id
+        mock_venda_finalizada.data_venda = mock_venda.data_venda
+        mock_venda_finalizada.subtotal = mock_venda.subtotal
+        mock_venda_finalizada.desconto = mock_venda.desconto
+        mock_venda_finalizada.valor_total = mock_venda.valor_total
+        mock_venda_finalizada.forma_pagamento = mock_venda.forma_pagamento
         mock_venda_finalizada.status = StatusVenda.FINALIZADA
+        mock_venda_finalizada.observacoes = mock_venda.observacoes
+        mock_venda_finalizada.itens = mock_venda.itens
+        mock_venda_finalizada.created_at = mock_venda.created_at
+        mock_venda_finalizada.updated_at = mock_venda.updated_at
 
         vendas_service.repository.get_by_id.return_value = mock_venda
         vendas_service.repository.finalizar_venda.return_value = mock_venda_finalizada
@@ -301,28 +331,56 @@ class TestVendasServiceCancelarVenda:
             await vendas_service.cancelar_venda(1)
 
     @pytest.mark.asyncio
-    async def test_cancelar_venda_devolve_estoque(self, vendas_service, mock_venda):
+    async def test_cancelar_venda_devolve_estoque(self, vendas_service, mock_venda, mock_item_venda):
         """Deve devolver estoque ao cancelar venda"""
-        # Setup venda com itens
-        mock_item1 = Mock()
+        # Setup venda com itens completos
+        mock_item1 = Mock(spec=ItemVenda)
+        mock_item1.id = 1
+        mock_item1.venda_id = 1
         mock_item1.produto_id = 1
-        mock_item1.quantidade = 2.0
-        mock_item1.preco_unitario = 50.0
+        mock_item1.quantidade = Decimal("2.00")
+        mock_item1.preco_unitario = Decimal("50.00")
+        mock_item1.desconto_item = Decimal("0.00")
+        mock_item1.subtotal_item = Decimal("100.00")
+        mock_item1.total_item = Decimal("100.00")
+        mock_item1.created_at = datetime.utcnow()
 
-        mock_item2 = Mock()
+        mock_item2 = Mock(spec=ItemVenda)
+        mock_item2.id = 2
+        mock_item2.venda_id = 1
         mock_item2.produto_id = 2
-        mock_item2.quantidade = 1.0
-        mock_item2.preco_unitario = 30.0
+        mock_item2.quantidade = Decimal("1.00")
+        mock_item2.preco_unitario = Decimal("30.00")
+        mock_item2.desconto_item = Decimal("0.00")
+        mock_item2.subtotal_item = Decimal("30.00")
+        mock_item2.total_item = Decimal("30.00")
+        mock_item2.created_at = datetime.utcnow()
 
         mock_venda.status = StatusVenda.FINALIZADA
         mock_venda.itens = [mock_item1, mock_item2]
         mock_venda.vendedor_id = 5
 
+        # Mock da venda cancelada (cópia com status alterado)
+        mock_venda_cancelada = Mock(spec=Venda)
+        mock_venda_cancelada.id = mock_venda.id
+        mock_venda_cancelada.cliente_id = mock_venda.cliente_id
+        mock_venda_cancelada.vendedor_id = mock_venda.vendedor_id
+        mock_venda_cancelada.data_venda = mock_venda.data_venda
+        mock_venda_cancelada.subtotal = mock_venda.subtotal
+        mock_venda_cancelada.desconto = mock_venda.desconto
+        mock_venda_cancelada.valor_total = mock_venda.valor_total
+        mock_venda_cancelada.forma_pagamento = mock_venda.forma_pagamento
+        mock_venda_cancelada.status = StatusVenda.CANCELADA
+        mock_venda_cancelada.observacoes = mock_venda.observacoes
+        mock_venda_cancelada.itens = [mock_item1, mock_item2]
+        mock_venda_cancelada.created_at = mock_venda.created_at
+        mock_venda_cancelada.updated_at = mock_venda.updated_at
+
         vendas_service.repository.get_by_id.return_value = mock_venda
         vendas_service.estoque_service.ajuste_estoque.return_value = None
-        vendas_service.repository.cancelar_venda.return_value = mock_venda
+        vendas_service.repository.cancelar_venda.return_value = mock_venda_cancelada
 
-        await vendas_service.cancelar_venda(1)
+        result = await vendas_service.cancelar_venda(1)
 
         # Verificar que ajuste_estoque foi chamado 2 vezes (um para cada item)
         assert vendas_service.estoque_service.ajuste_estoque.call_count == 2
@@ -461,7 +519,14 @@ class TestVendaRepository:
             vendedor_id=1,
             forma_pagamento="DINHEIRO",
             desconto=0.0,
-            itens=[]
+            itens=[
+                ItemVendaCreate(
+                    produto_id=1,
+                    quantidade=1.0,
+                    preco_unitario=50.0,
+                    desconto_item=0.0
+                )
+            ]
         )
 
         mock_venda = Mock(spec=Venda)
@@ -540,7 +605,7 @@ class TestVendasIntegration:
     """Testes de integração entre componentes"""
 
     @pytest.mark.asyncio
-    async def test_fluxo_completo_venda(self, vendas_service, mock_produto, mock_venda):
+    async def test_fluxo_completo_venda(self, vendas_service, mock_produto, mock_venda, mock_item_venda):
         """Teste de fluxo completo: criar → finalizar → cancelar"""
         # Setup mocks para criar
         vendas_service.produto_repository.get_by_id.return_value = mock_produto
@@ -569,16 +634,61 @@ class TestVendasIntegration:
 
         # 2. Finalizar venda
         mock_venda.status = StatusVenda.PENDENTE
-        mock_venda_finalizada = Mock()
+
+        # Mock venda finalizada completo
+        mock_venda_finalizada = Mock(spec=Venda)
+        mock_venda_finalizada.id = mock_venda.id
+        mock_venda_finalizada.cliente_id = mock_venda.cliente_id
+        mock_venda_finalizada.vendedor_id = mock_venda.vendedor_id
+        mock_venda_finalizada.data_venda = mock_venda.data_venda
+        mock_venda_finalizada.subtotal = mock_venda.subtotal
+        mock_venda_finalizada.desconto = mock_venda.desconto
+        mock_venda_finalizada.valor_total = mock_venda.valor_total
+        mock_venda_finalizada.forma_pagamento = mock_venda.forma_pagamento
         mock_venda_finalizada.status = StatusVenda.FINALIZADA
+        mock_venda_finalizada.observacoes = mock_venda.observacoes
+        mock_venda_finalizada.itens = mock_venda.itens
+        mock_venda_finalizada.created_at = mock_venda.created_at
+        mock_venda_finalizada.updated_at = mock_venda.updated_at
+
         vendas_service.repository.finalizar_venda.return_value = mock_venda_finalizada
 
         await vendas_service.finalizar_venda(mock_venda.id)
 
         # 3. Cancelar venda
         mock_venda.status = StatusVenda.FINALIZADA
-        mock_venda.itens = [Mock(produto_id=1, quantidade=1.0, preco_unitario=50.0)]
-        vendas_service.repository.cancelar_venda.return_value = mock_venda
+
+        # Criar item completo para cancelamento
+        mock_item_cancelamento = Mock(spec=ItemVenda)
+        mock_item_cancelamento.id = 1
+        mock_item_cancelamento.venda_id = 1
+        mock_item_cancelamento.produto_id = 1
+        mock_item_cancelamento.quantidade = Decimal("1.00")
+        mock_item_cancelamento.preco_unitario = Decimal("50.00")
+        mock_item_cancelamento.desconto_item = Decimal("0.00")
+        mock_item_cancelamento.subtotal_item = Decimal("50.00")
+        mock_item_cancelamento.total_item = Decimal("50.00")
+        mock_item_cancelamento.created_at = datetime.utcnow()
+
+        mock_venda.itens = [mock_item_cancelamento]
+
+        # Mock venda cancelada completo
+        mock_venda_cancelada = Mock(spec=Venda)
+        mock_venda_cancelada.id = mock_venda.id
+        mock_venda_cancelada.cliente_id = mock_venda.cliente_id
+        mock_venda_cancelada.vendedor_id = mock_venda.vendedor_id
+        mock_venda_cancelada.data_venda = mock_venda.data_venda
+        mock_venda_cancelada.subtotal = mock_venda.subtotal
+        mock_venda_cancelada.desconto = mock_venda.desconto
+        mock_venda_cancelada.valor_total = mock_venda.valor_total
+        mock_venda_cancelada.forma_pagamento = mock_venda.forma_pagamento
+        mock_venda_cancelada.status = StatusVenda.CANCELADA
+        mock_venda_cancelada.observacoes = mock_venda.observacoes
+        mock_venda_cancelada.itens = [mock_item_cancelamento]
+        mock_venda_cancelada.created_at = mock_venda.created_at
+        mock_venda_cancelada.updated_at = mock_venda.updated_at
+
+        vendas_service.repository.cancelar_venda.return_value = mock_venda_cancelada
         vendas_service.estoque_service.ajuste_estoque.return_value = None
 
         await vendas_service.cancelar_venda(mock_venda.id)
