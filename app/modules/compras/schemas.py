@@ -3,7 +3,7 @@ Schemas Pydantic para Compras
 """
 from datetime import datetime, date
 from typing import Optional, List
-from pydantic import BaseModel, Field, ConfigDict, field_validator
+from pydantic import BaseModel, Field, ConfigDict, field_validator, model_validator
 from enum import Enum
 
 
@@ -48,6 +48,22 @@ class ItemPedidoCompraResponse(ItemPedidoCompraBase):
     produto: Optional[dict] = None  # Simplificado para evitar imports circulares
 
     model_config = ConfigDict(from_attributes=True)
+
+    @model_validator(mode='before')
+    @classmethod
+    def convert_produto(cls, data):
+        """Converter produto SQLAlchemy para dict"""
+        if hasattr(data, '__dict__'):
+            obj_dict = data.__dict__
+            if 'produto' in obj_dict and obj_dict['produto'] is not None:
+                if not isinstance(obj_dict['produto'], dict):
+                    produto = obj_dict['produto']
+                    obj_dict['produto'] = {
+                        'id': getattr(produto, 'id', None),
+                        'descricao': getattr(produto, 'descricao', None),
+                        'codigo_barras': getattr(produto, 'codigo_barras', None),
+                    }
+        return data
 
 
 # ============================================
@@ -108,6 +124,22 @@ class PedidoCompraResponse(PedidoCompraBase):
     itens: List[ItemPedidoCompraResponse] = []
 
     model_config = ConfigDict(from_attributes=True)
+
+    @model_validator(mode='before')
+    @classmethod
+    def convert_fornecedor(cls, data):
+        """Converter fornecedor SQLAlchemy para dict"""
+        if hasattr(data, '__dict__'):
+            obj_dict = data.__dict__
+            if 'fornecedor' in obj_dict and obj_dict['fornecedor'] is not None:
+                if not isinstance(obj_dict['fornecedor'], dict):
+                    fornecedor = obj_dict['fornecedor']
+                    obj_dict['fornecedor'] = {
+                        'id': getattr(fornecedor, 'id', None),
+                        'nome_fantasia': getattr(fornecedor, 'nome_fantasia', None),
+                        'razao_social': getattr(fornecedor, 'razao_social', None),
+                    }
+        return data
 
 
 class PedidoCompraList(BaseModel):
