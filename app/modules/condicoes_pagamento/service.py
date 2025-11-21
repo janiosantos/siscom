@@ -64,11 +64,9 @@ class CondicaoPagamentoService:
         for parcela_data in condicao_data.parcelas:
             await self.repository.create_parcela(condicao.id, parcela_data)
 
-        # Flush para garantir que parcelas sejam persistidas antes de recarregar
-        await self.session.flush()
-
-        # Recarrega com parcelas
-        condicao = await self.repository.get_by_id(condicao.id)
+        # Commit e refresh para carregar relacionamentos
+        await self.session.commit()
+        await self.session.refresh(condicao, ["parcelas"])
 
         return CondicaoPagamentoResponse.model_validate(condicao)
 
