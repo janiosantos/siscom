@@ -106,7 +106,8 @@ class TestContasReceber:
         if response.status_code != 404:
             assert response.status_code == 201
             data = response.json()
-            assert data["tipo"] == "receita"
+            assert "id" in data
+            assert data["descricao"] == "Venda a Prazo"
 
     @pytest.mark.asyncio
     async def test_receber_conta(
@@ -208,6 +209,8 @@ class TestValidacoes:
         self, client: AsyncClient, conta_pagar_data: dict
     ):
         """Deve aceitar data de vencimento no passado (para registro histórico)"""
+        # Ajustar ambas as datas para o passado (emissão anterior ao vencimento)
+        conta_pagar_data["data_emissao"] = (date.today() - timedelta(days=20)).isoformat()
         conta_pagar_data["data_vencimento"] = (date.today() - timedelta(days=10)).isoformat()
         response = await client.post(
             "/api/v1/financeiro/contas-pagar", json=conta_pagar_data
