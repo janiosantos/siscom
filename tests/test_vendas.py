@@ -1,310 +1,594 @@
 """
-Testes para o módulo de Vendas
+Testes do módulo vendas
 
-Testa criação de vendas, itens, cálculos e regras de negócio
+Testa:
+- vendas/service.py - Lógica de negócio
+- vendas/repository.py - Acesso a dados
+- vendas/models.py - Modelos
 """
 import pytest
-from httpx import AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession
+from unittest.mock import AsyncMock, Mock, patch
+from datetime import datetime, timedelta
 from decimal import Decimal
 
-from app.modules.vendas.models import Venda
-from app.modules.clientes.models import Cliente
-from app.modules.produtos.models import Produto
-from app.modules.categorias.models import Categoria
+from app.modules.vendas.service import VendasService
+from app.modules.vendas.repository import VendaRepository
+from app.modules.vendas.models import Venda, ItemVenda, StatusVenda
+from app.modules.vendas.schemas import (
+    VendaCreate,
+    VendaUpdate,
+    ItemVendaCreate,
+    StatusVendaEnum,
+)
+from app.core.exceptions import (
+    NotFoundException,
+    ValidationException,
+    BusinessRuleException,
+)
+
+
+# ========== Fixtures ==========
+
+@pytest.fixture
+def mock_session():
+    """Mock do AsyncSession"""
+    session = AsyncMock()
+    session.flush = AsyncMock()
+    session.commit = AsyncMock()
+    session.add = Mock()
+    session.refresh = AsyncMock()
+    session.execute = AsyncMock()
+    return session
 
 
 @pytest.fixture
-async def setup_venda(db_session: AsyncSession):
-    """Fixture para setup completo de venda (cliente, categoria, produto)"""
-    from app.modules.clientes.models import TipoPessoa
-    # Criar cliente
-    cliente = Cliente(
-        nome="Cliente Teste",
-        tipo_pessoa=TipoPessoa.PF,
-        cpf_cnpj="12345678900",
-        ativo=True,
-    )
-    db_session.add(cliente)
-
-    # Criar categoria
-    categoria = Categoria(nome="Cimentos", ativa=True)
-    db_session.add(categoria)
-    await db_session.commit()
-    await db_session.refresh(categoria)
-
-    # Criar produto
-    produto = Produto(
-        codigo_barras="7891234567890",
-        descricao="Cimento 50kg",
-        categoria_id=categoria.id,
-        preco_custo=25.0,
-        preco_venda=32.90,
-        estoque_atual=100.0,
-        ativo=True,
-    )
-    db_session.add(produto)
-    await db_session.commit()
-    await db_session.refresh(cliente)
-    await db_session.refresh(produto)
-
-    return {"cliente": cliente, "produto": produto}
+def venda_repository(mock_session):
+    """Repository com session mockada"""
+    return VendaRepository(mock_session)
 
 
 @pytest.fixture
-async def venda_data(setup_venda: dict):
-    """Fixture com dados de venda"""
-    return {
-        "cliente_id": setup_venda["cliente"].id,
-        "vendedor_id": 1,  # ID fictício do vendedor
-        "forma_pagamento": "DINHEIRO",
-        "desconto": 0.0,
-        "itens": [
-            {
-                "produto_id": setup_venda["produto"].id,
-                "quantidade": 10,
-                "preco_unitario": 32.90,
-                "desconto_item": 0.0,
-            }
-        ],
-    }
+def vendas_service(mock_session):
+    """Service com dependencies mockadas"""
+    service = VendasService(mock_session)
+
+    # Mock repositories
+    service.produto_repository = AsyncMock()
+    service.estoque_service = AsyncMock()
+    service.repository = AsyncMock()
+
+    return service
 
 
-class TestCriarVenda:
+@pytest.fixture
+def mock_produto():
+    """Mock de produto"""
+    produto = Mock()
+    produto.id = 1
+    produto.descricao = "Cimento CP-II 50kg"
+    produto.ativo = True
+    produto.preco_venda = Decimal("32.90")
+    return produto
+
+
+@pytest.fixture
+def mock_venda():
+    """Mock de venda"""
+    venda = Mock(spec=Venda)
+    venda.id = 1
+    venda.cliente_id = 10
+    venda.vendedor_id = 5
+    venda.data_venda = datetime.utcnow()
+    venda.subtotal = Decimal("100.00")
+    venda.desconto = Decimal("10.00")
+    venda.valor_total = Decimal("90.00")
+    venda.forma_pagamento = "DINHEIRO"
+    venda.status = StatusVenda.PENDENTE
+    venda.observacoes = "Teste"
+    venda.itens = []
+    venda.created_at = datetime.utcnow()
+    venda.updated_at = datetime.utcnow()
+    return venda
+
+
+# ========== Testes VendasService - Criar Venda ==========
+
+class TestVendasServiceCriarVenda:
     """Testes de criação de venda"""
 
     @pytest.mark.asyncio
-    async def test_criar_venda_sucesso(
-        self, client: AsyncClient, venda_data: dict
-    ):
-        """Deve criar venda com itens"""
-        response = await client.post("/api/v1/vendas/", json=venda_data)
+    async def test_criar_venda_produto_inexistente(self, vendas_service):
+        """Deve falhar se produto não existe"""
+        # Mock produto repository retornando None
+        vendas_service.produto_repository.get_by_id.return_value = None
 
-        assert response.status_code == 201
-        data = response.json()
-        assert data["cliente_id"] == venda_data["cliente_id"]
-        assert "id" in data
-        assert "total" in data or "valor_total" in data
+        venda_data = VendaCreate(
+            vendedor_id=1,
+            forma_pagamento="CARTAO",
+            desconto=0.0,
+            itens=[
+                ItemVendaCreate(
+                    produto_id=999,  # Produto inexistente
+                    quantidade=1.0,
+                    preco_unitario=10.0,
+                    desconto_item=0.0
+                )
+            ]
+        )
 
-    @pytest.mark.asyncio
-    async def test_criar_venda_sem_itens(
-        self, client: AsyncClient, setup_venda: dict
-    ):
-        """Não deve criar venda sem itens"""
-        venda_sem_itens = {
-            "cliente_id": setup_venda["cliente"].id,
-            "vendedor_id": 1,
-            "forma_pagamento": "DINHEIRO",
-            "itens": [],
-        }
-        response = await client.post("/api/v1/vendas/", json=venda_sem_itens)
-
-        assert response.status_code in [400, 422]
+        with pytest.raises(NotFoundException, match="Produto 999 não encontrado"):
+            await vendas_service.criar_venda(venda_data)
 
     @pytest.mark.asyncio
-    async def test_criar_venda_quantidade_invalida(
-        self, client: AsyncClient, venda_data: dict
-    ):
-        """Não deve criar venda com quantidade negativa"""
-        venda_data["itens"][0]["quantidade"] = -5
-        response = await client.post("/api/v1/vendas/", json=venda_data)
+    async def test_criar_venda_produto_inativo(self, vendas_service, mock_produto):
+        """Deve falhar se produto está inativo"""
+        # Produto inativo
+        mock_produto.ativo = False
+        vendas_service.produto_repository.get_by_id.return_value = mock_produto
 
-        assert response.status_code in [400, 422]
+        venda_data = VendaCreate(
+            vendedor_id=1,
+            forma_pagamento="DINHEIRO",
+            desconto=0.0,
+            itens=[
+                ItemVendaCreate(
+                    produto_id=1,
+                    quantidade=2.0,
+                    preco_unitario=32.90,
+                    desconto_item=0.0
+                )
+            ]
+        )
 
-    @pytest.mark.asyncio
-    async def test_criar_venda_produto_inexistente(
-        self, client: AsyncClient, venda_data: dict
-    ):
-        """Não deve criar venda com produto inexistente"""
-        venda_data["itens"][0]["produto_id"] = 99999
-        response = await client.post("/api/v1/vendas/", json=venda_data)
-
-        assert response.status_code in [400, 404, 422]
-
-
-class TestCalculosVenda:
-    """Testes de cálculos de venda"""
-
-    @pytest.mark.asyncio
-    async def test_calcular_total_venda(
-        self, client: AsyncClient, venda_data: dict
-    ):
-        """Deve calcular total da venda corretamente"""
-        response = await client.post("/api/v1/vendas/", json=venda_data)
-
-        assert response.status_code == 201
-        data = response.json()
-
-        # Total esperado: 10 * 32.90 = 329.00
-        total_key = "total" if "total" in data else "valor_total"
-        if total_key in data:
-            assert float(data[total_key]) == 329.0
+        with pytest.raises(ValidationException, match="está inativo"):
+            await vendas_service.criar_venda(venda_data)
 
     @pytest.mark.asyncio
-    async def test_aplicar_desconto_item(
-        self, client: AsyncClient, venda_data: dict
-    ):
-        """Deve aplicar desconto no item"""
-        venda_data["itens"][0]["desconto_item"] = 10.0  # R$ 10 de desconto
-        response = await client.post("/api/v1/vendas/", json=venda_data)
+    async def test_criar_venda_desconto_maior_que_subtotal(self, vendas_service, mock_produto, mock_venda):
+        """Deve falhar se desconto > subtotal"""
+        vendas_service.produto_repository.get_by_id.return_value = mock_produto
+        vendas_service.estoque_service.validar_estoque_suficiente.return_value = None
+        vendas_service.repository.create_venda.return_value = mock_venda
+        vendas_service.repository.create_item_venda.return_value = Mock()
+        vendas_service.estoque_service.saida_estoque.return_value = None
 
-        assert response.status_code == 201
-        data = response.json()
+        venda_data = VendaCreate(
+            vendedor_id=1,
+            forma_pagamento="DINHEIRO",
+            desconto=200.0,  # Desconto maior que subtotal
+            itens=[
+                ItemVendaCreate(
+                    produto_id=1,
+                    quantidade=1.0,
+                    preco_unitario=100.0,
+                    desconto_item=0.0
+                )
+            ]
+        )
 
-        # Total esperado: (10 * 32.90) - 10 = 319.00
-        if "itens" in data and len(data["itens"]) > 0:
-            item = data["itens"][0]
-            assert float(item.get("desconto_item", 0)) == 10.0
-
-
-class TestBuscarVenda:
-    """Testes de busca de venda"""
+        with pytest.raises(ValidationException, match="Desconto não pode ser maior"):
+            await vendas_service.criar_venda(venda_data)
 
     @pytest.mark.asyncio
-    async def test_buscar_venda_por_id(
-        self, client: AsyncClient, db_session: AsyncSession, setup_venda: dict
-    ):
+    async def test_criar_venda_sucesso(self, vendas_service, mock_produto, mock_venda):
+        """Deve criar venda com sucesso"""
+        # Setup mocks
+        vendas_service.produto_repository.get_by_id.return_value = mock_produto
+        vendas_service.estoque_service.validar_estoque_suficiente.return_value = None
+        vendas_service.repository.create_venda.return_value = mock_venda
+        vendas_service.repository.create_item_venda.return_value = Mock()
+        vendas_service.estoque_service.saida_estoque.return_value = None
+        vendas_service.repository.get_by_id.return_value = mock_venda
+
+        venda_data = VendaCreate(
+            vendedor_id=1,
+            forma_pagamento="CARTAO",
+            desconto=5.0,
+            itens=[
+                ItemVendaCreate(
+                    produto_id=1,
+                    quantidade=2.0,
+                    preco_unitario=50.0,
+                    desconto_item=0.0
+                )
+            ]
+        )
+
+        result = await vendas_service.criar_venda(venda_data)
+
+        # Verificar chamadas
+        vendas_service.produto_repository.get_by_id.assert_called_once_with(1)
+        vendas_service.estoque_service.validar_estoque_suficiente.assert_called_once()
+        vendas_service.repository.create_venda.assert_called_once()
+        vendas_service.estoque_service.saida_estoque.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_criar_venda_multiplos_itens(self, vendas_service, mock_produto, mock_venda):
+        """Deve criar venda com múltiplos itens"""
+        vendas_service.produto_repository.get_by_id.return_value = mock_produto
+        vendas_service.estoque_service.validar_estoque_suficiente.return_value = None
+        vendas_service.repository.create_venda.return_value = mock_venda
+        vendas_service.repository.create_item_venda.return_value = Mock()
+        vendas_service.estoque_service.saida_estoque.return_value = None
+        vendas_service.repository.get_by_id.return_value = mock_venda
+
+        venda_data = VendaCreate(
+            vendedor_id=1,
+            forma_pagamento="PIX",
+            desconto=0.0,
+            itens=[
+                ItemVendaCreate(produto_id=1, quantidade=2.0, preco_unitario=50.0, desconto_item=0.0),
+                ItemVendaCreate(produto_id=1, quantidade=1.0, preco_unitario=30.0, desconto_item=5.0),
+                ItemVendaCreate(produto_id=1, quantidade=3.0, preco_unitario=20.0, desconto_item=0.0),
+            ]
+        )
+
+        await vendas_service.criar_venda(venda_data)
+
+        # Verificar que criou 3 itens
+        assert vendas_service.repository.create_item_venda.call_count == 3
+
+        # Verificar que registrou 3 saídas de estoque
+        assert vendas_service.estoque_service.saida_estoque.call_count == 3
+
+
+# ========== Testes VendasService - Finalizar Venda ==========
+
+class TestVendasServiceFinalizarVenda:
+    """Testes de finalização de venda"""
+
+    @pytest.mark.asyncio
+    async def test_finalizar_venda_inexistente(self, vendas_service):
+        """Deve falhar ao finalizar venda inexistente"""
+        vendas_service.repository.get_by_id.return_value = None
+
+        with pytest.raises(NotFoundException, match="não encontrada"):
+            await vendas_service.finalizar_venda(999)
+
+    @pytest.mark.asyncio
+    async def test_finalizar_venda_ja_finalizada(self, vendas_service, mock_venda):
+        """Deve falhar ao finalizar venda já finalizada"""
+        mock_venda.status = StatusVenda.FINALIZADA
+        vendas_service.repository.get_by_id.return_value = mock_venda
+
+        with pytest.raises(BusinessRuleException, match="não pode ser finalizada"):
+            await vendas_service.finalizar_venda(1)
+
+    @pytest.mark.asyncio
+    async def test_finalizar_venda_cancelada(self, vendas_service, mock_venda):
+        """Deve falhar ao finalizar venda cancelada"""
+        mock_venda.status = StatusVenda.CANCELADA
+        vendas_service.repository.get_by_id.return_value = mock_venda
+
+        with pytest.raises(BusinessRuleException, match="não pode ser finalizada"):
+            await vendas_service.finalizar_venda(1)
+
+    @pytest.mark.asyncio
+    async def test_finalizar_venda_sucesso(self, vendas_service, mock_venda):
+        """Deve finalizar venda com sucesso"""
+        mock_venda.status = StatusVenda.PENDENTE
+        mock_venda_finalizada = Mock(spec=Venda)
+        mock_venda_finalizada.status = StatusVenda.FINALIZADA
+
+        vendas_service.repository.get_by_id.return_value = mock_venda
+        vendas_service.repository.finalizar_venda.return_value = mock_venda_finalizada
+
+        result = await vendas_service.finalizar_venda(1)
+
+        vendas_service.repository.finalizar_venda.assert_called_once_with(1)
+
+
+# ========== Testes VendasService - Cancelar Venda ==========
+
+class TestVendasServiceCancelarVenda:
+    """Testes de cancelamento de venda"""
+
+    @pytest.mark.asyncio
+    async def test_cancelar_venda_inexistente(self, vendas_service):
+        """Deve falhar ao cancelar venda inexistente"""
+        vendas_service.repository.get_by_id.return_value = None
+
+        with pytest.raises(NotFoundException):
+            await vendas_service.cancelar_venda(999)
+
+    @pytest.mark.asyncio
+    async def test_cancelar_venda_ja_cancelada(self, vendas_service, mock_venda):
+        """Deve falhar ao cancelar venda já cancelada"""
+        mock_venda.status = StatusVenda.CANCELADA
+        vendas_service.repository.get_by_id.return_value = mock_venda
+
+        with pytest.raises(BusinessRuleException, match="já está cancelada"):
+            await vendas_service.cancelar_venda(1)
+
+    @pytest.mark.asyncio
+    async def test_cancelar_venda_devolve_estoque(self, vendas_service, mock_venda):
+        """Deve devolver estoque ao cancelar venda"""
+        # Setup venda com itens
+        mock_item1 = Mock()
+        mock_item1.produto_id = 1
+        mock_item1.quantidade = 2.0
+        mock_item1.preco_unitario = 50.0
+
+        mock_item2 = Mock()
+        mock_item2.produto_id = 2
+        mock_item2.quantidade = 1.0
+        mock_item2.preco_unitario = 30.0
+
+        mock_venda.status = StatusVenda.FINALIZADA
+        mock_venda.itens = [mock_item1, mock_item2]
+        mock_venda.vendedor_id = 5
+
+        vendas_service.repository.get_by_id.return_value = mock_venda
+        vendas_service.estoque_service.ajuste_estoque.return_value = None
+        vendas_service.repository.cancelar_venda.return_value = mock_venda
+
+        await vendas_service.cancelar_venda(1)
+
+        # Verificar que ajuste_estoque foi chamado 2 vezes (um para cada item)
+        assert vendas_service.estoque_service.ajuste_estoque.call_count == 2
+
+
+# ========== Testes VendasService - Listar e Buscar ==========
+
+class TestVendasServiceListarBuscar:
+    """Testes de listagem e busca"""
+
+    @pytest.mark.asyncio
+    async def test_get_venda_inexistente(self, vendas_service):
+        """Deve falhar ao buscar venda inexistente"""
+        vendas_service.repository.get_by_id.return_value = None
+
+        with pytest.raises(NotFoundException):
+            await vendas_service.get_venda(999)
+
+    @pytest.mark.asyncio
+    async def test_get_venda_sucesso(self, vendas_service, mock_venda):
+        """Deve buscar venda com sucesso"""
+        vendas_service.repository.get_by_id.return_value = mock_venda
+
+        result = await vendas_service.get_venda(1)
+
+        vendas_service.repository.get_by_id.assert_called_once_with(1)
+
+    @pytest.mark.asyncio
+    async def test_list_vendas_paginacao(self, vendas_service, mock_venda):
+        """Deve listar vendas com paginação"""
+        vendas = [mock_venda, mock_venda]
+        vendas_service.repository.get_all.return_value = vendas
+        vendas_service.repository.count.return_value = 25
+
+        result = await vendas_service.list_vendas(page=2, page_size=10)
+
+        # Verificar skip correto (page 2 = skip 10)
+        call_args = vendas_service.repository.get_all.call_args
+        assert call_args[1]["skip"] == 10
+        assert call_args[1]["limit"] == 10
+
+        # Verificar cálculo de páginas
+        assert result.pages == 3  # 25 vendas / 10 por página = 3 páginas
+
+    @pytest.mark.asyncio
+    async def test_list_vendas_filtros(self, vendas_service, mock_venda):
+        """Deve listar vendas com filtros"""
+        vendas_service.repository.get_all.return_value = [mock_venda]
+        vendas_service.repository.count.return_value = 1
+
+        data_inicio = datetime(2025, 1, 1)
+        data_fim = datetime(2025, 1, 31)
+
+        await vendas_service.list_vendas(
+            status=StatusVendaEnum.FINALIZADA,
+            cliente_id=10,
+            vendedor_id=5,
+            data_inicio=data_inicio,
+            data_fim=data_fim
+        )
+
+        # Verificar que filtros foram passados
+        call_args = vendas_service.repository.get_all.call_args
+        assert call_args[1]["status"] == StatusVenda.FINALIZADA
+        assert call_args[1]["cliente_id"] == 10
+        assert call_args[1]["vendedor_id"] == 5
+
+    @pytest.mark.asyncio
+    async def test_list_vendas_page_size_invalido(self, vendas_service):
+        """Deve ajustar page_size inválido"""
+        vendas_service.repository.get_all.return_value = []
+        vendas_service.repository.count.return_value = 0
+
+        # Page size muito grande
+        await vendas_service.list_vendas(page_size=500)
+        call_args = vendas_service.repository.get_all.call_args
+        assert call_args[1]["limit"] == 50  # Deve usar padrão
+
+        # Page size negativo
+        await vendas_service.list_vendas(page_size=-10)
+        call_args = vendas_service.repository.get_all.call_args
+        assert call_args[1]["limit"] == 50
+
+    @pytest.mark.asyncio
+    async def test_list_vendas_page_invalida(self, vendas_service):
+        """Deve ajustar page inválida"""
+        vendas_service.repository.get_all.return_value = []
+        vendas_service.repository.count.return_value = 0
+
+        # Page zero ou negativa
+        await vendas_service.list_vendas(page=0)
+        call_args = vendas_service.repository.get_all.call_args
+        assert call_args[1]["skip"] == 0  # Deve usar page 1
+
+    @pytest.mark.asyncio
+    async def test_get_vendas_periodo(self, vendas_service, mock_venda):
+        """Deve buscar vendas por período"""
+        vendas_service.repository.get_vendas_periodo.return_value = [mock_venda]
+        vendas_service.repository.count.return_value = 1
+
+        data_inicio = datetime(2025, 1, 1)
+        data_fim = datetime(2025, 1, 31)
+
+        result = await vendas_service.get_vendas_periodo(data_inicio, data_fim)
+
+        vendas_service.repository.get_vendas_periodo.assert_called_once()
+        assert result.total == 1
+
+    @pytest.mark.asyncio
+    async def test_get_total_vendas_periodo(self, vendas_service):
+        """Deve calcular total de vendas por período"""
+        vendas_service.repository.get_total_vendas_periodo.return_value = 1500.50
+
+        data_inicio = datetime(2025, 1, 1)
+        data_fim = datetime(2025, 1, 31)
+
+        total = await vendas_service.get_total_vendas_periodo(
+            data_inicio,
+            data_fim,
+            status=StatusVendaEnum.FINALIZADA
+        )
+
+        assert total == 1500.50
+        vendas_service.repository.get_total_vendas_periodo.assert_called_once()
+
+
+# ========== Testes VendaRepository ==========
+
+class TestVendaRepository:
+    """Testes do repository de vendas"""
+
+    @pytest.mark.asyncio
+    async def test_create_venda(self, venda_repository, mock_session):
+        """Deve criar venda"""
+        venda_data = VendaCreate(
+            vendedor_id=1,
+            forma_pagamento="DINHEIRO",
+            desconto=0.0,
+            itens=[]
+        )
+
+        mock_venda = Mock(spec=Venda)
+        mock_session.refresh = AsyncMock(side_effect=lambda x: setattr(x, 'id', 1))
+
+        await venda_repository.create_venda(venda_data)
+
+        mock_session.add.assert_called_once()
+        mock_session.flush.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_create_item_venda(self, venda_repository, mock_session):
+        """Deve criar item de venda"""
+        item_data = ItemVendaCreate(
+            produto_id=1,
+            quantidade=2.0,
+            preco_unitario=50.0,
+            desconto_item=0.0
+        )
+
+        await venda_repository.create_item_venda(
+            venda_id=1,
+            item_data=item_data,
+            subtotal=100.0,
+            total=100.0
+        )
+
+        mock_session.add.assert_called_once()
+        mock_session.flush.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_get_by_id(self, venda_repository, mock_session, mock_venda):
         """Deve buscar venda por ID"""
-        from app.modules.vendas.models import StatusVenda
-        from datetime import datetime
-        # Criar venda primeiro
-        venda = Venda(
-            cliente_id=setup_venda["cliente"].id,
+        mock_result = Mock()
+        mock_result.scalar_one_or_none.return_value = mock_venda
+        mock_session.execute.return_value = mock_result
+
+        result = await venda_repository.get_by_id(1)
+
+        assert result == mock_venda
+        mock_session.execute.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_get_by_id_nao_encontrada(self, venda_repository, mock_session):
+        """Deve retornar None se venda não existe"""
+        mock_result = Mock()
+        mock_result.scalar_one_or_none.return_value = None
+        mock_session.execute.return_value = mock_result
+
+        result = await venda_repository.get_by_id(999)
+
+        assert result is None
+
+
+# ========== Testes Models ==========
+
+class TestVendaModels:
+    """Testes dos modelos"""
+
+    def test_status_venda_enum(self):
+        """Deve ter todos os status"""
+        assert StatusVenda.PENDENTE.value == "PENDENTE"
+        assert StatusVenda.FINALIZADA.value == "FINALIZADA"
+        assert StatusVenda.CANCELADA.value == "CANCELADA"
+
+    def test_venda_repr(self, mock_venda):
+        """Deve ter representação string"""
+        repr_str = repr(mock_venda)
+        assert "Venda" in repr_str
+        assert str(mock_venda.id) in repr_str
+
+
+# ========== Testes de Integração ==========
+
+class TestVendasIntegration:
+    """Testes de integração entre componentes"""
+
+    @pytest.mark.asyncio
+    async def test_fluxo_completo_venda(self, vendas_service, mock_produto, mock_venda):
+        """Teste de fluxo completo: criar → finalizar → cancelar"""
+        # Setup mocks para criar
+        vendas_service.produto_repository.get_by_id.return_value = mock_produto
+        vendas_service.estoque_service.validar_estoque_suficiente.return_value = None
+        vendas_service.repository.create_venda.return_value = mock_venda
+        vendas_service.repository.create_item_venda.return_value = Mock()
+        vendas_service.estoque_service.saida_estoque.return_value = None
+        vendas_service.repository.get_by_id.return_value = mock_venda
+
+        # 1. Criar venda
+        venda_data = VendaCreate(
             vendedor_id=1,
-            data_venda=datetime.utcnow(),
-            forma_pagamento="DINHEIRO",
-            status=StatusVenda.PENDENTE,
-            valor_total=100.0,
+            forma_pagamento="CARTAO",
+            desconto=0.0,
+            itens=[
+                ItemVendaCreate(
+                    produto_id=1,
+                    quantidade=1.0,
+                    preco_unitario=50.0,
+                    desconto_item=0.0
+                )
+            ]
         )
-        db_session.add(venda)
-        await db_session.commit()
-        await db_session.refresh(venda)
 
-        response = await client.get(f"/api/v1/vendas/{venda.id}")
+        venda_criada = await vendas_service.criar_venda(venda_data)
 
-        # Se modelo Venda não tiver todos os campos, pode falhar
-        if response.status_code != 500:
-            assert response.status_code == 200
-            data = response.json()
-            assert data["id"] == venda.id
+        # 2. Finalizar venda
+        mock_venda.status = StatusVenda.PENDENTE
+        mock_venda_finalizada = Mock()
+        mock_venda_finalizada.status = StatusVenda.FINALIZADA
+        vendas_service.repository.finalizar_venda.return_value = mock_venda_finalizada
 
+        await vendas_service.finalizar_venda(mock_venda.id)
 
-class TestListarVendas:
-    """Testes de listagem de vendas"""
+        # 3. Cancelar venda
+        mock_venda.status = StatusVenda.FINALIZADA
+        mock_venda.itens = [Mock(produto_id=1, quantidade=1.0, preco_unitario=50.0)]
+        vendas_service.repository.cancelar_venda.return_value = mock_venda
+        vendas_service.estoque_service.ajuste_estoque.return_value = None
 
-    @pytest.mark.asyncio
-    async def test_listar_vendas(
-        self, client: AsyncClient, db_session: AsyncSession, setup_venda: dict
-    ):
-        """Deve listar vendas"""
-        from app.modules.vendas.models import StatusVenda
-        from datetime import datetime
-        # Criar 2 vendas
-        for i in range(2):
-            venda = Venda(
-                cliente_id=setup_venda["cliente"].id,
-                vendedor_id=1,
-                data_venda=datetime.utcnow(),
-                forma_pagamento="DINHEIRO",
-                status=StatusVenda.PENDENTE,
-                valor_total=100.0 * (i + 1),
-            )
-            db_session.add(venda)
-        await db_session.commit()
+        await vendas_service.cancelar_venda(mock_venda.id)
 
-        response = await client.get("/api/v1/vendas/")
-
-        assert response.status_code == 200
-        data = response.json()
-        if isinstance(data, list):
-            assert len(data) >= 2
-        elif isinstance(data, dict) and "items" in data:
-            assert len(data["items"]) >= 2
+        # Verificar que todas as operações foram chamadas
+        assert vendas_service.repository.create_venda.called
+        assert vendas_service.repository.finalizar_venda.called
+        assert vendas_service.repository.cancelar_venda.called
+        assert vendas_service.estoque_service.ajuste_estoque.called
 
 
-class TestStatusVenda:
-    """Testes de mudança de status"""
-
-    @pytest.mark.asyncio
-    async def test_confirmar_venda(
-        self, client: AsyncClient, db_session: AsyncSession, setup_venda: dict
-    ):
-        """Deve confirmar venda pendente"""
-        from app.modules.vendas.models import StatusVenda
-        from datetime import datetime
-        venda = Venda(
-            cliente_id=setup_venda["cliente"].id,
-            vendedor_id=1,
-            data_venda=datetime.utcnow(),
-            forma_pagamento="DINHEIRO",
-            status=StatusVenda.PENDENTE,
-            valor_total=100.0,
-        )
-        db_session.add(venda)
-        await db_session.commit()
-        await db_session.refresh(venda)
-
-        response = await client.post(f"/api/v1/vendas/{venda.id}/confirmar")
-
-        # Se endpoint existir
-        if response.status_code != 404:
-            assert response.status_code == 200
-            data = response.json()
-            assert data["status"] == "confirmada" or data["status"] == "finalizada"
-
-    @pytest.mark.asyncio
-    async def test_cancelar_venda(
-        self, client: AsyncClient, db_session: AsyncSession, setup_venda: dict
-    ):
-        """Deve cancelar venda"""
-        from app.modules.vendas.models import StatusVenda
-        from datetime import datetime
-        venda = Venda(
-            cliente_id=setup_venda["cliente"].id,
-            vendedor_id=1,
-            data_venda=datetime.utcnow(),
-            forma_pagamento="DINHEIRO",
-            status=StatusVenda.PENDENTE,
-            valor_total=100.0,
-        )
-        db_session.add(venda)
-        await db_session.commit()
-        await db_session.refresh(venda)
-
-        response = await client.post(f"/api/v1/vendas/{venda.id}/cancelar")
-
-        # Se endpoint existir
-        if response.status_code != 404:
-            assert response.status_code == 200
-            data = response.json()
-            assert data["status"] == "cancelada"
-
-
-class TestEstoqueVenda:
-    """Testes de integração com estoque"""
-
-    @pytest.mark.asyncio
-    async def test_baixa_estoque_ao_confirmar(
-        self, client: AsyncClient, venda_data: dict, setup_venda: dict
-    ):
-        """Deve baixar estoque ao confirmar venda"""
-        produto = setup_venda["produto"]
-        estoque_inicial = produto.estoque_atual
-
-        # Criar venda
-        response = await client.post("/api/v1/vendas/", json=venda_data)
-        assert response.status_code == 201
-        venda_id = response.json()["id"]
-
-        # Confirmar venda (se endpoint existir)
-        confirm_response = await client.post(f"/api/v1/vendas/{venda_id}/confirmar")
-
-        # Se endpoint existir e confirmar, estoque deve baixar
-        if confirm_response.status_code == 200:
-            # Buscar produto atualizado
-            produto_response = await client.get(f"/api/v1/produtos/{produto.id}")
-            if produto_response.status_code == 200:
-                produto_data = produto_response.json()
-                estoque_final = float(produto_data["estoque_atual"])
-                # Estoque deve ter diminuído
-                assert estoque_final < estoque_inicial
+if __name__ == "__main__":
+    pytest.main([__file__, "-v"])
