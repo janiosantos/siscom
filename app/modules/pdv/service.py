@@ -362,3 +362,46 @@ class PDVService:
             raise NotFoundException(f"Caixa {caixa_id} não encontrado")
 
         return CaixaResponse.model_validate(caixa)
+
+    async def criar_movimentacao(
+        self, caixa_id: int, movimentacao_data: MovimentacaoCaixaCreate
+    ) -> MovimentacaoCaixaResponse:
+        """
+        Cria uma movimentação genérica no caixa
+
+        Regras:
+        - Caixa deve estar ABERTO
+        - Valor deve ser maior que zero
+
+        Args:
+            caixa_id: ID do caixa
+            movimentacao_data: Dados da movimentação
+
+        Returns:
+            MovimentacaoCaixaResponse com a movimentação criada
+
+        Raises:
+            NotFoundException: Se caixa não existe
+            ValidationException: Se caixa não está aberto
+        """
+        # Buscar caixa
+        caixa = await self.repository.get_by_id(caixa_id)
+        if not caixa:
+            raise NotFoundException(f"Caixa {caixa_id} não encontrado")
+
+        # Validar que caixa está aberto
+        if caixa.status != StatusCaixa.ABERTO:
+            raise ValidationException(f"Caixa {caixa_id} não está aberto")
+
+        # Criar movimentação
+        movimentacao = await self.repository.criar_movimentacao(
+            caixa_id=caixa_id,
+            tipo=TipoMovimentacaoCaixa(movimentacao_data.tipo),
+            valor=movimentacao_data.valor,
+            descricao=movimentacao_data.descricao,
+            venda_id=movimentacao_data.venda_id if hasattr(movimentacao_data, 'venda_id') else None,
+        )
+
+        await self.session.flush()
+
+        return MovimentacaoCaixaResponse.model_validate(movimentacao)

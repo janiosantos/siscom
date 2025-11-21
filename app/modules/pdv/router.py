@@ -297,3 +297,117 @@ async def calcular_saldo_caixa(caixa_id: int, db: AsyncSession = Depends(get_db)
     """
     service = PDVService(db)
     return await service.calcular_saldo_caixa(caixa_id)
+
+
+# ========== ROTAS ALTERNATIVAS COM CAIXA_ID NA URL ==========
+
+
+@router.post(
+    "/caixa/{caixa_id}/fechar",
+    response_model=CaixaResponse,
+    summary="Fechar caixa por ID",
+    description="Fecha um caixa específico pelo ID",
+)
+async def fechar_caixa_por_id(
+    caixa_id: int,
+    fechamento_data: FecharCaixaCreate,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Fecha um caixa específico pelo ID.
+    """
+    service = PDVService(db)
+    # Buscar o caixa para pegar o operador_id
+    caixa = await service.get_caixa_by_id(caixa_id)
+    return await service.fechar_caixa(caixa.operador_id, fechamento_data)
+
+
+@router.post(
+    "/caixa/{caixa_id}/movimentacoes",
+    response_model=MovimentacaoCaixaResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Criar movimentação no caixa",
+    description="Registra uma movimentação (entrada ou saída) no caixa",
+)
+async def criar_movimentacao(
+    caixa_id: int,
+    tipo: str = Query(..., description="Tipo de movimentação: ENTRADA ou SAIDA"),
+    valor: float = Query(..., description="Valor da movimentação"),
+    descricao: str = Query(None, description="Descrição da movimentação"),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Cria uma movimentação no caixa.
+    """
+    from app.modules.pdv.schemas import MovimentacaoCaixaCreate
+
+    movimentacao_data = MovimentacaoCaixaCreate(
+        tipo=tipo,
+        valor=valor,
+        descricao=descricao
+    )
+    service = PDVService(db)
+    return await service.criar_movimentacao(caixa_id, movimentacao_data)
+
+
+@router.post(
+    "/caixa/{caixa_id}/sangria",
+    response_model=MovimentacaoCaixaResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Registrar sangria por ID do caixa",
+    description="Registra uma sangria no caixa específico",
+)
+async def registrar_sangria_por_id(
+    caixa_id: int,
+    sangria_data: SangriaCreate,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Registra uma sangria no caixa específico.
+    """
+    service = PDVService(db)
+    # Buscar o caixa para pegar o operador_id
+    caixa = await service.get_caixa_by_id(caixa_id)
+    return await service.registrar_sangria(caixa.operador_id, sangria_data)
+
+
+@router.post(
+    "/caixa/{caixa_id}/suprimento",
+    response_model=MovimentacaoCaixaResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Registrar suprimento por ID do caixa",
+    description="Registra um suprimento no caixa específico",
+)
+async def registrar_suprimento_por_id(
+    caixa_id: int,
+    suprimento_data: SuprimentoCreate,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Registra um suprimento no caixa específico.
+    """
+    service = PDVService(db)
+    # Buscar o caixa para pegar o operador_id
+    caixa = await service.get_caixa_by_id(caixa_id)
+    return await service.registrar_suprimento(caixa.operador_id, suprimento_data)
+
+
+@router.post(
+    "/caixa/{caixa_id}/vendas",
+    response_model=VendaResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Registrar venda no PDV por ID do caixa",
+    description="Registra uma venda rápida no PDV usando o ID do caixa",
+)
+async def registrar_venda_pdv_por_id(
+    caixa_id: int,
+    venda_data: VendaPDVCreate,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Registra uma venda rápida no PDV usando o ID do caixa.
+    """
+    service = PDVService(db)
+    # Buscar o caixa para pegar o operador_id
+    caixa = await service.get_caixa_by_id(caixa_id)
+    return await service.registrar_venda_pdv(caixa.operador_id, venda_data)
