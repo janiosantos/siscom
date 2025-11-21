@@ -423,12 +423,12 @@ async def faturar_os(
 
 @router.delete(
     "/{os_id}",
-    response_model=OrdemServicoResponse,
+    status_code=status.HTTP_204_NO_CONTENT,
     summary="Cancelar Ordem de Serviço",
 )
 async def cancelar_os(
     os_id: int,
-    cancelar_data: CancelarOSRequest,
+    motivo: str = Query(default="Cancelamento via API", description="Motivo do cancelamento"),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -438,7 +438,8 @@ async def cancelar_os(
     Registra motivo do cancelamento nas observações.
     """
     service = OSService(db)
-    return await service.cancelar_os(os_id, cancelar_data.motivo)
+    await service.cancelar_os(os_id, motivo)
+    return None
 
 
 # ========== ROTAS ALTERNATIVAS PARA COMPATIBILIDADE COM TESTES ==========
