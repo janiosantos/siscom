@@ -28,6 +28,7 @@ class CondicaoPagamentoService:
     """Service para regras de negócio de Condições de Pagamento"""
 
     def __init__(self, session: AsyncSession):
+        self.session = session
         self.repository = CondicaoPagamentoRepository(session)
 
     async def criar_condicao(
@@ -62,6 +63,9 @@ class CondicaoPagamentoService:
         # Cria as parcelas
         for parcela_data in condicao_data.parcelas:
             await self.repository.create_parcela(condicao.id, parcela_data)
+
+        # Flush para garantir que parcelas sejam persistidas antes de recarregar
+        await self.session.flush()
 
         # Recarrega com parcelas
         condicao = await self.repository.get_by_id(condicao.id)
@@ -214,9 +218,9 @@ class CondicaoPagamentoService:
         parcelas_calculadas: List[ParcelaCalculada] = []
 
         for parcela in condicao.parcelas:
-            # Calcula valor da parcela
+            # Calcula valor da parcela (converter para float para evitar TypeError com Decimal)
             valor_parcela = round(
-                (request.valor_total * parcela.percentual_valor) / 100, 2
+                (float(request.valor_total) * float(parcela.percentual_valor)) / 100, 2
             )
 
             # Calcula data de vencimento
@@ -233,7 +237,7 @@ class CondicaoPagamentoService:
 
         # Ajusta arredondamento para garantir que soma = valor_total
         soma_parcelas = sum(p.valor for p in parcelas_calculadas)
-        diferenca = round(request.valor_total - soma_parcelas, 2)
+        diferenca = round(float(request.valor_total) - soma_parcelas, 2)
 
         if diferenca != 0:
             # Adiciona diferença na última parcela
