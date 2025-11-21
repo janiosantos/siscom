@@ -580,6 +580,273 @@ class TestVendaRepository:
 
         assert result is None
 
+    @pytest.mark.asyncio
+    async def test_get_all_sem_filtros(self, venda_repository, mock_session, mock_venda):
+        """Deve listar todas as vendas sem filtros"""
+        mock_result = Mock()
+        mock_result.scalars.return_value.all.return_value = [mock_venda, mock_venda]
+        mock_session.execute.return_value = mock_result
+
+        result = await venda_repository.get_all()
+
+        assert len(result) == 2
+        mock_session.execute.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_get_all_com_filtro_status(self, venda_repository, mock_session, mock_venda):
+        """Deve filtrar vendas por status"""
+        mock_result = Mock()
+        mock_result.scalars.return_value.all.return_value = [mock_venda]
+        mock_session.execute.return_value = mock_result
+
+        result = await venda_repository.get_all(status=StatusVenda.FINALIZADA)
+
+        assert len(result) == 1
+        mock_session.execute.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_get_all_com_filtro_cliente(self, venda_repository, mock_session, mock_venda):
+        """Deve filtrar vendas por cliente"""
+        mock_result = Mock()
+        mock_result.scalars.return_value.all.return_value = [mock_venda]
+        mock_session.execute.return_value = mock_result
+
+        result = await venda_repository.get_all(cliente_id=10)
+
+        assert len(result) == 1
+        mock_session.execute.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_get_all_com_filtro_vendedor(self, venda_repository, mock_session, mock_venda):
+        """Deve filtrar vendas por vendedor"""
+        mock_result = Mock()
+        mock_result.scalars.return_value.all.return_value = [mock_venda]
+        mock_session.execute.return_value = mock_result
+
+        result = await venda_repository.get_all(vendedor_id=5)
+
+        assert len(result) == 1
+        mock_session.execute.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_get_all_com_filtro_periodo(self, venda_repository, mock_session, mock_venda):
+        """Deve filtrar vendas por período"""
+        mock_result = Mock()
+        mock_result.scalars.return_value.all.return_value = [mock_venda]
+        mock_session.execute.return_value = mock_result
+
+        data_inicio = datetime(2025, 1, 1)
+        data_fim = datetime(2025, 1, 31)
+
+        result = await venda_repository.get_all(data_inicio=data_inicio, data_fim=data_fim)
+
+        assert len(result) == 1
+        mock_session.execute.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_count_sem_filtros(self, venda_repository, mock_session):
+        """Deve contar todas as vendas"""
+        mock_result = Mock()
+        mock_result.scalar_one.return_value = 10
+        mock_session.execute.return_value = mock_result
+
+        result = await venda_repository.count()
+
+        assert result == 10
+        mock_session.execute.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_count_com_filtros(self, venda_repository, mock_session):
+        """Deve contar vendas com filtros"""
+        mock_result = Mock()
+        mock_result.scalar_one.return_value = 5
+        mock_session.execute.return_value = mock_result
+
+        result = await venda_repository.count(
+            status=StatusVenda.FINALIZADA,
+            cliente_id=10
+        )
+
+        assert result == 5
+        mock_session.execute.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_get_vendas_periodo(self, venda_repository, mock_session, mock_venda):
+        """Deve buscar vendas por período"""
+        mock_result = Mock()
+        mock_result.scalars.return_value.all.return_value = [mock_venda]
+        mock_session.execute.return_value = mock_result
+
+        data_inicio = datetime(2025, 1, 1)
+        data_fim = datetime(2025, 1, 31)
+
+        result = await venda_repository.get_vendas_periodo(data_inicio, data_fim)
+
+        assert len(result) == 1
+        mock_session.execute.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_get_vendas_por_cliente(self, venda_repository, mock_session, mock_venda):
+        """Deve buscar vendas por cliente"""
+        mock_result = Mock()
+        mock_result.scalars.return_value.all.return_value = [mock_venda]
+        mock_session.execute.return_value = mock_result
+
+        result = await venda_repository.get_vendas_por_cliente(cliente_id=10)
+
+        assert len(result) == 1
+        mock_session.execute.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_get_total_vendas_periodo_com_vendas(self, venda_repository, mock_session):
+        """Deve calcular total de vendas no período"""
+        mock_result = Mock()
+        mock_result.scalar_one_or_none.return_value = Decimal("1500.00")
+        mock_session.execute.return_value = mock_result
+
+        data_inicio = datetime(2025, 1, 1)
+        data_fim = datetime(2025, 1, 31)
+
+        result = await venda_repository.get_total_vendas_periodo(data_inicio, data_fim)
+
+        assert result == 1500.0
+        mock_session.execute.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_get_total_vendas_periodo_sem_vendas(self, venda_repository, mock_session):
+        """Deve retornar 0 se não há vendas no período"""
+        mock_result = Mock()
+        mock_result.scalar_one_or_none.return_value = None
+        mock_session.execute.return_value = mock_result
+
+        data_inicio = datetime(2025, 1, 1)
+        data_fim = datetime(2025, 1, 31)
+
+        result = await venda_repository.get_total_vendas_periodo(data_inicio, data_fim)
+
+        assert result == 0.0
+        mock_session.execute.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_get_total_vendas_periodo_com_status(self, venda_repository, mock_session):
+        """Deve calcular total de vendas por status"""
+        mock_result = Mock()
+        mock_result.scalar_one_or_none.return_value = Decimal("800.00")
+        mock_session.execute.return_value = mock_result
+
+        data_inicio = datetime(2025, 1, 1)
+        data_fim = datetime(2025, 1, 31)
+
+        result = await venda_repository.get_total_vendas_periodo(
+            data_inicio, data_fim, status=StatusVenda.FINALIZADA
+        )
+
+        assert result == 800.0
+        mock_session.execute.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_get_itens_venda(self, venda_repository, mock_session, mock_item_venda):
+        """Deve buscar itens de uma venda"""
+        mock_result = Mock()
+        mock_result.scalars.return_value.all.return_value = [mock_item_venda]
+        mock_session.execute.return_value = mock_result
+
+        result = await venda_repository.get_itens_venda(venda_id=1)
+
+        assert len(result) == 1
+        mock_session.execute.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_cancelar_venda_sucesso(self, venda_repository, mock_session, mock_venda):
+        """Deve cancelar venda existente"""
+        mock_venda.status = StatusVenda.FINALIZADA
+
+        # Mock do get_by_id
+        mock_result = Mock()
+        mock_result.scalar_one_or_none.return_value = mock_venda
+        mock_session.execute.return_value = mock_result
+
+        result = await venda_repository.cancelar_venda(1)
+
+        assert result.status == StatusVenda.CANCELADA
+        mock_session.flush.assert_called_once()
+        mock_session.refresh.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_cancelar_venda_inexistente(self, venda_repository, mock_session):
+        """Deve retornar None ao cancelar venda inexistente"""
+        mock_result = Mock()
+        mock_result.scalar_one_or_none.return_value = None
+        mock_session.execute.return_value = mock_result
+
+        result = await venda_repository.cancelar_venda(999)
+
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_finalizar_venda_sucesso(self, venda_repository, mock_session, mock_venda):
+        """Deve finalizar venda existente"""
+        mock_venda.status = StatusVenda.PENDENTE
+
+        # Mock do get_by_id
+        mock_result = Mock()
+        mock_result.scalar_one_or_none.return_value = mock_venda
+        mock_session.execute.return_value = mock_result
+
+        result = await venda_repository.finalizar_venda(1)
+
+        assert result.status == StatusVenda.FINALIZADA
+        mock_session.flush.assert_called_once()
+        mock_session.refresh.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_finalizar_venda_inexistente(self, venda_repository, mock_session):
+        """Deve retornar None ao finalizar venda inexistente"""
+        mock_result = Mock()
+        mock_result.scalar_one_or_none.return_value = None
+        mock_session.execute.return_value = mock_result
+
+        result = await venda_repository.finalizar_venda(999)
+
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_atualizar_totais_venda_sucesso(self, venda_repository, mock_session, mock_venda):
+        """Deve atualizar totais de uma venda"""
+        # Mock do get_by_id
+        mock_result = Mock()
+        mock_result.scalar_one_or_none.return_value = mock_venda
+        mock_session.execute.return_value = mock_result
+
+        result = await venda_repository.atualizar_totais_venda(
+            venda_id=1,
+            subtotal=200.0,
+            desconto=20.0,
+            valor_total=180.0
+        )
+
+        assert result.subtotal == 200.0
+        assert result.desconto == 20.0
+        assert result.valor_total == 180.0
+        mock_session.flush.assert_called_once()
+        mock_session.refresh.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_atualizar_totais_venda_inexistente(self, venda_repository, mock_session):
+        """Deve retornar None ao atualizar totais de venda inexistente"""
+        mock_result = Mock()
+        mock_result.scalar_one_or_none.return_value = None
+        mock_session.execute.return_value = mock_result
+
+        result = await venda_repository.atualizar_totais_venda(
+            venda_id=999,
+            subtotal=200.0,
+            desconto=20.0,
+            valor_total=180.0
+        )
+
+        assert result is None
+
 
 # ========== Testes Models ==========
 
