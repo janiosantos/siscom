@@ -304,7 +304,7 @@ async def get_orcamentos_a_vencer(
 
 @router.delete(
     "/{orcamento_id}",
-    response_model=OrcamentoResponse,
+    status_code=status.HTTP_204_NO_CONTENT,
     summary="Cancelar orçamento",
     description="Cancela (deleta) um orçamento",
 )
@@ -321,4 +321,43 @@ async def deletar_orcamento(orcamento_id: int, db: AsyncSession = Depends(get_db
     - DELETE /orcamentos/1
     """
     service = OrcamentosService(db)
-    return await service.deletar_orcamento(orcamento_id)
+    await service.deletar_orcamento(orcamento_id)
+    return None
+
+
+# ========== ROTAS ALTERNATIVAS PARA COMPATIBILIDADE COM TESTES ==========
+
+
+@router.post(
+    "/{orcamento_id}/perdido",
+    response_model=OrcamentoResponse,
+    summary="Marcar orçamento como perdido (rota alternativa)",
+    description="Marca orçamento como perdido (alias para /reprovar)",
+)
+async def marcar_como_perdido(orcamento_id: int, db: AsyncSession = Depends(get_db)):
+    """
+    Marca orçamento como perdido (rota alternativa a /reprovar).
+
+    Esta rota é um alias para /reprovar para compatibilidade com testes.
+    """
+    service = OrcamentosService(db)
+    return await service.reprovar_orcamento(orcamento_id)
+
+
+@router.post(
+    "/{orcamento_id}/converter",
+    summary="Converter orçamento para venda (rota alternativa)",
+    description="Converte orçamento para venda (alias para /converter-venda)",
+)
+async def converter_para_venda_alt(
+    orcamento_id: int,
+    converter_data: ConverterOrcamentoRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Converte orçamento para venda (rota alternativa a /converter-venda).
+
+    Esta rota é um alias para /converter-venda para compatibilidade com testes.
+    """
+    service = OrcamentosService(db)
+    return await service.converter_para_venda(orcamento_id, converter_data)
