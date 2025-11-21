@@ -46,7 +46,7 @@ async def setup_compra(db_session: AsyncSession):
 
     # Criar produtos
     produto1 = Produto(
-        codigo="MAT-001",
+        codigo_barras="MAT-001",
         descricao="Areia Fina",
         categoria_id=categoria.id,
         preco_venda=50.0,
@@ -56,7 +56,7 @@ async def setup_compra(db_session: AsyncSession):
         ativo=True,
     )
     produto2 = Produto(
-        codigo="MAT-002",
+        codigo_barras="MAT-002",
         descricao="Pedra Brita",
         categoria_id=categoria.id,
         preco_venda=60.0,

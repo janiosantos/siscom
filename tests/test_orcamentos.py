@@ -28,7 +28,7 @@ async def setup_orcamento(db_session: AsyncSession):
 
     # Criar produtos
     produto1 = Produto(
-        codigo="FER-001",
+        codigo_barras="FER-001",
         descricao="Parafuso 6x40mm",
         categoria_id=categoria.id,
         preco_venda=0.50,
@@ -38,7 +38,7 @@ async def setup_orcamento(db_session: AsyncSession):
         ativo=True,
     )
     produto2 = Produto(
-        codigo="FER-002",
+        codigo_barras="FER-002",
         descricao="Prego 18x27",
         categoria_id=categoria.id,
         preco_venda=0.25,

@@ -67,7 +67,7 @@ async def setup_os(db_session: AsyncSession):
     await db_session.flush()
 
     produto = Produto(
-        codigo="PECA-001",
+        codigo_barras="PECA-001",
         descricao="Peça Teste",
         categoria_id=categoria.id,
         preco_venda=50.0,

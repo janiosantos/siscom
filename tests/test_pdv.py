@@ -28,7 +28,7 @@ async def setup_pdv(db_session: AsyncSession):
 
     # Criar produto
     produto = Produto(
-        codigo="CIM-001",
+        codigo_barras="CIM-001",
         descricao="Cimento CP-II 50kg",
         categoria_id=categoria.id,
         preco_venda=32.90,
