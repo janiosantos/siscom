@@ -33,7 +33,7 @@ from app.modules.os.schemas import (
     CancelarOSRequest,
 )
 
-router = APIRouter(prefix="/os", tags=["Ordens de Serviço"])
+router = APIRouter()
 
 
 # ====================================
@@ -439,3 +439,138 @@ async def cancelar_os(
     """
     service = OSService(db)
     return await service.cancelar_os(os_id, cancelar_data.motivo)
+
+
+# ========== ROTAS ALTERNATIVAS PARA COMPATIBILIDADE COM TESTES ==========
+
+
+@router.post(
+    "/{os_id}/cancelar",
+    response_model=OrdemServicoResponse,
+    summary="Cancelar Ordem de Serviço (POST)",
+    description="Cancela ordem de serviço via POST (alternativa ao DELETE)",
+)
+async def cancelar_os_post(
+    os_id: int,
+    cancelar_data: CancelarOSRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Cancela ordem de serviço (rota alternativa POST)
+
+    Não permite cancelar OSs FATURADAS.
+    Registra motivo do cancelamento nas observações.
+    """
+    service = OSService(db)
+    return await service.cancelar_os(os_id, cancelar_data.motivo)
+
+
+@router.post(
+    "/{os_id}/materiais",
+    response_model=ItemOSResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Adicionar Material (rota alternativa)",
+    description="Adiciona material à OS (alternativa a /adicionar-material)",
+)
+async def adicionar_material_alt(
+    os_id: int,
+    material_data: AdicionarMaterialRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """Adiciona material à OS (rota alternativa /materiais)"""
+    service = OSService(db)
+    from app.modules.os.schemas import ItemOSCreate
+
+    item_data = ItemOSCreate(
+        produto_id=material_data.produto_id,
+        quantidade=material_data.quantidade,
+        preco_unitario=material_data.preco_unitario,
+    )
+    return await service.adicionar_material_os(os_id, item_data)
+
+
+@router.post(
+    "/{os_id}/apontamentos",
+    response_model=ApontamentoHorasResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Apontar Horas (rota alternativa)",
+    description="Registra apontamento de horas (alternativa a /apontar-horas)",
+)
+async def apontar_horas_alt(
+    os_id: int,
+    apontamento_data: ApontarHorasRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """Registra apontamento de horas (rota alternativa /apontamentos)"""
+    service = OSService(db)
+    from app.modules.os.schemas import ApontamentoHorasCreate
+
+    apontamento = ApontamentoHorasCreate(
+        tecnico_id=apontamento_data.tecnico_id,
+        data=apontamento_data.data,
+        horas_trabalhadas=apontamento_data.horas_trabalhadas,
+        descricao=apontamento_data.descricao,
+    )
+    return await service.apontar_horas(os_id, apontamento)
+
+
+@router.post(
+    "/tipos-servico/",
+    response_model=TipoServicoResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Criar Tipo de Serviço (com slash)",
+)
+async def criar_tipo_servico_alt(
+    tipo_data: TipoServicoCreate,
+    db: AsyncSession = Depends(get_db),
+):
+    """Cria um novo tipo de serviço (rota alternativa com /)"""
+    service = OSService(db)
+    return await service.criar_tipo_servico(tipo_data)
+
+
+@router.get(
+    "/tipos-servico/",
+    response_model=TipoServicoList,
+    summary="Listar Tipos de Serviço (com slash)",
+)
+async def listar_tipos_servico_alt(
+    page: int = Query(1, ge=1, description="Número da página"),
+    page_size: int = Query(50, ge=1, le=100, description="Itens por página"),
+    ativo: Optional[bool] = Query(None, description="Filtrar por status ativo"),
+    db: AsyncSession = Depends(get_db),
+):
+    """Lista tipos de serviço (rota alternativa com /)"""
+    service = OSService(db)
+    return await service.list_tipos_servico(page=page, page_size=page_size, ativo=ativo)
+
+
+@router.post(
+    "/tecnicos/",
+    response_model=TecnicoResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Criar Técnico (com slash)",
+)
+async def criar_tecnico_alt(
+    tecnico_data: TecnicoCreate,
+    db: AsyncSession = Depends(get_db),
+):
+    """Cria um novo técnico (rota alternativa com /)"""
+    service = OSService(db)
+    return await service.criar_tecnico(tecnico_data)
+
+
+@router.get(
+    "/tecnicos/",
+    response_model=TecnicoList,
+    summary="Listar Técnicos (com slash)",
+)
+async def listar_tecnicos_alt(
+    page: int = Query(1, ge=1, description="Número da página"),
+    page_size: int = Query(50, ge=1, le=100, description="Itens por página"),
+    ativo: Optional[bool] = Query(None, description="Filtrar por status ativo"),
+    db: AsyncSession = Depends(get_db),
+):
+    """Lista técnicos (rota alternativa com /)"""
+    service = OSService(db)
+    return await service.list_tecnicos(page=page, page_size=page_size, ativo=ativo)
