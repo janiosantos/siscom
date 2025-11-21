@@ -17,7 +17,7 @@ from app.modules.compras.schemas import (
     SugestaoCompraList,
 )
 
-router = APIRouter(prefix="/compras", tags=["Compras"])
+router = APIRouter()
 
 
 @router.post(
@@ -314,3 +314,53 @@ async def comparar_fornecedores(
     """
     service = FornecedorAnaliseService(db)
     return await service.comparar_fornecedores(fornecedor_ids, periodo_dias)
+
+
+# ========== ROTAS ALTERNATIVAS PARA COMPATIBILIDADE COM TESTES ==========
+
+
+@router.post(
+    "/{pedido_id}/cancelar",
+    response_model=PedidoCompraResponse,
+    summary="Cancelar pedido de compra (POST)",
+    description="Cancela um pedido de compra via POST (alternativa ao DELETE)",
+)
+async def cancelar_pedido_post(
+    pedido_id: int,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Cancela um pedido de compra (rota alternativa POST)
+
+    - **pedido_id**: ID do pedido
+    - Não pode cancelar pedido recebido (total ou parcial)
+    """
+    service = ComprasService(db)
+    return await service.cancelar_pedido(pedido_id)
+
+
+@router.get(
+    "/sugestoes",
+    response_model=SugestaoCompraList,
+    summary="Sugestão de compras (rota alternativa)",
+    description="Gera lista de produtos sugeridos para compra (rota alternativa)",
+)
+async def sugestoes_compras_alt(
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Gera sugestão automática de compras (rota alternativa /sugestoes)
+
+    Regras:
+    - Analisa produtos com estoque_atual < estoque_minimo
+    - Classifica por curva ABC (A=alta prioridade, B=média, C=baixa)
+    - Quantidade sugerida = (estoque_minimo * 2) - estoque_atual
+    - Ordena por classe ABC e déficit de estoque
+
+    Retorna:
+    - Lista de produtos sugeridos
+    - Quantidade sugerida para cada produto
+    - Valor total da sugestão
+    """
+    service = ComprasService(db)
+    return await service.sugerir_compras()

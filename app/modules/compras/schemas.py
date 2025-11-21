@@ -45,7 +45,7 @@ class ItemPedidoCompraResponse(ItemPedidoCompraBase):
     quantidade_recebida: float
     subtotal_item: float
     created_at: datetime
-    produto: dict  # Simplificado para evitar imports circulares
+    produto: Optional[dict] = None  # Simplificado para evitar imports circulares
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -98,14 +98,14 @@ class PedidoCompraResponse(PedidoCompraBase):
     """Schema de resposta de Pedido de Compra"""
 
     id: int
-    data_entrega_real: Optional[date]
+    data_entrega_real: Optional[date] = None
     subtotal: float
     valor_total: float
     status: StatusPedidoCompraEnum
     created_at: datetime
     updated_at: datetime
-    fornecedor: dict  # Simplificado para evitar imports circulares
-    itens: List[ItemPedidoCompraResponse]
+    fornecedor: Optional[dict] = None  # Simplificado para evitar imports circulares
+    itens: List[ItemPedidoCompraResponse] = []
 
     model_config = ConfigDict(from_attributes=True)
 
