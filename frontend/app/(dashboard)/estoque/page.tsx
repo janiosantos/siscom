@@ -38,6 +38,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog"
+import { ProtectedPage } from "@/components/auth/protected-page"
+import { PermissionGuard } from "@/components/auth/permission-guard"
 import { estoqueApi } from "@/lib/api/estoque"
 import { produtosApi } from "@/lib/api/produtos"
 import { formatCurrency } from "@/lib/utils"
@@ -149,8 +151,9 @@ export default function EstoquePage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Movimentação Form Dialog */}
+    <ProtectedPage permission="estoque.view">
+      <div className="space-y-6">
+        {/* Movimentação Form Dialog */}
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
         <DialogContent>
           <DialogHeader onClose={() => setFormOpen(false)}>
@@ -257,10 +260,12 @@ export default function EstoquePage() {
             Gerencie o estoque e movimentações
           </p>
         </div>
-        <Button onClick={() => setFormOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Nova Movimentação
-        </Button>
+        <PermissionGuard permission="estoque.create">
+          <Button onClick={() => setFormOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Nova Movimentação
+          </Button>
+        </PermissionGuard>
       </div>
 
       {/* Alertas de Estoque Baixo */}
@@ -423,6 +428,7 @@ export default function EstoquePage() {
           )}
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </ProtectedPage>
   )
 }

@@ -29,6 +29,8 @@ import {
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectItem } from "@/components/ui/select"
+import { ProtectedPage } from "@/components/auth/protected-page"
+import { PermissionGuard } from "@/components/auth/permission-guard"
 import { financeiroApi } from "@/lib/api/financeiro"
 import { formatCurrency } from "@/lib/utils"
 import { toast } from "sonner"
@@ -128,8 +130,9 @@ export default function FinanceiroPage() {
   const currentData = activeTab === "pagar" ? contasPagar : contasReceber
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <ProtectedPage permission="financeiro.view">
+      <div className="space-y-6">
+        {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
@@ -326,17 +329,19 @@ export default function FinanceiroPage() {
                   </TableCell>
                   <TableCell className="text-right">
                     {conta.status === "pendente" && (
-                      <Button
-                        size="sm"
-                        onClick={() =>
-                          activeTab === "pagar"
-                            ? handlePagar(conta.id)
-                            : handleReceber(conta.id)
-                        }
-                      >
-                        <CheckCircle className="h-4 w-4 mr-1" />
-                        {activeTab === "pagar" ? "Pagar" : "Receber"}
-                      </Button>
+                      <PermissionGuard permission="financeiro.update">
+                        <Button
+                          size="sm"
+                          onClick={() =>
+                            activeTab === "pagar"
+                              ? handlePagar(conta.id)
+                              : handleReceber(conta.id)
+                          }
+                        >
+                          <CheckCircle className="h-4 w-4 mr-1" />
+                          {activeTab === "pagar" ? "Pagar" : "Receber"}
+                        </Button>
+                      </PermissionGuard>
                     )}
                     {conta.status === "pago" && conta.data_pagamento && (
                       <p className="text-xs text-muted-foreground">
@@ -380,6 +385,7 @@ export default function FinanceiroPage() {
           )}
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </ProtectedPage>
   )
 }

@@ -22,6 +22,8 @@ import {
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectItem } from "@/components/ui/select"
+import { ProtectedPage } from "@/components/auth/protected-page"
+import { PermissionGuard } from "@/components/auth/permission-guard"
 import { vendasApi } from "@/lib/api/vendas"
 import { formatCurrency } from "@/lib/utils"
 import { toast } from "sonner"
@@ -112,23 +114,26 @@ export default function VendasPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            <ShoppingCart className="h-8 w-8" />
-            Vendas
-          </h1>
-          <p className="text-muted-foreground">
-            Gerencie as vendas e orçamentos
-          </p>
+    <ProtectedPage permission="vendas.view">
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+              <ShoppingCart className="h-8 w-8" />
+              Vendas
+            </h1>
+            <p className="text-muted-foreground">
+              Gerencie as vendas e orçamentos
+            </p>
+          </div>
+          <PermissionGuard permission="vendas.create">
+            <Button onClick={handleNewSale}>
+              <Plus className="mr-2 h-4 w-4" />
+              Nova Venda (PDV)
+            </Button>
+          </PermissionGuard>
         </div>
-        <Button onClick={handleNewSale}>
-          <Plus className="mr-2 h-4 w-4" />
-          Nova Venda (PDV)
-        </Button>
-      </div>
 
       {/* Filters */}
       <Card>
@@ -242,22 +247,26 @@ export default function VendasPage() {
                           </Button>
                           {venda.status === "pendente" && (
                             <>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                title="Finalizar"
-                                onClick={() => handleFinalize(venda.id)}
-                              >
-                                <CheckCircle className="h-4 w-4 text-green-600" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                title="Cancelar"
-                                onClick={() => handleCancel(venda.id)}
-                              >
-                                <XCircle className="h-4 w-4 text-red-600" />
-                              </Button>
+                              <PermissionGuard permission="vendas.update">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  title="Finalizar"
+                                  onClick={() => handleFinalize(venda.id)}
+                                >
+                                  <CheckCircle className="h-4 w-4 text-green-600" />
+                                </Button>
+                              </PermissionGuard>
+                              <PermissionGuard permission="vendas.cancel">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  title="Cancelar"
+                                  onClick={() => handleCancel(venda.id)}
+                                >
+                                  <XCircle className="h-4 w-4 text-red-600" />
+                                </Button>
+                              </PermissionGuard>
                             </>
                           )}
                         </div>
@@ -297,6 +306,7 @@ export default function VendasPage() {
           )}
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </ProtectedPage>
   )
 }
