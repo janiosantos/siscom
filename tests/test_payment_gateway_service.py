@@ -41,17 +41,19 @@ class TestCieloCreditCard:
     async def test_cielo_credit_card_success(self, payment_service):
         """Teste de pagamento com cartão Cielo - Sucesso"""
 
-        # Mock da resposta da Cielo
+        # Mock da resposta da Cielo (deve incluir Payment object)
         mock_response = {
-            "PaymentId": "abc-123-def",
-            "Tid": "TID123456",
-            "Status": "2",  # Capturada
-            "Amount": 15000,  # R$ 150,00 em centavos
-            "Installments": 3,
-            "Captured": True,
-            "AuthorizationCode": "AUTH123456",
-            "ReturnCode": "4",
-            "ReturnMessage": "Operacao realizada com sucesso"
+            "Payment": {
+                "PaymentId": "abc-123-def",
+                "Tid": "TID123456",
+                "Status": 2,  # Capturada (int, não string)
+                "Amount": 15000,  # R$ 150,00 em centavos
+                "Installments": 3,
+                "Capture": True,
+                "AuthorizationCode": "AUTH123456",
+                "ReturnCode": "4",
+                "ReturnMessage": "Operacao realizada com sucesso"
+            }
         }
 
         with patch.object(
@@ -90,12 +92,14 @@ class TestCieloCreditCard:
         """Teste de pré-autorização Cielo"""
 
         mock_response = {
-            "PaymentId": "pre-auth-123",
-            "Status": "1",  # Autorizada
-            "Amount": 20000,
-            "Installments": 1,
-            "Captured": False,
-            "AuthorizationCode": "AUTH789"
+            "Payment": {
+                "PaymentId": "pre-auth-123",
+                "Status": 1,  # Autorizada (int)
+                "Amount": 20000,
+                "Installments": 1,
+                "Capture": False,
+                "AuthorizationCode": "AUTH789"
+            }
         }
 
         with patch.object(
@@ -302,10 +306,12 @@ class TestPaymentOperations:
         """Teste de captura de pagamento"""
 
         mock_response = {
-            "PaymentId": "cap-123",
-            "Status": "2",  # Capturada
-            "Captured": True,
-            "Amount": 30000
+            "Payment": {
+                "PaymentId": "cap-123",
+                "Status": 2,  # Capturada (int)
+                "Capture": True,
+                "Amount": 30000
+            }
         }
 
         with patch.object(
@@ -327,9 +333,11 @@ class TestPaymentOperations:
         """Teste de cancelamento"""
 
         mock_response = {
-            "PaymentId": "cancel-123",
-            "Status": "10",  # Cancelada
-            "VoidedAmount": 10000
+            "Payment": {
+                "PaymentId": "cancel-123",
+                "Status": 10,  # Cancelada (int)
+                "Amount": 10000
+            }
         }
 
         with patch.object(
@@ -350,9 +358,11 @@ class TestPaymentOperations:
         """Teste de consulta"""
 
         mock_response = {
-            "PaymentId": "query-123",
-            "Status": "2",
-            "Amount": 15000
+            "Payment": {
+                "PaymentId": "query-123",
+                "Status": 2,  # int
+                "Amount": 15000
+            }
         }
 
         with patch.object(
@@ -446,9 +456,12 @@ class TestComplexScenarios:
 
         # Mock Cielo negando
         cielo_response = {
-            "PaymentId": "denied-123",
-            "Status": "3",  # Negada
-            "ReturnCode": "05"
+            "Payment": {
+                "PaymentId": "denied-123",
+                "Status": 3,  # Negada (int)
+                "Amount": 10000,
+                "ReturnCode": "05"
+            }
         }
 
         # Mock GetNet aprovando
@@ -540,3 +553,403 @@ class TestComplexScenarios:
         assert mp_result["status"] == PaymentStatus.PENDING
         assert gn_result["pix_qrcode"] is not None
         assert mp_result["pix_qrcode"] is not None
+
+
+# ============================================
+# TESTES DE MAPEAMENTO DE STATUS
+# ============================================
+
+class TestStatusMapping:
+    """Testes de mapeamento de status entre gateways"""
+
+    def test_map_cielo_status(self, payment_service):
+        """Mapear todos os status Cielo"""
+        assert payment_service._map_cielo_status("0") == PaymentStatus.PENDING
+        assert payment_service._map_cielo_status("1") == PaymentStatus.AUTHORIZED
+        assert payment_service._map_cielo_status("2") == PaymentStatus.CAPTURED
+        assert payment_service._map_cielo_status("3") == PaymentStatus.DENIED
+        assert payment_service._map_cielo_status("10") == PaymentStatus.CANCELLED
+        assert payment_service._map_cielo_status("11") == PaymentStatus.REFUNDED
+        assert payment_service._map_cielo_status("12") == PaymentStatus.PENDING
+        assert payment_service._map_cielo_status("13") == PaymentStatus.CANCELLED
+        # Status desconhecido
+        assert payment_service._map_cielo_status("99") == PaymentStatus.PENDING
+
+    def test_map_getnet_status(self, payment_service):
+        """Mapear todos os status GetNet"""
+        assert payment_service._map_getnet_status("PENDING") == PaymentStatus.PENDING
+        assert payment_service._map_getnet_status("AUTHORIZED") == PaymentStatus.AUTHORIZED
+        assert payment_service._map_getnet_status("APPROVED") == PaymentStatus.CAPTURED
+        assert payment_service._map_getnet_status("DENIED") == PaymentStatus.DENIED
+        assert payment_service._map_getnet_status("CANCELED") == PaymentStatus.CANCELLED
+        assert payment_service._map_getnet_status("REFUNDED") == PaymentStatus.REFUNDED
+        # Status desconhecido (ERROR, UNKNOWN, etc) mapeia para PENDING
+        assert payment_service._map_getnet_status("ERROR") == PaymentStatus.PENDING
+        assert payment_service._map_getnet_status("UNKNOWN") == PaymentStatus.PENDING
+
+    def test_map_mercadopago_status(self, payment_service):
+        """Mapear todos os status Mercado Pago"""
+        assert payment_service._map_mercadopago_status("pending") == PaymentStatus.PENDING
+        assert payment_service._map_mercadopago_status("approved") == PaymentStatus.CAPTURED
+        assert payment_service._map_mercadopago_status("authorized") == PaymentStatus.AUTHORIZED
+        assert payment_service._map_mercadopago_status("rejected") == PaymentStatus.DENIED
+        assert payment_service._map_mercadopago_status("cancelled") == PaymentStatus.CANCELLED
+        assert payment_service._map_mercadopago_status("refunded") == PaymentStatus.REFUNDED
+        # Status desconhecido
+        assert payment_service._map_mercadopago_status("unknown") == PaymentStatus.PENDING
+
+
+# ============================================
+# TESTES DE NORMALIZAÇÃO DE RESPOSTAS
+# ============================================
+
+class TestResponseNormalization:
+    """Testes de normalização de respostas dos gateways"""
+
+    def test_normalize_cielo_response(self, payment_service):
+        """Normalizar resposta Cielo com Payment object"""
+        raw_response = {
+            "Payment": {
+                "PaymentId": "cielo-abc-123",
+                "Tid": "TID987654",
+                "Status": 2,
+                "Amount": 25000,  # R$ 250,00 em centavos
+                "Installments": 5,
+                "Capture": True,
+                "AuthorizationCode": "AUTH-XYZ",
+                "QrCodeString": None
+            }
+        }
+
+        normalized = payment_service._normalize_response(
+            PaymentGateway.CIELO,
+            raw_response
+        )
+
+        assert normalized["gateway"] == "cielo"
+        assert normalized["payment_id"] == "cielo-abc-123"
+        assert normalized["transaction_id"] == "TID987654"
+        assert normalized["status"] == PaymentStatus.CAPTURED
+        assert normalized["amount"] == 250.0
+        assert normalized["installments"] == 5
+        assert normalized["captured"] is True
+        assert normalized["authorization_code"] == "AUTH-XYZ"
+        assert "created_at" in normalized
+
+    def test_normalize_getnet_response(self, payment_service):
+        """Normalizar resposta GetNet"""
+        raw_response = {
+            "payment_id": "getnet-xyz-789",
+            "order_id": "ORDER-999",
+            "status": "APPROVED",
+            "amount": 18500,
+            "installments": 3,
+            "authorization_code": "GN-AUTH-123",
+            "qr_code": None
+        }
+
+        normalized = payment_service._normalize_response(
+            PaymentGateway.GETNET,
+            raw_response
+        )
+
+        assert normalized["gateway"] == "getnet"
+        assert normalized["payment_id"] == "getnet-xyz-789"
+        assert normalized["transaction_id"] == "ORDER-999"
+        assert normalized["status"] == PaymentStatus.CAPTURED
+        assert normalized["amount"] == 185.0
+        assert normalized["installments"] == 3
+
+    def test_normalize_mercadopago_response(self, payment_service):
+        """Normalizar resposta Mercado Pago"""
+        raw_response = {
+            "id": 987654321,
+            "external_reference": "EXT-REF-001",
+            "status": "approved",
+            "valor": Decimal("320.00"),
+            "installments": 6,
+            "qr_code": "MP-QR-CODE-123"
+        }
+
+        normalized = payment_service._normalize_response(
+            PaymentGateway.MERCADOPAGO,
+            raw_response
+        )
+
+        assert normalized["gateway"] == "mercadopago"
+        assert normalized["payment_id"] == "987654321"
+        assert normalized["transaction_id"] == "EXT-REF-001"
+        assert normalized["status"] == PaymentStatus.CAPTURED
+        assert normalized["amount"] == 320.0
+        assert normalized["pix_qrcode"] == "MP-QR-CODE-123"
+
+
+# ============================================
+# TESTES DE TOKENIZAÇÃO
+# ============================================
+
+class TestTokenization:
+    """Testes de tokenização de cartão"""
+
+    @pytest.mark.asyncio
+    async def test_tokenize_cielo_card_success(self, payment_service):
+        """Tokenizar cartão na Cielo com sucesso"""
+        # CieloClient.tokenize_card retorna diretamente a string do token
+        mock_token = "TOKEN-CIELO-ABC123"
+
+        with patch.object(
+            payment_service.cielo,
+            'tokenize_card',
+            new_callable=AsyncMock,
+            return_value=mock_token
+        ):
+            result = await payment_service.tokenize_card(
+                gateway=PaymentGateway.CIELO,
+                card_data={
+                    "number": "4532000000000000",
+                    "holder": "JOAO SILVA",
+                    "expiration": "12/2028",
+                    "brand": "visa"
+                }
+            )
+
+        assert result["gateway"] == "cielo"
+        assert result["card_token"] == "TOKEN-CIELO-ABC123"
+        assert result["last_digits"] == "0000"
+        assert "created_at" in result
+
+    @pytest.mark.asyncio
+    async def test_tokenize_getnet_card_success(self, payment_service):
+        """Tokenizar cartão na GetNet com sucesso"""
+        # GetNetClient.tokenize_card retorna diretamente a string do token
+        mock_token = "TOKEN-GETNET-XYZ789"
+
+        with patch.object(
+            payment_service.getnet,
+            'tokenize_card',
+            new_callable=AsyncMock,
+            return_value=mock_token
+        ):
+            result = await payment_service.tokenize_card(
+                gateway=PaymentGateway.GETNET,
+                card_data={
+                    "number": "5555555555555555"
+                },
+                customer_data={
+                    "customer_id": "CUST-123"
+                }
+            )
+
+        assert result["card_token"] == "TOKEN-GETNET-XYZ789"
+        assert result["last_digits"] == "5555"
+
+    @pytest.mark.asyncio
+    async def test_tokenize_card_no_number(self, payment_service):
+        """Deve exigir número do cartão"""
+        from app.core.exceptions import ValidationException
+
+        with pytest.raises(ValidationException, match="Número do cartão"):
+            await payment_service.tokenize_card(
+                gateway=PaymentGateway.CIELO,
+                card_data={
+                    "holder": "TEST",
+                    "expiration": "12/2028"
+                }
+            )
+
+    @pytest.mark.asyncio
+    async def test_tokenize_cielo_missing_required(self, payment_service):
+        """Cielo requer holder, expiration e brand"""
+        from app.core.exceptions import ValidationException
+
+        with pytest.raises(ValidationException, match="Campos obrigatórios"):
+            await payment_service.tokenize_card(
+                gateway=PaymentGateway.CIELO,
+                card_data={
+                    "number": "4532000000000000"
+                    # Faltando: holder, expiration, brand
+                }
+            )
+
+    @pytest.mark.asyncio
+    async def test_tokenize_unsupported_gateway(self, payment_service):
+        """Gateway não suporta tokenização"""
+        with pytest.raises(BusinessRuleException, match="não suporta tokenização"):
+            await payment_service.tokenize_card(
+                gateway=PaymentGateway.MERCADOPAGO,
+                card_data={"number": "4532000000000000"}
+            )
+
+
+# ============================================
+# TESTES DE DÉBITO
+# ============================================
+
+class TestDebitCards:
+    """Testes específicos de cartão de débito"""
+
+    @pytest.mark.asyncio
+    async def test_cielo_debit_card_with_return_url(self, payment_service):
+        """Débito Cielo com URL de retorno"""
+        mock_response = {
+            "Payment": {
+                "PaymentId": "debit-123",
+                "Status": 1,  # Autorizado
+                "Amount": 8000,
+                "AuthenticationUrl": "https://auth.cielo.com.br/..."
+            }
+        }
+
+        with patch.object(
+            payment_service.cielo,
+            'create_debit_card_payment',
+            new_callable=AsyncMock,
+            return_value=mock_response
+        ):
+            result = await payment_service.create_payment(
+                gateway=PaymentGateway.CIELO,
+                payment_method=PaymentMethod.DEBIT_CARD,
+                amount=Decimal("80.00"),
+                order_id="DEBIT-001",
+                customer_data={"name": "Test"},
+                card_data={
+                    "number": "4532111111111111",
+                    "holder": "TEST",
+                    "expiration": "06/2027",
+                    "cvv": "456",
+                    "brand": "visa"
+                },
+                metadata={"return_url": "https://loja.com/retorno"}
+            )
+
+        assert result["status"] == PaymentStatus.AUTHORIZED
+
+    @pytest.mark.asyncio
+    async def test_getnet_debit_card(self, payment_service):
+        """Débito GetNet"""
+        mock_response = {
+            "payment_id": "debit-gn-456",
+            "status": "APPROVED",
+            "amount": 12000
+        }
+
+        with patch.object(
+            payment_service.getnet,
+            'create_debit_card_payment',
+            new_callable=AsyncMock,
+            return_value=mock_response
+        ):
+            result = await payment_service.create_payment(
+                gateway=PaymentGateway.GETNET,
+                payment_method=PaymentMethod.DEBIT_CARD,
+                amount=Decimal("120.00"),
+                order_id="DEBIT-GN-001",
+                customer_data={"name": "Test", "cpf": "12345678900"},
+                card_data={
+                    "number": "5555666677778888",
+                    "holder": "TEST DEBIT",
+                    "expiration": "09/2026",
+                    "cvv": "789",
+                    "brand": "mastercard"
+                }
+            )
+
+        assert result["status"] == PaymentStatus.CAPTURED
+
+
+# ============================================
+# TESTES DE BANDEIRAS DE CARTÃO
+# ============================================
+
+class TestCardBrands:
+    """Testes de diferentes bandeiras de cartão"""
+
+    @pytest.mark.asyncio
+    async def test_visa_card(self, payment_service):
+        """Pagamento com Visa"""
+        mock_response = {
+            "Payment": {"PaymentId": "visa-123", "Status": 2, "Amount": 10000}
+        }
+
+        with patch.object(
+            payment_service.cielo,
+            'create_credit_card_payment',
+            new_callable=AsyncMock,
+            return_value=mock_response
+        ):
+            result = await payment_service.create_payment(
+                gateway=PaymentGateway.CIELO,
+                payment_method=PaymentMethod.CREDIT_CARD,
+                amount=Decimal("100.00"),
+                order_id="VISA-001",
+                customer_data={"name": "Test"},
+                card_data={
+                    "number": "4532000000000000",
+                    "holder": "TEST",
+                    "expiration": "12/2028",
+                    "cvv": "123",
+                    "brand": "visa"
+                }
+            )
+
+        assert result["status"] == PaymentStatus.CAPTURED
+
+    @pytest.mark.asyncio
+    async def test_mastercard(self, payment_service):
+        """Pagamento com Mastercard"""
+        mock_response = {
+            "Payment": {"PaymentId": "mc-456", "Status": 2, "Amount": 15000}
+        }
+
+        with patch.object(
+            payment_service.cielo,
+            'create_credit_card_payment',
+            new_callable=AsyncMock,
+            return_value=mock_response
+        ):
+            result = await payment_service.create_payment(
+                gateway=PaymentGateway.CIELO,
+                payment_method=PaymentMethod.CREDIT_CARD,
+                amount=Decimal("150.00"),
+                order_id="MC-001",
+                customer_data={"name": "Test"},
+                card_data={
+                    "number": "5555555555555555",
+                    "holder": "TEST",
+                    "expiration": "12/2028",
+                    "cvv": "456",
+                    "brand": "mastercard"
+                }
+            )
+
+        assert result["status"] == PaymentStatus.CAPTURED
+
+    @pytest.mark.asyncio
+    async def test_elo_card(self, payment_service):
+        """Pagamento com Elo"""
+        mock_response = {
+            "Payment": {"PaymentId": "elo-789", "Status": 2, "Amount": 20000}
+        }
+
+        with patch.object(
+            payment_service.cielo,
+            'create_credit_card_payment',
+            new_callable=AsyncMock,
+            return_value=mock_response
+        ):
+            result = await payment_service.create_payment(
+                gateway=PaymentGateway.CIELO,
+                payment_method=PaymentMethod.CREDIT_CARD,
+                amount=Decimal("200.00"),
+                order_id="ELO-001",
+                customer_data={"name": "Test"},
+                card_data={
+                    "number": "6362970000457013",
+                    "holder": "TEST",
+                    "expiration": "12/2028",
+                    "cvv": "789",
+                    "brand": "elo"
+                }
+            )
+
+        assert result["status"] == PaymentStatus.CAPTURED

@@ -24,6 +24,7 @@ from app.integrations.getnet import GetNetClient, GetNetEnvironment, GetNetPayme
 from app.integrations.mercadopago import MercadoPagoClient
 from app.core.logging import get_logger
 from app.core.exceptions import BusinessRuleException, ValidationException
+from app.utils.retry import with_retry, RETRYABLE_HTTP_EXCEPTIONS
 
 logger = get_logger(__name__)
 
@@ -133,6 +134,12 @@ class PaymentGatewayService:
         else:
             raise BusinessRuleException(f"Gateway não suportado: {gateway}")
 
+    @with_retry(
+        max_attempts=5,
+        initial_delay=2.0,
+        max_delay=30.0,
+        retryable_exceptions=RETRYABLE_HTTP_EXCEPTIONS
+    )
     async def _create_cielo_payment(
         self,
         payment_method: PaymentMethod,
@@ -144,7 +151,7 @@ class PaymentGatewayService:
         capture: bool,
         metadata: Optional[Dict[str, Any]]
     ) -> Dict[str, Any]:
-        """Cria pagamento na Cielo"""
+        """Cria pagamento na Cielo com retry automático"""
 
         if payment_method == PaymentMethod.PIX:
             # Cielo não tem método create_pix_payment ainda
@@ -154,16 +161,29 @@ class PaymentGatewayService:
             if not card_data:
                 raise BusinessRuleException("Dados do cartão são obrigatórios")
 
+            # Converter brand string para enum CieloCardBrand
+            from app.integrations.cielo import CieloCardBrand
+            brand_str = card_data.get("brand", "visa").upper()
+            brand_map = {
+                "VISA": CieloCardBrand.VISA,
+                "MASTERCARD": CieloCardBrand.MASTER,
+                "MASTER": CieloCardBrand.MASTER,
+                "ELO": CieloCardBrand.ELO,
+                "AMEX": CieloCardBrand.AMEX,
+                "DINERS": CieloCardBrand.DINERS
+            }
+            card_brand = brand_map.get(brand_str, CieloCardBrand.VISA)
+
             result = await self.cielo.create_credit_card_payment(
                 amount=float(amount),
                 installments=installments,
-                merchant_order_id=order_id,
-                customer_name=customer_data.get("name", "Cliente"),
+                order_id=order_id,
+                customer={"Name": customer_data.get("name", "Cliente")},
                 card_number=card_data.get("number"),
                 card_holder=card_data.get("holder"),
-                card_expiration=card_data.get("expiration"),
+                card_expiration_date=card_data.get("expiration"),
                 card_cvv=card_data.get("cvv"),
-                card_brand=card_data.get("brand", "Visa"),
+                card_brand=card_brand,
                 capture=capture
             )
 
@@ -171,16 +191,29 @@ class PaymentGatewayService:
             if not card_data:
                 raise BusinessRuleException("Dados do cartão são obrigatórios")
 
+            # Converter brand string para enum CieloCardBrand
+            from app.integrations.cielo import CieloCardBrand
+            brand_str = card_data.get("brand", "visa").upper()
+            brand_map = {
+                "VISA": CieloCardBrand.VISA,
+                "MASTERCARD": CieloCardBrand.MASTER,
+                "MASTER": CieloCardBrand.MASTER
+            }
+            card_brand = brand_map.get(brand_str, CieloCardBrand.VISA)
+
+            return_url = (metadata.get("return_url") if metadata
+                         else "https://loja.com.br/retorno")
+
             result = await self.cielo.create_debit_card_payment(
                 amount=float(amount),
-                merchant_order_id=order_id,
-                customer_name=customer_data.get("name", "Cliente"),
+                order_id=order_id,
+                customer={"Name": customer_data.get("name", "Cliente")},
                 card_number=card_data.get("number"),
                 card_holder=card_data.get("holder"),
-                card_expiration=card_data.get("expiration"),
+                card_expiration_date=card_data.get("expiration"),
                 card_cvv=card_data.get("cvv"),
-                card_brand=card_data.get("brand", "Visa"),
-                return_url=metadata.get("return_url") if metadata else None
+                card_brand=card_brand,
+                return_url=return_url
             )
         else:
             raise BusinessRuleException(f"Método de pagamento não suportado: {payment_method}")
@@ -188,6 +221,12 @@ class PaymentGatewayService:
         # Normaliza resposta
         return self._normalize_response(PaymentGateway.CIELO, result)
 
+    @with_retry(
+        max_attempts=5,
+        initial_delay=2.0,
+        max_delay=30.0,
+        retryable_exceptions=RETRYABLE_HTTP_EXCEPTIONS
+    )
     async def _create_getnet_payment(
         self,
         payment_method: PaymentMethod,
@@ -199,7 +238,7 @@ class PaymentGatewayService:
         capture: bool,
         metadata: Optional[Dict[str, Any]]
     ) -> Dict[str, Any]:
-        """Cria pagamento na GetNet"""
+        """Cria pagamento na GetNet com retry automático"""
 
         if payment_method == PaymentMethod.PIX:
             result = await self.getnet.create_pix_payment(
@@ -213,34 +252,46 @@ class PaymentGatewayService:
             if not card_data:
                 raise BusinessRuleException("Dados do cartão são obrigatórios")
 
+            # GetNet precisa de customer_id, usar CPF/documento como fallback
+            customer_id = customer_data.get("document_number") or customer_data.get("cpf", "customer-123")
+
+            # Parse expiration (MM/YYYY) para month e year
+            expiration = card_data.get("expiration", "12/2025")
+            month, year = expiration.split("/") if "/" in expiration else ("12", "2025")
+
             result = await self.getnet.create_credit_card_payment(
                 amount=float(amount),
                 installments=installments,
                 order_id=order_id,
-                customer_name=customer_data.get("name", "Cliente"),
-                customer_document=customer_data.get("cpf", "00000000000"),
+                customer_id=customer_id,
                 card_number=card_data.get("number"),
-                card_holder=card_data.get("holder"),
-                card_expiration=card_data.get("expiration"),
+                card_holder_name=card_data.get("holder"),
+                card_expiration_month=month,
+                card_expiration_year=year,
                 card_cvv=card_data.get("cvv"),
-                card_brand=card_data.get("brand", "Mastercard")
+                capture=capture
             )
 
         elif payment_method == PaymentMethod.DEBIT_CARD:
             if not card_data:
                 raise BusinessRuleException("Dados do cartão são obrigatórios")
 
+            # GetNet precisa de customer_id
+            customer_id = customer_data.get("document_number") or customer_data.get("cpf", "customer-123")
+
+            # Parse expiration (MM/YYYY) para month e year
+            expiration = card_data.get("expiration", "12/2025")
+            month, year = expiration.split("/") if "/" in expiration else ("12", "2025")
+
             result = await self.getnet.create_debit_card_payment(
                 amount=float(amount),
                 order_id=order_id,
-                customer_name=customer_data.get("name", "Cliente"),
-                customer_document=customer_data.get("cpf", "00000000000"),
+                customer_id=customer_id,
                 card_number=card_data.get("number"),
-                card_holder=card_data.get("holder"),
-                card_expiration=card_data.get("expiration"),
-                card_cvv=card_data.get("cvv"),
-                card_brand=card_data.get("brand", "Mastercard"),
-                callback_url=metadata.get("callback_url") if metadata else None
+                card_holder_name=card_data.get("holder"),
+                card_expiration_month=month,
+                card_expiration_year=year,
+                card_cvv=card_data.get("cvv")
             )
         else:
             raise BusinessRuleException(f"Método de pagamento não suportado: {payment_method}")
@@ -248,6 +299,12 @@ class PaymentGatewayService:
         # Normaliza resposta
         return self._normalize_response(PaymentGateway.GETNET, result)
 
+    @with_retry(
+        max_attempts=5,
+        initial_delay=2.0,
+        max_delay=30.0,
+        retryable_exceptions=RETRYABLE_HTTP_EXCEPTIONS
+    )
     async def _create_mercadopago_payment(
         self,
         payment_method: PaymentMethod,
@@ -258,7 +315,7 @@ class PaymentGatewayService:
         installments: int,
         metadata: Optional[Dict[str, Any]]
     ) -> Dict[str, Any]:
-        """Cria pagamento no Mercado Pago"""
+        """Cria pagamento no Mercado Pago com retry automático"""
 
         if not self.mercadopago:
             raise BusinessRuleException("MercadoPago não inicializado. Use initialize_mercadopago()")
@@ -316,15 +373,17 @@ class PaymentGatewayService:
         }
 
         if gateway == PaymentGateway.CIELO:
+            # Extrair dados do objeto Payment (Cielo retorna tudo dentro de Payment)
+            payment = raw_response.get("Payment", {})
             normalized.update({
-                "payment_id": raw_response.get("PaymentId"),
-                "transaction_id": raw_response.get("Tid"),
-                "status": self._map_cielo_status(raw_response.get("Status")),
-                "amount": raw_response.get("Amount", 0) / 100,  # Cielo usa centavos
-                "installments": raw_response.get("Installments", 1),
-                "captured": raw_response.get("Captured", False),
-                "authorization_code": raw_response.get("AuthorizationCode"),
-                "pix_qrcode": raw_response.get("QrCodeString"),
+                "payment_id": payment.get("PaymentId"),
+                "transaction_id": payment.get("Tid"),
+                "status": self._map_cielo_status(payment.get("Status")),
+                "amount": payment.get("Amount", 0) / 100,  # Cielo usa centavos
+                "installments": payment.get("Installments", 1),
+                "captured": payment.get("Capture", False),
+                "authorization_code": payment.get("AuthorizationCode"),
+                "pix_qrcode": payment.get("QrCodeString"),
             })
 
         elif gateway == PaymentGateway.GETNET:
@@ -390,6 +449,12 @@ class PaymentGatewayService:
         }
         return mapping.get(mp_status, PaymentStatus.PENDING)
 
+    @with_retry(
+        max_attempts=3,
+        initial_delay=1.0,
+        max_delay=10.0,
+        retryable_exceptions=RETRYABLE_HTTP_EXCEPTIONS
+    )
     async def capture_payment(
         self,
         gateway: PaymentGateway,
@@ -397,7 +462,7 @@ class PaymentGatewayService:
         amount: Optional[Decimal] = None
     ) -> Dict[str, Any]:
         """
-        Captura pagamento pré-autorizado
+        Captura pagamento pré-autorizado com retry automático
 
         Args:
             gateway: Gateway usado
@@ -420,6 +485,12 @@ class PaymentGatewayService:
 
         return self._normalize_response(gateway, result)
 
+    @with_retry(
+        max_attempts=3,
+        initial_delay=1.0,
+        max_delay=10.0,
+        retryable_exceptions=RETRYABLE_HTTP_EXCEPTIONS
+    )
     async def cancel_payment(
         self,
         gateway: PaymentGateway,
@@ -427,7 +498,7 @@ class PaymentGatewayService:
         amount: Optional[Decimal] = None
     ) -> Dict[str, Any]:
         """
-        Cancela/estorna pagamento
+        Cancela/estorna pagamento com retry automático
 
         Args:
             gateway: Gateway usado
@@ -456,13 +527,19 @@ class PaymentGatewayService:
 
         return self._normalize_response(gateway, result)
 
+    @with_retry(
+        max_attempts=3,
+        initial_delay=0.5,
+        max_delay=5.0,
+        retryable_exceptions=RETRYABLE_HTTP_EXCEPTIONS
+    )
     async def query_payment(
         self,
         gateway: PaymentGateway,
         payment_id: str
     ) -> Dict[str, Any]:
         """
-        Consulta status de um pagamento
+        Consulta status de um pagamento com retry automático
 
         Args:
             gateway: Gateway usado
