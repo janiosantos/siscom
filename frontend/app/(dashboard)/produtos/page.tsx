@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
-import { Plus, Search, Pencil, Trash2, Package } from "lucide-react"
+import { Plus, Search, Pencil, Trash2, Package, Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -23,6 +23,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { ProdutoForm } from "@/components/forms/produto-form"
 import { produtosApi } from "@/lib/api/produtos"
+import { exportProdutosToPDF } from "@/lib/pdf-export"
 import { formatCurrency } from "@/lib/utils"
 import { toast } from "sonner"
 import { Produto } from "@/types"
@@ -71,6 +72,20 @@ export default function ProdutosPage() {
     refetch()
   }
 
+  const handleExportPDF = () => {
+    if (!data?.items || data.items.length === 0) {
+      toast.error("Não há produtos para exportar")
+      return
+    }
+
+    try {
+      exportProdutosToPDF(data.items)
+      toast.success("Relatório PDF exportado com sucesso!")
+    } catch (error) {
+      toast.error("Erro ao exportar PDF")
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Product Form Dialog */}
@@ -92,10 +107,16 @@ export default function ProdutosPage() {
             Gerencie o catálogo de produtos
           </p>
         </div>
-        <Button onClick={handleNew}>
-          <Plus className="mr-2 h-4 w-4" />
-          Novo Produto
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleExportPDF}>
+            <Download className="mr-2 h-4 w-4" />
+            Exportar PDF
+          </Button>
+          <Button onClick={handleNew}>
+            <Plus className="mr-2 h-4 w-4" />
+            Novo Produto
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}

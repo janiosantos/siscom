@@ -4,6 +4,7 @@ import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Sidebar } from "@/components/navigation/sidebar"
 import { Header } from "@/components/navigation/header"
+import { CommandPalette } from "@/components/command-palette"
 import { useUserStore } from "@/lib/store/user"
 
 export default function DashboardLayout({
@@ -39,6 +40,7 @@ export default function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-background">
+      <CommandPalette />
       <Sidebar />
       <div className="md:pl-64">
         <Header />

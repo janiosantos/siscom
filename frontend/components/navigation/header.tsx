@@ -11,6 +11,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import { useUserStore } from "@/lib/store/user"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 export function Header() {
   const { user, logout } = useUserStore()
@@ -19,9 +20,16 @@ export function Header() {
   return (
     <header className="sticky top-0 z-40 border-b bg-background">
       <div className="flex h-16 items-center justify-between px-6">
-        {/* Left side - could add breadcrumbs here */}
+        {/* Left side - search hint */}
         <div className="flex-1">
-          <h2 className="text-lg font-semibold">Dashboard</h2>
+          <div className="flex items-center gap-2">
+            <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+              <span className="text-xs">⌘</span>K
+            </kbd>
+            <span className="hidden sm:inline text-sm text-muted-foreground">
+              Busca rápida
+            </span>
+          </div>
         </div>
 
         {/* Right side - notifications and user menu */}
@@ -31,6 +39,9 @@ export function Header() {
             <Bell className="h-5 w-5" />
             <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
           </Button>
+
+          {/* Theme Toggle */}
+          <ThemeToggle />
 
           {/* User dropdown */}
           <DropdownMenu>
