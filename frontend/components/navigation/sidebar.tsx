@@ -14,47 +14,56 @@ import {
   Settings,
   Building2,
 } from "lucide-react"
+import { PermissionGuard } from "@/components/auth/permission-guard"
 
 const menuItems = [
   {
     title: "Dashboard",
     href: "/dashboard",
     icon: LayoutDashboard,
+    permission: undefined, // Available to all authenticated users
   },
   {
     title: "Vendas",
     href: "/dashboard/vendas",
     icon: ShoppingCart,
+    permission: "vendas.view",
   },
   {
     title: "Produtos",
     href: "/dashboard/produtos",
     icon: Package,
+    permission: "produtos.view",
   },
   {
     title: "Estoque",
     href: "/dashboard/estoque",
     icon: Warehouse,
+    permission: "estoque.view",
   },
   {
     title: "Financeiro",
     href: "/dashboard/financeiro",
     icon: DollarSign,
+    permission: "financeiro.view",
   },
   {
     title: "Clientes",
     href: "/dashboard/clientes",
     icon: Users,
+    permission: "clientes.view",
   },
   {
     title: "Relatórios",
     href: "/dashboard/relatorios",
     icon: FileText,
+    permission: "relatorios.view",
   },
   {
     title: "Configurações",
     href: "/dashboard/configuracoes",
     icon: Settings,
+    permission: "configuracoes.view",
   },
 ]
 
@@ -75,7 +84,7 @@ export function Sidebar() {
           const Icon = item.icon
           const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
 
-          return (
+          const linkElement = (
             <Link
               key={item.href}
               href={item.href}
@@ -90,6 +99,18 @@ export function Sidebar() {
               {item.title}
             </Link>
           )
+
+          // Wrap with PermissionGuard if permission is required
+          if (item.permission) {
+            return (
+              <PermissionGuard key={item.href} permission={item.permission}>
+                {linkElement}
+              </PermissionGuard>
+            )
+          }
+
+          // Dashboard and other items without permission are always visible
+          return linkElement
         })}
       </nav>
 

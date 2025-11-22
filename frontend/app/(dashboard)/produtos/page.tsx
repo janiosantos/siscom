@@ -22,6 +22,8 @@ import {
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { ProdutoForm } from "@/components/forms/produto-form"
+import { ProtectedPage } from "@/components/auth/protected-page"
+import { PermissionGuard } from "@/components/auth/permission-guard"
 import { produtosApi } from "@/lib/api/produtos"
 import { exportProdutosToPDF } from "@/lib/pdf-export"
 import { formatCurrency } from "@/lib/utils"
@@ -87,37 +89,42 @@ export default function ProdutosPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Product Form Dialog */}
-      <ProdutoForm
-        open={formOpen}
-        onOpenChange={setFormOpen}
-        produto={selectedProduto}
-        onSuccess={handleSuccess}
-      />
+    <ProtectedPage permission="produtos.view">
+      <div className="space-y-6">
+        {/* Product Form Dialog */}
+        <ProdutoForm
+          open={formOpen}
+          onOpenChange={setFormOpen}
+          produto={selectedProduto}
+          onSuccess={handleSuccess}
+        />
 
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            <Package className="h-8 w-8" />
-            Produtos
-          </h1>
-          <p className="text-muted-foreground">
-            Gerencie o catálogo de produtos
-          </p>
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+              <Package className="h-8 w-8" />
+              Produtos
+            </h1>
+            <p className="text-muted-foreground">
+              Gerencie o catálogo de produtos
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <PermissionGuard permission="produtos.view">
+              <Button variant="outline" onClick={handleExportPDF}>
+                <Download className="mr-2 h-4 w-4" />
+                Exportar PDF
+              </Button>
+            </PermissionGuard>
+            <PermissionGuard permission="produtos.create">
+              <Button onClick={handleNew}>
+                <Plus className="mr-2 h-4 w-4" />
+                Novo Produto
+              </Button>
+            </PermissionGuard>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={handleExportPDF}>
-            <Download className="mr-2 h-4 w-4" />
-            Exportar PDF
-          </Button>
-          <Button onClick={handleNew}>
-            <Plus className="mr-2 h-4 w-4" />
-            Novo Produto
-          </Button>
-        </div>
-      </div>
 
       {/* Filters */}
       <Card>
@@ -207,22 +214,26 @@ export default function ProdutosPage() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            title="Editar"
-                            onClick={() => handleEdit(produto)}
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            title="Excluir"
-                            onClick={() => handleDelete(produto.id)}
-                          >
-                            <Trash2 className="h-4 w-4 text-red-600" />
-                          </Button>
+                          <PermissionGuard permission="produtos.update">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              title="Editar"
+                              onClick={() => handleEdit(produto)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          </PermissionGuard>
+                          <PermissionGuard permission="produtos.delete">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              title="Excluir"
+                              onClick={() => handleDelete(produto.id)}
+                            >
+                              <Trash2 className="h-4 w-4 text-red-600" />
+                            </Button>
+                          </PermissionGuard>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -260,6 +271,7 @@ export default function ProdutosPage() {
           )}
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </ProtectedPage>
   )
 }
