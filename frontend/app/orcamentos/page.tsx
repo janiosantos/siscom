@@ -19,9 +19,16 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Plus, FileText, Check, X, Clock, DollarSign, Edit2, Loader2 } from 'lucide-react'
+import { Plus, FileText, Check, X, Clock, DollarSign, Edit2, Loader2, Download, FileSpreadsheet } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { useOrcamentos } from '@/lib/hooks/use-orcamentos'
 import { OrcamentoForm } from '@/components/forms/orcamento-form'
+import { exportOrcamentosToExcel, exportOrcamentosToCSV } from '@/lib/export/orcamentos'
 
 interface Orcamento {
   id: number
@@ -140,10 +147,30 @@ export default function OrcamentosPage() {
           <h1 className="text-3xl font-bold">Orçamentos</h1>
           <p className="text-muted-foreground">Gerencie orçamentos e propostas</p>
         </div>
-        <Button className="flex items-center gap-2" onClick={handleNovoOrcamento}>
-          <Plus className="h-4 w-4" />
-          Novo Orçamento
-        </Button>
+        <div className="flex gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="flex items-center gap-2">
+                <Download className="h-4 w-4" />
+                Exportar
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => orcamentos && exportOrcamentosToExcel(orcamentos)}>
+                <FileSpreadsheet className="mr-2 h-4 w-4" />
+                Exportar para Excel
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => orcamentos && exportOrcamentosToCSV(orcamentos)}>
+                <FileText className="mr-2 h-4 w-4" />
+                Exportar para CSV
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button className="flex items-center gap-2" onClick={handleNovoOrcamento}>
+            <Plus className="h-4 w-4" />
+            Novo Orçamento
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}
