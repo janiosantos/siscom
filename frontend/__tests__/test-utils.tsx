@@ -1,32 +1,25 @@
 import React, { ReactElement } from 'react'
 import { render, RenderOptions } from '@testing-library/react'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { SWRConfig } from 'swr'
 
 // Create a custom render function that includes providers
-const createTestQueryClient = () =>
-  new QueryClient({
-    defaultOptions: {
-      queries: {
-        retry: false,
-        gcTime: 0,
-      },
-      mutations: {
-        retry: false,
-      },
-    },
-  })
-
 interface AllTheProvidersProps {
   children: React.ReactNode
 }
 
 const AllTheProviders = ({ children }: AllTheProvidersProps) => {
-  const testQueryClient = createTestQueryClient()
-
   return (
-    <QueryClientProvider client={testQueryClient}>
+    <SWRConfig
+      value={{
+        dedupingInterval: 0,
+        provider: () => new Map(),
+        revalidateOnFocus: false,
+        revalidateOnReconnect: false,
+        shouldRetryOnError: false,
+      }}
+    >
       {children}
-    </QueryClientProvider>
+    </SWRConfig>
   )
 }
 
