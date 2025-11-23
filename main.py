@@ -224,6 +224,12 @@ except ImportError:
     pass
 
 try:
+    from app.modules.dashboard.router import router as dashboard_router
+    app.include_router(dashboard_router, prefix="/api/v1", tags=["Dashboard"])
+except ImportError:
+    pass
+
+try:
     from app.modules.relatorios.router import router as relatorios_router
     app.include_router(relatorios_router, prefix="/api/v1/relatorios", tags=["Relatórios"])
 except ImportError:
