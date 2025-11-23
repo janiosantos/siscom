@@ -96,6 +96,25 @@ try:
 except ImportError:
     pass
 
+# Pedidos de Venda
+try:
+    from app.modules.pedidos_venda.models import (  # noqa: F401
+        PedidoVenda,
+        ItemPedidoVenda,
+        StatusPedidoVenda,
+    )
+except ImportError:
+    pass
+
+# Documentos Auxiliares
+try:
+    from app.modules.documentos_auxiliares.models import (  # noqa: F401
+        DocumentoAuxiliar,
+        TipoDocumento,
+    )
+except ImportError:
+    pass
+
 # Multi-tenant (Fase 3)
 try:
     from app.modules.multiempresa.models import Empresa  # noqa: F401
