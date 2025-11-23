@@ -235,6 +235,12 @@ try:
 except ImportError:
     pass
 
+try:
+    from app.modules.relatorios_avancados.router import router as relatorios_avancados_router
+    app.include_router(relatorios_avancados_router, prefix="/api/v1", tags=["Relatórios Avançados"])
+except ImportError:
+    pass
+
 # Sprint 7
 try:
     from app.modules.crm.router import router as crm_router
