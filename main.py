@@ -178,6 +178,18 @@ try:
 except ImportError:
     pass
 
+try:
+    from app.modules.pedidos_venda.router import router as pedidos_venda_router
+    app.include_router(pedidos_venda_router, prefix="/api/v1/pedidos-venda", tags=["Pedidos de Venda"])
+except ImportError:
+    pass
+
+try:
+    from app.modules.documentos_auxiliares.router import router as documentos_auxiliares_router
+    app.include_router(documentos_auxiliares_router, prefix="/api/v1/documentos-auxiliares", tags=["Documentos Auxiliares"])
+except ImportError:
+    pass
+
 # Sprint 3
 try:
     from app.modules.compras.router import router as compras_router
