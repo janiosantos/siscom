@@ -1,9 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import {
   Table,
   TableBody,
@@ -32,8 +39,12 @@ import {
   MoreVertical,
   Eye,
   Printer,
-  Edit
+  Edit,
+  Loader2
 } from 'lucide-react'
+import { usePedidosVenda, confirmarPedido, faturarPedido } from '@/lib/hooks/use-pedidos-venda'
+import { PedidoVendaForm } from '@/components/forms/pedido-venda-form'
+import { useToast } from '@/components/ui/use-toast'
 
 type Status = 'RASCUNHO' | 'CONFIRMADO' | 'EM_SEPARACAO' | 'SEPARADO' | 'EM_ENTREGA' | 'ENTREGUE' | 'FATURADO' | 'CANCELADO'
 
@@ -51,10 +62,34 @@ interface PedidoVenda {
 }
 
 export default function PedidosVendaPage() {
-  const [pedidos, setPedidos] = useState<PedidoVenda[]>([])
-  const [loading, setLoading] = useState(true)
+  const { toast } = useToast()
   const [filtroStatus, setFiltroStatus] = useState<Status | 'TODOS'>('TODOS')
-  const [stats, setStats] = useState({
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [selectedPedido, setSelectedPedido] = useState<PedidoVenda | null>(null)
+
+  const { pedidos: allPedidos, isLoading, isError, mutate } = usePedidosVenda(
+    filtroStatus !== 'TODOS' ? { status: filtroStatus } : undefined
+  )
+
+  const pedidos = allPedidos || []
+
+  // Calcular estatísticas
+  const stats = pedidos.length > 0 ? {
+    total: pedidos.length,
+    rascunho: pedidos.filter((p: PedidoVenda) => p.status === 'RASCUNHO').length,
+    confirmado: pedidos.filter((p: PedidoVenda) => p.status === 'CONFIRMADO').length,
+    emSeparacao: pedidos.filter((p: PedidoVenda) => p.status === 'EM_SEPARACAO').length,
+    separado: pedidos.filter((p: PedidoVenda) => p.status === 'SEPARADO').length,
+    emEntrega: pedidos.filter((p: PedidoVenda) => p.status === 'EM_ENTREGA').length,
+    entregue: pedidos.filter((p: PedidoVenda) => p.status === 'ENTREGUE').length,
+    faturado: pedidos.filter((p: PedidoVenda) => p.status === 'FATURADO').length,
+    atrasados: pedidos.filter((p: PedidoVenda) => {
+      const hoje = new Date()
+      const entrega = new Date(p.data_entrega_prevista)
+      return entrega < hoje && !['ENTREGUE', 'FATURADO', 'CANCELADO'].includes(p.status)
+    }).length,
+    valorTotal: pedidos.reduce((sum: number, p: PedidoVenda) => sum + p.valor_total, 0)
+  } : {
     total: 0,
     rascunho: 0,
     confirmado: 0,
@@ -65,123 +100,50 @@ export default function PedidosVendaPage() {
     faturado: 0,
     atrasados: 0,
     valorTotal: 0
-  })
+  }
 
-  useEffect(() => {
-    fetchPedidos()
-  }, [filtroStatus])
+  const handleNovoPedido = () => {
+    setSelectedPedido(null)
+    setIsDialogOpen(true)
+  }
 
-  const fetchPedidos = async () => {
+  const handleEditarPedido = (pedido: PedidoVenda) => {
+    setSelectedPedido(pedido)
+    setIsDialogOpen(true)
+  }
+
+  const handleSuccess = () => {
+    setIsDialogOpen(false)
+    setSelectedPedido(null)
+    mutate() // Revalidar dados
+  }
+
+  const handleAcao = async (pedidoId: number, acao: string) => {
     try {
-      // TODO: Integrar com API real
-      // const response = await fetch('/api/v1/pedidos-venda/')
-      // const data = await response.json()
-
-      // Mock data
-      const mockData: PedidoVenda[] = [
-        {
-          id: 1,
-          numero_pedido: 'PV000001',
-          cliente_nome: 'Construtora XYZ Ltda',
-          vendedor_nome: 'Maria Santos',
-          data_pedido: '2025-11-20',
-          data_entrega_prevista: '2025-11-25',
-          status: 'CONFIRMADO',
-          tipo_entrega: 'ENTREGA',
-          valor_total: 15420.50,
-          itens_count: 25
-        },
-        {
-          id: 2,
-          numero_pedido: 'PV000002',
-          cliente_nome: 'João Silva Materiais',
-          vendedor_nome: 'Pedro Costa',
-          data_pedido: '2025-11-21',
-          data_entrega_prevista: '2025-11-26',
-          status: 'EM_SEPARACAO',
-          tipo_entrega: 'RETIRADA',
-          valor_total: 8350.00,
-          itens_count: 12
-        },
-        {
-          id: 3,
-          numero_pedido: 'PV000003',
-          cliente_nome: 'Reforma Total S.A.',
-          vendedor_nome: 'Ana Paula',
-          data_pedido: '2025-11-19',
-          data_entrega_prevista: '2025-11-24',
-          status: 'SEPARADO',
-          tipo_entrega: 'ENTREGA',
-          valor_total: 22100.00,
-          itens_count: 38
-        },
-        {
-          id: 4,
-          numero_pedido: 'PV000004',
-          cliente_nome: 'ABC Construções',
-          vendedor_nome: 'Carlos Lima',
-          data_pedido: '2025-11-22',
-          data_entrega_prevista: '2025-11-28',
-          status: 'EM_ENTREGA',
-          tipo_entrega: 'TRANSPORTADORA',
-          valor_total: 31200.00,
-          itens_count: 45
-        },
-        {
-          id: 5,
-          numero_pedido: 'PV000005',
-          cliente_nome: 'Engenharia Master',
-          vendedor_nome: 'Maria Santos',
-          data_pedido: '2025-11-18',
-          data_entrega_prevista: '2025-11-23',
-          status: 'FATURADO',
-          tipo_entrega: 'ENTREGA',
-          valor_total: 18900.00,
-          itens_count: 28
-        },
-        {
-          id: 6,
-          numero_pedido: 'PV000006',
-          cliente_nome: 'Obras & Cia',
-          vendedor_nome: 'Pedro Costa',
-          data_pedido: '2025-11-23',
-          data_entrega_prevista: '2025-11-30',
-          status: 'RASCUNHO',
-          tipo_entrega: 'ENTREGA',
-          valor_total: 5600.00,
-          itens_count: 8
-        }
-      ]
-
-      const filtered = filtroStatus === 'TODOS'
-        ? mockData
-        : mockData.filter(p => p.status === filtroStatus)
-
-      setPedidos(filtered)
-
-      // Calcular estatísticas
-      setStats({
-        total: mockData.length,
-        rascunho: mockData.filter(p => p.status === 'RASCUNHO').length,
-        confirmado: mockData.filter(p => p.status === 'CONFIRMADO').length,
-        emSeparacao: mockData.filter(p => p.status === 'EM_SEPARACAO').length,
-        separado: mockData.filter(p => p.status === 'SEPARADO').length,
-        emEntrega: mockData.filter(p => p.status === 'EM_ENTREGA').length,
-        entregue: mockData.filter(p => p.status === 'ENTREGUE').length,
-        faturado: mockData.filter(p => p.status === 'FATURADO').length,
-        atrasados: mockData.filter(p => {
-          const hoje = new Date()
-          const entrega = new Date(p.data_entrega_prevista)
-          return entrega < hoje && !['ENTREGUE', 'FATURADO', 'CANCELADO'].includes(p.status)
-        }).length,
-        valorTotal: mockData.reduce((sum, p) => sum + p.valor_total, 0)
+      if (acao === 'confirmar') {
+        await confirmarPedido(pedidoId)
+        toast({
+          title: 'Sucesso',
+          description: 'Pedido confirmado com sucesso',
+        })
+      } else if (acao === 'faturar') {
+        await faturarPedido(pedidoId)
+        toast({
+          title: 'Sucesso',
+          description: 'Pedido faturado com sucesso',
+        })
+      }
+      // Add other actions as needed
+      mutate() // Revalidar dados
+    } catch (error: any) {
+      toast({
+        title: 'Erro',
+        description: error.message || 'Erro ao executar ação',
+        variant: 'destructive',
       })
-    } catch (error) {
-      console.error('Erro ao carregar pedidos:', error)
-    } finally {
-      setLoading(false)
     }
   }
+
 
   const getStatusConfig = (status: Status) => {
     const configs: Record<Status, { label: string; variant: any; icon: any; color: string }> = {
@@ -209,24 +171,59 @@ export default function PedidosVendaPage() {
     )
   }
 
-  const handleAcao = (pedidoId: number, acao: string) => {
-    console.log(`Ação ${acao} no pedido ${pedidoId}`)
-    // TODO: Implementar ações (confirmar, separar, faturar, etc)
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <span className="ml-2">Carregando pedidos...</span>
+      </div>
+    )
   }
 
-  if (loading) {
-    return <div className="flex items-center justify-center h-screen">Carregando...</div>
+  if (isError) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold mb-2">Erro ao carregar pedidos</h2>
+          <p className="text-muted-foreground">Tente novamente mais tarde</p>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="container mx-auto py-6 space-y-6">
+      {/* Dialog para Criar/Editar Pedido */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {selectedPedido ? 'Editar Pedido de Venda' : 'Novo Pedido de Venda'}
+            </DialogTitle>
+            <DialogDescription>
+              {selectedPedido
+                ? `Editando pedido ${selectedPedido.numero_pedido}`
+                : 'Preencha os dados abaixo para criar um novo pedido de venda'
+              }
+            </DialogDescription>
+          </DialogHeader>
+          <PedidoVendaForm
+            pedidoId={selectedPedido?.id}
+            initialData={selectedPedido || undefined}
+            onSuccess={handleSuccess}
+            onCancel={() => setIsDialogOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Pedidos de Venda</h1>
           <p className="text-muted-foreground">Gerencie o ciclo completo de pedidos</p>
         </div>
-        <Button className="flex items-center gap-2">
+        <Button className="flex items-center gap-2" onClick={handleNovoPedido}>
           <Plus className="h-4 w-4" />
           Novo Pedido
         </Button>

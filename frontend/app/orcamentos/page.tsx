@@ -1,9 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import {
   Table,
   TableBody,
@@ -12,7 +19,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Plus, FileText, Check, X, Clock, DollarSign } from 'lucide-react'
+import { Plus, FileText, Check, X, Clock, DollarSign, Edit2, Loader2 } from 'lucide-react'
+import { useOrcamentos } from '@/lib/hooks/use-orcamentos'
+import { OrcamentoForm } from '@/components/forms/orcamento-form'
 
 interface Orcamento {
   id: number
@@ -27,76 +36,37 @@ interface Orcamento {
 }
 
 export default function OrcamentosPage() {
-  const [orcamentos, setOrcamentos] = useState<Orcamento[]>([])
-  const [loading, setLoading] = useState(true)
-  const [stats, setStats] = useState({
+  const { orcamentos, isLoading, isError, mutate } = useOrcamentos()
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [selectedOrcamento, setSelectedOrcamento] = useState<Orcamento | null>(null)
+
+  // Calcular estatísticas
+  const stats = orcamentos ? {
+    total: orcamentos.length,
+    abertos: orcamentos.filter((o: Orcamento) => o.status === 'ABERTO').length,
+    aprovados: orcamentos.filter((o: Orcamento) => o.status === 'APROVADO').length,
+    valorTotal: orcamentos.reduce((sum: number, o: Orcamento) => sum + o.valor_total, 0)
+  } : {
     total: 0,
     abertos: 0,
     aprovados: 0,
     valorTotal: 0
-  })
+  }
 
-  useEffect(() => {
-    fetchOrcamentos()
-  }, [])
+  const handleNovoOrcamento = () => {
+    setSelectedOrcamento(null)
+    setIsDialogOpen(true)
+  }
 
-  const fetchOrcamentos = async () => {
-    try {
-      // TODO: Integrar com API real
-      // const response = await fetch('/api/v1/orcamentos/')
-      // const data = await response.json()
+  const handleEditarOrcamento = (orcamento: Orcamento) => {
+    setSelectedOrcamento(orcamento)
+    setIsDialogOpen(true)
+  }
 
-      // Mock data para demonstração
-      const mockData: Orcamento[] = [
-        {
-          id: 1,
-          numero_orcamento: 'ORC-001',
-          cliente_nome: 'João Silva Construções',
-          vendedor_nome: 'Maria Santos',
-          data_orcamento: '2025-11-20',
-          data_validade: '2025-11-27',
-          status: 'ABERTO',
-          valor_total: 15420.50,
-          itens_count: 15
-        },
-        {
-          id: 2,
-          numero_orcamento: 'ORC-002',
-          cliente_nome: 'Reforma Total Ltda',
-          vendedor_nome: 'Pedro Costa',
-          data_orcamento: '2025-11-21',
-          data_validade: '2025-11-28',
-          status: 'APROVADO',
-          valor_total: 8350.00,
-          itens_count: 8
-        },
-        {
-          id: 3,
-          numero_orcamento: 'ORC-003',
-          cliente_nome: 'Construtora ABC',
-          vendedor_nome: 'Ana Paula',
-          data_orcamento: '2025-11-18',
-          data_validade: '2025-11-25',
-          status: 'CONVERTIDO',
-          valor_total: 22100.00,
-          itens_count: 25
-        }
-      ]
-
-      setOrcamentos(mockData)
-
-      // Calcular estatísticas
-      setStats({
-        total: mockData.length,
-        abertos: mockData.filter(o => o.status === 'ABERTO').length,
-        aprovados: mockData.filter(o => o.status === 'APROVADO').length,
-        valorTotal: mockData.reduce((sum, o) => sum + o.valor_total, 0)
-      })
-    } catch (error) {
-      console.error('Erro ao carregar orçamentos:', error)
-    } finally {
-      setLoading(false)
-    }
+  const handleSuccess = () => {
+    setIsDialogOpen(false)
+    setSelectedOrcamento(null)
+    mutate() // Revalidar dados
   }
 
   const getStatusBadge = (status: string) => {
@@ -118,19 +88,59 @@ export default function OrcamentosPage() {
     )
   }
 
-  if (loading) {
-    return <div className="flex items-center justify-center h-screen">Carregando...</div>
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <span className="ml-2">Carregando orçamentos...</span>
+      </div>
+    )
+  }
+
+  if (isError) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <X className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold mb-2">Erro ao carregar orçamentos</h2>
+          <p className="text-muted-foreground">Tente novamente mais tarde</p>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="container mx-auto py-6 space-y-6">
+      {/* Dialog para Criar/Editar Orçamento */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {selectedOrcamento ? 'Editar Orçamento' : 'Novo Orçamento'}
+            </DialogTitle>
+            <DialogDescription>
+              {selectedOrcamento
+                ? `Editando orçamento ${selectedOrcamento.numero_orcamento}`
+                : 'Preencha os dados abaixo para criar um novo orçamento'
+              }
+            </DialogDescription>
+          </DialogHeader>
+          <OrcamentoForm
+            orcamentoId={selectedOrcamento?.id}
+            initialData={selectedOrcamento || undefined}
+            onSuccess={handleSuccess}
+            onCancel={() => setIsDialogOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Orçamentos</h1>
           <p className="text-muted-foreground">Gerencie orçamentos e propostas</p>
         </div>
-        <Button className="flex items-center gap-2">
+        <Button className="flex items-center gap-2" onClick={handleNovoOrcamento}>
           <Plus className="h-4 w-4" />
           Novo Orçamento
         </Button>
@@ -202,7 +212,7 @@ export default function OrcamentosPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {orcamentos.map((orc) => (
+              {orcamentos && orcamentos.map((orc: Orcamento) => (
                 <TableRow key={orc.id}>
                   <TableCell className="font-medium">{orc.numero_orcamento}</TableCell>
                   <TableCell>{orc.cliente_nome}</TableCell>
@@ -214,10 +224,16 @@ export default function OrcamentosPage() {
                     R$ {orc.valor_total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="sm">
-                      <FileText className="h-4 w-4 mr-2" />
-                      Ver
-                    </Button>
+                    <div className="flex justify-end gap-2">
+                      <Button variant="ghost" size="sm" onClick={() => handleEditarOrcamento(orc)}>
+                        <Edit2 className="h-4 w-4 mr-2" />
+                        Editar
+                      </Button>
+                      <Button variant="ghost" size="sm">
+                        <FileText className="h-4 w-4 mr-2" />
+                        Ver
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
