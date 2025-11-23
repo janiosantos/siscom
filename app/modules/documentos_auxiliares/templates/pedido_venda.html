@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedido de Venda {{ numero_pedido }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 11pt;
+            line-height: 1.4;
+            color: #333;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #000;
+        }
+
+        .header h1 {
+            font-size: 18pt;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 9pt;
+            color: #666;
+        }
+
+        .info-section {
+            margin-bottom: 15px;
+        }
+
+        .info-section h2 {
+            font-size: 12pt;
+            background-color: #f0f0f0;
+            padding: 5px 10px;
+            margin-bottom: 8px;
+            border-left: 4px solid #333;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .info-item {
+            padding: 5px;
+        }
+
+        .info-item strong {
+            display: inline-block;
+            min-width: 150px;
+            font-weight: bold;
+        }
+
+        .table-container {
+            margin: 15px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+
+        table th {
+            background-color: #333;
+            color: white;
+            padding: 8px;
+            text-align: left;
+            font-size: 10pt;
+        }
+
+        table td {
+            padding: 6px 8px;
+            border-bottom: 1px solid #ddd;
+            font-size: 10pt;
+        }
+
+        table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .totals {
+            text-align: right;
+            margin-top: 10px;
+        }
+
+        .totals div {
+            padding: 3px 0;
+        }
+
+        .totals strong {
+            display: inline-block;
+            min-width: 150px;
+            text-align: right;
+        }
+
+        .total-final {
+            font-size: 14pt;
+            font-weight: bold;
+            padding: 10px;
+            background-color: #f0f0f0;
+            margin-top: 5px;
+        }
+
+        .observacoes {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #fffbcc;
+            border-left: 4px solid #ffeb3b;
+        }
+
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            text-align: center;
+            font-size: 9pt;
+            color: #666;
+        }
+
+        .assinatura {
+            margin-top: 40px;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .assinatura-box {
+            text-align: center;
+            width: 45%;
+        }
+
+        .assinatura-linha {
+            border-top: 1px solid #000;
+            margin-top: 50px;
+            padding-top: 5px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 3px;
+            font-weight: bold;
+            font-size: 10pt;
+        }
+
+        .status-RASCUNHO { background-color: #e0e0e0; color: #000; }
+        .status-CONFIRMADO { background-color: #4caf50; color: white; }
+        .status-EM_SEPARACAO { background-color: #ff9800; color: white; }
+        .status-SEPARADO { background-color: #2196f3; color: white; }
+        .status-EM_ENTREGA { background-color: #9c27b0; color: white; }
+        .status-ENTREGUE { background-color: #4caf50; color: white; }
+        .status-FATURADO { background-color: #4caf50; color: white; }
+        .status-CANCELADO { background-color: #f44336; color: white; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>{{ empresa_nome }}</h1>
+        <p>{{ empresa_endereco }}</p>
+        <p>CNPJ: {{ empresa_cnpj }} | Telefone: {{ empresa_telefone }} | Email: {{ empresa_email }}</p>
+    </div>
+
+    <div style="text-align: center; margin: 20px 0;">
+        <h1>PEDIDO DE VENDA</h1>
+        <p style="font-size: 14pt;"><strong>Nº {{ numero_pedido }}</strong></p>
+        <span class="status-badge status-{{ status }}">{{ status }}</span>
+    </div>
+
+    <div class="info-section">
+        <h2>Dados do Pedido</h2>
+        <div class="info-grid">
+            <div class="info-item">
+                <strong>Data do Pedido:</strong> {{ data_pedido }}
+            </div>
+            <div class="info-item">
+                <strong>Entrega Prevista:</strong> {{ data_entrega_prevista }}
+            </div>
+            <div class="info-item">
+                <strong>Vendedor:</strong> {{ vendedor_nome }}
+            </div>
+            <div class="info-item">
+                <strong>Tipo de Entrega:</strong> {{ tipo_entrega }}
+            </div>
+        </div>
+    </div>
+
+    <div class="info-section">
+        <h2>Cliente</h2>
+        <div class="info-grid">
+            <div class="info-item">
+                <strong>Nome:</strong> {{ cliente_nome }}
+            </div>
+            <div class="info-item">
+                <strong>CPF/CNPJ:</strong> {{ cliente_documento }}
+            </div>
+            <div class="info-item">
+                <strong>Telefone:</strong> {{ cliente_telefone }}
+            </div>
+            <div class="info-item">
+                <strong>Email:</strong> {{ cliente_email }}
+            </div>
+        </div>
+        {% if endereco_entrega %}
+        <div class="info-item" style="margin-top: 10px;">
+            <strong>Endereço de Entrega:</strong> {{ endereco_entrega }}
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="table-container">
+        <h2 style="font-size: 12pt; margin-bottom: 10px;">Itens do Pedido</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 5%;">Item</th>
+                    <th style="width: 10%;">Código</th>
+                    <th style="width: 35%;">Descrição</th>
+                    <th style="width: 10%; text-align: center;">Qtd.</th>
+                    <th style="width: 12%; text-align: right;">Preço Unit.</th>
+                    <th style="width: 10%; text-align: right;">Desconto</th>
+                    <th style="width: 18%; text-align: right;">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in itens %}
+                <tr>
+                    <td style="text-align: center;">{{ loop.index }}</td>
+                    <td>{{ item.codigo }}</td>
+                    <td>{{ item.descricao }}</td>
+                    <td style="text-align: center;">{{ item.quantidade }}</td>
+                    <td style="text-align: right;">R$ {{ item.preco_unitario }}</td>
+                    <td style="text-align: right;">R$ {{ item.desconto }}</td>
+                    <td style="text-align: right;"><strong>R$ {{ item.total }}</strong></td>
+                </tr>
+                {% if item.observacao %}
+                <tr>
+                    <td colspan="7" style="font-size: 9pt; font-style: italic; padding-left: 30px;">
+                        Obs: {{ item.observacao }}
+                    </td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="totals">
+        <div><strong>Subtotal:</strong> R$ {{ subtotal }}</div>
+        <div><strong>Desconto:</strong> R$ {{ desconto }}</div>
+        <div><strong>Frete:</strong> R$ {{ valor_frete }}</div>
+        <div><strong>Outras Despesas:</strong> R$ {{ outras_despesas }}</div>
+        <div class="total-final">
+            <strong>TOTAL:</strong> R$ {{ valor_total }}
+        </div>
+    </div>
+
+    {% if forma_pagamento or condicao_pagamento %}
+    <div class="info-section">
+        <h2>Condições de Pagamento</h2>
+        <div class="info-item">
+            {% if forma_pagamento %}
+            <strong>Forma de Pagamento:</strong> {{ forma_pagamento }}
+            {% endif %}
+        </div>
+        {% if condicao_pagamento %}
+        <div class="info-item">
+            <strong>Condição:</strong> {{ condicao_pagamento }}
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if observacoes %}
+    <div class="observacoes">
+        <strong>Observações:</strong><br>
+        {{ observacoes }}
+    </div>
+    {% endif %}
+
+    <div class="assinatura">
+        <div class="assinatura-box">
+            <div class="assinatura-linha">
+                {{ empresa_nome }}<br>
+                Representante Legal
+            </div>
+        </div>
+        <div class="assinatura-box">
+            <div class="assinatura-linha">
+                {{ cliente_nome }}<br>
+                Cliente
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Documento gerado em {{ data_geracao }} | Este não é um documento fiscal</p>
+    </div>
+</body>
+</html>
