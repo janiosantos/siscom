@@ -1,7 +1,19 @@
 # Guia de Separação em Dois Repositórios
 
-**Data:** 23/11/2025
-**Objetivo:** Separar o monorepo atual em dois repositórios independentes
+> **⚠️ NOTA IMPORTANTE (2025-11-23):**
+> Este guia foi criado para documentar o processo de separação em dois repositórios independentes, mas **a decisão final foi MANTER UM ÚNICO REPOSITÓRIO (MONOREPO)** com backend e frontend bem organizados em pastas separadas.
+>
+> **Estrutura adotada:**
+> - `/app/` - Backend (Python/FastAPI)
+> - `/frontend/` - Frontend (Next.js/React)
+> - Dev Containers configurados para ambos
+>
+> Este documento é mantido apenas como **referência futura** caso seja necessário fazer a separação.
+
+---
+
+**Data de criação:** 23/11/2025
+**Objetivo original:** Separar o monorepo atual em dois repositórios independentes
 
 ---
 
