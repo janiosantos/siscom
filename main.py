@@ -296,6 +296,13 @@ try:
 except ImportError:
     pass
 
+# Export de Dados (Excel/CSV)
+try:
+    from app.modules.export.router import router as export_router
+    app.include_router(export_router, prefix="/api/v1/export", tags=["Export"])
+except ImportError:
+    pass
+
 # Gateway Cielo (Fase 4)
 try:
     from app.integrations.cielo_router import router as cielo_router

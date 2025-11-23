@@ -17,6 +17,7 @@ from app.modules.pedidos_venda.models import PedidoVenda, ItemPedidoVenda, Statu
 from app.modules.vendas.models import Venda, ItemVenda
 from app.modules.produtos.models import Produto
 from app.modules.auth.models import User
+from app.core.cache import cached
 
 
 class DashboardService:
