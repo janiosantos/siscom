@@ -1,0 +1,161 @@
+{
+  "name": "SISCOM Backend (Python)",
+  "dockerComposeFile": ["../docker-compose.dev.yml"],
+  "service": "backend",
+  "workspaceFolder": "/workspace",
+  
+  // Features to add to the dev container
+  "features": {
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.12",
+      "installTools": true
+    },
+    "ghcr.io/devcontainers/features/git:1": {
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/common-utils:1": {
+      "installZsh": true,
+      "installOhMyZsh": true,
+      "upgradePackages": true
+    }
+  },
+
+  // Configure tool-specific properties
+  "customizations": {
+    "vscode": {
+      "settings": {
+        // Python
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.linting.enabled": true,
+        "python.linting.pylintEnabled": false,
+        "python.linting.flake8Enabled": true,
+        "python.linting.flake8Args": ["--max-line-length=100", "--ignore=E501,W503"],
+        "python.formatting.provider": "black",
+        "python.formatting.blackArgs": ["--line-length=100"],
+        "python.testing.pytestEnabled": true,
+        "python.testing.unittestEnabled": false,
+        "python.testing.pytestArgs": ["tests"],
+        "python.analysis.typeCheckingMode": "basic",
+        "python.analysis.autoImportCompletions": true,
+        
+        // Editor
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.organizeImports": true
+        },
+        "editor.rulers": [100],
+        "editor.tabSize": 4,
+        "editor.insertSpaces": true,
+        
+        // Files
+        "files.exclude": {
+          "**/__pycache__": true,
+          "**/*.pyc": true,
+          "**/.pytest_cache": true,
+          "**/.coverage": true,
+          "**/htmlcov": true,
+          "**/.mypy_cache": true
+        },
+        "files.watcherExclude": {
+          "**/__pycache__/**": true,
+          "**/.pytest_cache/**": true
+        },
+        
+        // Terminal
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "terminal.integrated.fontSize": 14
+      },
+      
+      "extensions": [
+        // Python essenciais
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.black-formatter",
+        "ms-python.flake8",
+        "ms-python.isort",
+        
+        // Testing
+        "littlefoxteam.vscode-python-test-adapter",
+        "hbenl.vscode-test-explorer",
+        
+        // Database
+        "mtxr.sqltools",
+        "mtxr.sqltools-driver-pg",
+        
+        // Git
+        "eamodio.gitlens",
+        "mhutchie.git-graph",
+        
+        // Docker
+        "ms-azuretools.vscode-docker",
+        
+        // REST Client
+        "humao.rest-client",
+        "rangav.vscode-thunder-client",
+        
+        // Markdown
+        "yzhang.markdown-all-in-one",
+        "DavidAnson.vscode-markdownlint",
+        
+        // YAML/JSON
+        "redhat.vscode-yaml",
+        "tamasfe.even-better-toml",
+        
+        // Utilities
+        "streetsidesoftware.code-spell-checker",
+        "streetsidesoftware.code-spell-checker-portuguese-brazilian",
+        "usernamehw.errorlens",
+        "christian-kohler.path-intellisense",
+        "oderwat.indent-rainbow",
+        "PKief.material-icon-theme",
+        "GitHub.copilot",
+        "GitHub.copilot-chat"
+      ]
+    }
+  },
+
+  // Use 'forwardPorts' to make a list of ports inside the container available locally
+  "forwardPorts": [8000, 5432, 6379],
+  
+  // Port labels
+  "portsAttributes": {
+    "8000": {
+      "label": "FastAPI Backend",
+      "onAutoForward": "notify"
+    },
+    "5432": {
+      "label": "PostgreSQL",
+      "onAutoForward": "silent"
+    },
+    "6379": {
+      "label": "Redis",
+      "onAutoForward": "silent"
+    }
+  },
+
+  // Run commands after container creation
+  "postCreateCommand": "pip install -r requirements.txt && pre-commit install",
+  
+  // Run commands on container start
+  "postStartCommand": "echo '🚀 SISCOM Backend Dev Container Ready!' && python --version && which python",
+  
+  // Comment out to connect as root instead
+  "remoteUser": "vscode",
+  
+  // Set environment variables
+  "remoteEnv": {
+    "PYTHONUNBUFFERED": "1",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "DATABASE_URL": "postgresql+asyncpg://siscom:siscom123@postgres:5432/siscom_dev",
+    "REDIS_URL": "redis://redis:6379/0",
+    "DEBUG": "true"
+  },
+
+  // Mount configuration
+  "mounts": [
+    "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached"
+  ]
+}
