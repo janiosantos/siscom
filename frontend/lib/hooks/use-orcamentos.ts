@@ -111,7 +111,7 @@ export async function converterOrcamentoParaVenda(
   id: number,
   formaPagamento: string
 ): Promise<{ orcamento: Orcamento; venda: any }> {
-  return apiClient.post<any>(`/orcamentos/${id}/converter`, {
+  return apiClient.post<any>(`/orcamentos/${id}/converter-venda`, {
     forma_pagamento: formaPagamento,
   })
 }
