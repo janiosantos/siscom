@@ -72,7 +72,7 @@ services:
     image: redis:7-alpine
     container_name: siscom-redis-dev
     ports:
-      - "6379:6379"
+      - "6380:6379"  # Porta 6380 no host, 6379 no container (evitar conflito)
     volumes:
       - redis-data:/data
     networks:
