@@ -1,1 +1,0 @@
-"""Routers do mock service"""

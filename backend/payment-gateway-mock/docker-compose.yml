@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  payment-gateway-mock:
+    build: .
+    container_name: payment-gateway-mock
+    ports:
+      - "8001:8001"
+    environment:
+      - MOCK_APPROVAL_RATE=0.90
+      - MOCK_LOG_LEVEL=INFO
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

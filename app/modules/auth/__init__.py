@@ -1,3 +1,0 @@
-"""
-Módulo de Autenticação e Autorização
-"""

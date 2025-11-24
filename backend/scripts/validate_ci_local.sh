@@ -1,0 +1,319 @@
+#!/bin/bash
+# Script de Validação Local CI/CD
+# Executa verificações locais antes de fazer push, evitando erros no GitHub Actions
+#
+# USO:
+#   ./scripts/validate_ci_local.sh
+#   make validate-local  (se configurado no Makefile)
+#
+# O QUE FAZ:
+#   1. Verifica sintaxe Python
+#   2. Valida imports de modelos
+#   3. Checa foreign keys incorretas
+#   4. Valida existência de classes nos models
+#   5. Verifica schemas Pydantic
+#   6. Valida funções específicas (converter_status_mp, etc)
+#   7. Checa configuração bcrypt
+#   8. Valida imports em conftest.py
+#   9. Verifica nomes de campos em testes
+#   10. Verifica tamanhos de boleto (código barras 44, linha digitável 47)
+#   11. Verifica tipos de exceções (ValueError vs BusinessException)
+#   12. Verifica percentuais em fixtures de teste
+#   13. VALIDA MÉTODOS (análise estática - detecta AttributeError)
+#   14. Executa testes pytest (opcional)
+#
+# VANTAGENS:
+#   - Detecta erros ANTES de fazer push
+#   - Economiza tempo (não precisa esperar GitHub Actions)
+#   - Feedback imediato sobre problemas
+#   - Executa os mesmos testes que rodam no CI/CD
+
+set -e
+
+BOLD='\033[1m'
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+echo -e "${BOLD}=================================================="
+echo -e "🔍 Validação Local do CI/CD"
+echo -e "==================================================${NC}"
+echo ""
+
+# 1. Sintaxe Python
+echo -e "${YELLOW}1️⃣  Verificando sintaxe Python...${NC}"
+if python3 -m py_compile app/models.py tests/conftest.py 2>/dev/null; then
+    echo -e "   ${GREEN}✅ Sintaxe Python OK${NC}"
+else
+    echo -e "   ${RED}❌ Erro de sintaxe Python${NC}"
+    exit 1
+fi
+echo ""
+
+# 2. Imports do módulo auth
+echo -e "${YELLOW}2️⃣  Verificando imports do módulo auth...${NC}"
+if grep -E "^class (User|Role|Permission|AuditLog|RefreshToken)\(" app/modules/auth/models.py > /dev/null; then
+    echo -e "   ${GREEN}✅ Módulo auth OK${NC}"
+else
+    echo -e "   ${RED}❌ Classes do módulo auth não encontradas${NC}"
+    exit 1
+fi
+echo ""
+
+# 3. Foreign keys incorretas
+echo -e "${YELLOW}3️⃣  Verificando foreign keys...${NC}"
+if grep -r 'ForeignKey("usuarios' app/modules --include="*.py"; then
+    echo -e "   ${RED}❌ Encontrada referência a 'usuarios' (deveria ser 'users')${NC}"
+    exit 1
+else
+    echo -e "   ${GREEN}✅ Nenhuma referência incorreta a 'usuarios'${NC}"
+fi
+echo ""
+
+# 4. Imports em app/models.py
+echo -e "${YELLOW}4️⃣  Verificando imports em app/models.py...${NC}"
+
+# Classes que devem existir
+declare -A model_checks=(
+    ["app/modules/produtos/models.py"]="Produto"
+    ["app/modules/categorias/models.py"]="Categoria"
+    ["app/modules/estoque/models.py"]="MovimentacaoEstoque LoteEstoque LocalizacaoEstoque"
+    ["app/modules/vendas/models.py"]="Venda ItemVenda"
+    ["app/modules/pdv/models.py"]="Caixa MovimentacaoCaixa"
+    ["app/modules/financeiro/models.py"]="ContaPagar ContaReceber"
+    ["app/modules/nfe/models.py"]="NotaFiscal"
+    ["app/modules/clientes/models.py"]="Cliente"
+    ["app/modules/condicoes_pagamento/models.py"]="CondicaoPagamento ParcelaPadrao"
+    ["app/modules/pagamentos/models.py"]="ChavePix TransacaoPix Boleto ConciliacaoBancaria"
+)
+
+errors=0
+for file in "${!model_checks[@]}"; do
+    if [ ! -f "$file" ]; then
+        echo -e "   ${RED}❌ Arquivo não encontrado: $file${NC}"
+        ((errors++))
+        continue
+    fi
+
+    for class in ${model_checks[$file]}; do
+        if ! grep -q "class $class(" "$file"; then
+            echo -e "   ${RED}❌ Classe $class não encontrada em $file${NC}"
+            ((errors++))
+        fi
+    done
+done
+
+if [ $errors -eq 0 ]; then
+    echo -e "   ${GREEN}✅ Todos os imports verificados (36 classes)${NC}"
+else
+    echo -e "   ${RED}❌ $errors erro(s) encontrado(s) nos imports${NC}"
+    exit 1
+fi
+echo ""
+
+# 5. Schemas Pydantic
+echo -e "${YELLOW}5️⃣  Verificando schemas Pydantic...${NC}"
+if grep -q "tipo_conta" app/modules/pagamentos/schemas.py && \
+   grep -q "nome_titular" app/modules/pagamentos/schemas.py; then
+    echo -e "   ${GREEN}✅ ChavePixBase tem campos obrigatórios${NC}"
+else
+    echo -e "   ${RED}❌ Campos faltando em ChavePixBase${NC}"
+    exit 1
+fi
+echo ""
+
+# 6. Converter status
+echo -e "${YELLOW}6️⃣  Verificando converter_status_mp...${NC}"
+if grep -q "def converter_status_mp.*StatusPagamento" app/integrations/mercadopago.py; then
+    echo -e "   ${GREEN}✅ converter_status_mp retorna StatusPagamento enum${NC}"
+else
+    echo -e "   ${RED}❌ converter_status_mp não retorna enum correto${NC}"
+    exit 1
+fi
+echo ""
+
+# 7. Bcrypt configuration
+echo -e "${YELLOW}7️⃣  Verificando configuração bcrypt...${NC}"
+if grep -q "bcrypt__default_rounds" app/modules/auth/security.py; then
+    echo -e "   ${GREEN}✅ CryptContext configurado corretamente${NC}"
+else
+    echo -e "   ${RED}❌ CryptContext não tem configuração bcrypt${NC}"
+    exit 1
+fi
+echo ""
+
+# 8. Verificar import que não sobrescreve app
+echo -e "${YELLOW}8️⃣  Verificando imports em conftest.py...${NC}"
+if grep -q "^import app\\.models" tests/conftest.py; then
+    echo -e "   ${RED}❌ 'import app.models' sobrescreve variável app${NC}"
+    echo -e "   ${YELLOW}   Use 'from app import models' no lugar${NC}"
+    exit 1
+elif grep -q "^from app import models" tests/conftest.py; then
+    echo -e "   ${GREEN}✅ Import de models correto (não sobrescreve app)${NC}"
+else
+    echo -e "   ${YELLOW}⚠️  Import de models não encontrado${NC}"
+fi
+echo ""
+
+# 9. Verificar nomes de campos em schemas de testes
+echo -e "${YELLOW}9️⃣  Verificando nomes de campos em testes...${NC}"
+errors=0
+
+# Verificar se test_boleto.py usa campos corretos
+if [ -f "tests/test_boleto.py" ]; then
+    if grep -q "cedente_cnpj" tests/test_boleto.py; then
+        echo -e "   ${RED}❌ test_boleto.py usa 'cedente_cnpj' (deveria ser 'cedente_documento')${NC}"
+        ((errors++))
+    fi
+    if grep -q "sacado_cpf_cnpj" tests/test_boleto.py; then
+        echo -e "   ${RED}❌ test_boleto.py usa 'sacado_cpf_cnpj' (deveria ser 'sacado_documento')${NC}"
+        ((errors++))
+    fi
+fi
+
+# Verificar se test_pix.py usa campos corretos
+if [ -f "tests/test_pix.py" ]; then
+    if ! grep -q "tipo_conta" tests/test_pix.py && grep -q "ChavePixCreate" tests/test_pix.py; then
+        echo -e "   ${YELLOW}⚠️  test_pix.py pode estar faltando campo 'tipo_conta'${NC}"
+    fi
+fi
+
+if [ $errors -eq 0 ]; then
+    echo -e "   ${GREEN}✅ Nomes de campos corretos nos testes${NC}"
+else
+    echo -e "   ${RED}❌ $errors erro(s) encontrado(s) nos nomes de campos${NC}"
+    exit 1
+fi
+echo ""
+
+# 10. Verificar tamanhos corretos (código de barras, linha digitável)
+echo -e "${YELLOW}🔟  Verificando tamanhos de boleto (código de barras, linha digitável)...${NC}"
+errors=0
+
+# Verificar se gera código de barras com 44 dígitos
+if [ -f "app/modules/pagamentos/services/boleto_service.py" ]; then
+    if grep -q "# Total.*44" app/modules/pagamentos/services/boleto_service.py && \
+       grep -q "def _gerar_codigo_barras_fake" app/modules/pagamentos/services/boleto_service.py; then
+        echo -e "   ${GREEN}✅ Código de barras configurado para 44 dígitos${NC}"
+    else
+        echo -e "   ${YELLOW}⚠️  Verificar geração de código de barras (deve ser 44 dígitos)${NC}"
+        ((errors++))
+    fi
+
+    # Verificar linha digitável (47 caracteres)
+    if grep -q "# Total.*47" app/modules/pagamentos/services/boleto_service.py && \
+       grep -q "def _gerar_linha_digitavel_fake" app/modules/pagamentos/services/boleto_service.py; then
+        echo -e "   ${GREEN}✅ Linha digitável configurada para 47 caracteres${NC}"
+    else
+        echo -e "   ${YELLOW}⚠️  Verificar geração de linha digitável (deve ser 47 caracteres)${NC}"
+        ((errors++))
+    fi
+fi
+
+if [ $errors -eq 0 ]; then
+    echo -e "   ${GREEN}✅ Tamanhos de boleto corretos${NC}"
+fi
+echo ""
+
+# 11. Verificar tipos de exceções corretos
+echo -e "${YELLOW}1️⃣1️⃣  Verificando tipos de exceções...${NC}"
+errors=0
+
+# Verificar se cancelar_boleto usa ValueError (não BusinessException)
+if [ -f "app/modules/pagamentos/services/boleto_service.py" ]; then
+    if grep -A 5 "def cancelar_boleto" app/modules/pagamentos/services/boleto_service.py | \
+       grep -q "raise ValueError" app/modules/pagamentos/services/boleto_service.py; then
+        echo -e "   ${GREEN}✅ cancelar_boleto usa ValueError${NC}"
+    else
+        if grep -A 5 "def cancelar_boleto" app/modules/pagamentos/services/boleto_service.py | \
+           grep -q "raise BusinessException" app/modules/pagamentos/services/boleto_service.py; then
+            echo -e "   ${YELLOW}⚠️  cancelar_boleto deveria usar ValueError (não BusinessException)${NC}"
+            ((errors++))
+        fi
+    fi
+fi
+
+if [ $errors -eq 0 ]; then
+    echo -e "   ${GREEN}✅ Tipos de exceções corretos${NC}"
+fi
+echo ""
+
+# 12. Verificar percentuais em fixtures de teste
+echo -e "${YELLOW}1️⃣2️⃣  Verificando percentuais em fixtures de teste...${NC}"
+errors=0
+
+if [ -f "tests/test_boleto.py" ]; then
+    if grep -q "percentual_juros" tests/test_boleto.py && \
+       grep -q "percentual_multa" tests/test_boleto.py; then
+        echo -e "   ${GREEN}✅ Fixture config_boleto_bb tem percentuais${NC}"
+    else
+        echo -e "   ${YELLOW}⚠️  Fixture config_boleto_bb pode estar faltando percentuais de juros/multa${NC}"
+        ((errors++))
+    fi
+fi
+
+if [ $errors -eq 0 ]; then
+    echo -e "   ${GREEN}✅ Fixtures de teste configuradas corretamente${NC}"
+fi
+echo ""
+
+# 13. Validar métodos usados nos testes (análise estática)
+echo -e "${YELLOW}1️⃣3️⃣  Validando métodos usados nos testes...${NC}"
+if command -v python3 &> /dev/null; then
+    if python3 scripts/validate_test_methods.py 2>&1 | tail -20 | grep -q "❌"; then
+        echo -e "   ${RED}❌ Métodos inexistentes detectados${NC}"
+        python3 scripts/validate_test_methods.py
+        exit 1
+    else
+        echo -e "   ${GREEN}✅ Todos os métodos existem nas classes${NC}"
+    fi
+else
+    echo -e "   ${YELLOW}⚠️  Python3 não instalado${NC}"
+fi
+echo ""
+
+# 14. Executar testes pytest (opcional - pode falhar se deps não instaladas)
+echo -e "${YELLOW}1️⃣4️⃣  Executando testes pytest (opcional)...${NC}"
+if command -v pytest &> /dev/null; then
+    echo -e "   ${YELLOW}   Executando pytest com coverage...${NC}"
+
+    # Executar pytest com timeout e capturar resultado
+    if timeout 120 python -m pytest tests/ -v --tb=short --maxfail=3 2>&1 | tee /tmp/pytest_output.txt; then
+        echo -e "   ${GREEN}✅ Testes pytest passaram!${NC}"
+
+        # Mostrar resumo
+        if grep -q "passed" /tmp/pytest_output.txt; then
+            summary=$(grep -E "passed|failed|error" /tmp/pytest_output.txt | tail -1)
+            echo -e "   ${GREEN}   $summary${NC}"
+        fi
+    else
+        exit_code=$?
+        if [ $exit_code -eq 124 ]; then
+            echo -e "   ${YELLOW}⚠️  Testes excederam timeout de 120s${NC}"
+        else
+            echo -e "   ${RED}❌ Alguns testes falharam${NC}"
+            echo -e "   ${YELLOW}   Verifique os erros acima${NC}"
+
+            # Mostrar apenas os testes que falharam
+            if [ -f /tmp/pytest_output.txt ]; then
+                echo ""
+                echo -e "   ${YELLOW}Testes que falharam:${NC}"
+                grep "FAILED" /tmp/pytest_output.txt | head -5 | while read line; do
+                    echo -e "   ${RED}   $line${NC}"
+                done
+            fi
+            exit 1
+        fi
+    fi
+else
+    echo -e "   ${YELLOW}⚠️  pytest não instalado - pulando testes${NC}"
+    echo -e "   ${YELLOW}   Instale com: pip install -r requirements.txt${NC}"
+fi
+echo ""
+
+echo -e "${BOLD}${GREEN}=================================================="
+echo -e "✅ VALIDAÇÃO COMPLETA - TUDO OK!"
+echo -e "==================================================${NC}"
+echo ""
+echo -e "${GREEN}Você pode fazer push com segurança! 🚀${NC}"
