@@ -1,7 +1,7 @@
 """Add valor_juros and valor_multa to boleto table
 
 Revision ID: 2ff86a9ff2d9
-Revises: 003
+Revises: 006_performance_indexes
 Create Date: 2025-11-20 23:03:31.353306
 
 """
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision: str = '2ff86a9ff2d9'
-down_revision: Union[str, None] = '003'
+down_revision: Union[str, None] = '006_performance_indexes'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

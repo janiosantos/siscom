@@ -1,7 +1,7 @@
 """add_performance_indexes
 
-Revision ID: 006
-Revises: 005
+Revision ID: 006_performance_indexes
+Revises: 005_documentos_auxiliares
 Create Date: 2025-11-23
 
 Adiciona índices compostos otimizados para melhorar performance de queries
@@ -11,8 +11,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '006'
-down_revision = '005'
+revision = '006_performance_indexes'
+down_revision = '005_documentos_auxiliares'
 branch_labels = None
 depends_on = None
 
