@@ -49,11 +49,62 @@ class Settings(BaseSettings):
     # JWT
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
     # Logging and Monitoring
     # URL do Sentry para monitoramento de erros (opcional)
     SENTRY_DSN: str = ""
     LOG_LEVEL: str = "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+
+    # Integrations - Mercado Pago
+    MERCADOPAGO_ACCESS_TOKEN: str = ""
+    MERCADOPAGO_PUBLIC_KEY: str = ""
+    MERCADOPAGO_WEBHOOK_SECRET: str = ""
+
+    # Integrations - PagSeguro
+    PIX_PAGSEGURO_CLIENT_ID: str = ""
+    PIX_PAGSEGURO_CLIENT_SECRET: str = ""
+    PAGSEGURO_TOKEN: str = ""
+    PAGSEGURO_SANDBOX: bool = True
+
+    # Integrations - Cielo
+    CIELO_CLIENT_ID: str = ""
+    CIELO_CLIENT_SECRET: str = ""
+    CIELO_MERCHANT_ID: str = ""
+
+    # Integrations - Stone
+    STONE_CLIENT_ID: str = ""
+    STONE_CLIENT_SECRET: str = ""
+
+    # Integrations - Shipping
+    CORREIOS_API_KEY: str = ""
+    MELHOR_ENVIO_CLIENT_ID: str = ""
+    MELHOR_ENVIO_CLIENT_SECRET: str = ""
+    FRENET_API_KEY: str = ""
+
+    # Integrations - Communication
+    SENDGRID_API_KEY: str = ""
+    AWS_SES_ACCESS_KEY: str = ""
+    AWS_SES_SECRET_KEY: str = ""
+    TWILIO_ACCOUNT_SID: str = ""
+    TWILIO_AUTH_TOKEN: str = ""
+    TWILIO_PHONE_NUMBER: str = ""
+    WHATSAPP_API_TOKEN: str = ""
+
+    # Integrations - Marketplaces
+    MERCADO_LIVRE_CLIENT_ID: str = ""
+    MERCADO_LIVRE_CLIENT_SECRET: str = ""
+    AMAZON_CLIENT_ID: str = ""
+    AMAZON_CLIENT_SECRET: str = ""
+
+    # BI - Metabase
+    METABASE_URL: str = "http://localhost:3000"
+    METABASE_USERNAME: str = ""
+    METABASE_PASSWORD: str = ""
+
+    # Celery
+    CELERY_BROKER_URL: str = "redis://localhost:6379/1"
+    CELERY_RESULT_BACKEND: str = "redis://localhost:6379/1"
 
     @validator("ALLOWED_ORIGINS")
     def assemble_cors_origins(cls, v: str) -> List[str]:
