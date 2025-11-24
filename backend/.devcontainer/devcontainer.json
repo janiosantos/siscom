@@ -98,25 +98,27 @@
         "GitHub.copilot-chat",
         "ms-vscode-remote.remote-containers",
         "ms-vscode-remote.vscode-remote-extensionpack",
-        "Anthropic.claude-code"
+        "Anthropic.claude-code",
+        "alexcvzz.vscode-sqlite",
+        "qwtel.sqlite-viewer"
       ]
     }
   },
 
   // Use 'forwardPorts' to make a list of ports inside the container available locally
-  "forwardPorts": [8001, 6432, 6479],
+  "forwardPorts": [8000, 5432, 6379],
   
   // Port labels
   "portsAttributes": {
-    "8001": {
+    "8000": {
       "label": "FastAPI Backend",
       "onAutoForward": "notify"
     },
-    "6432": {
+    "5432": {
       "label": "PostgreSQL",
       "onAutoForward": "silent"
     },
-    "6479": {
+    "6379": {
       "label": "Redis",
       "onAutoForward": "silent"
     }
@@ -135,8 +137,11 @@
   "remoteEnv": {
     "PYTHONUNBUFFERED": "1",
     "PYTHONDONTWRITEBYTECODE": "1",
-    "DATABASE_URL": "postgresql+asyncpg://siscom:siscom123@postgres:6432/siscom_dev",
-    "REDIS_URL": "redis://redis:6479/0",
+    // "DATABASE_URL": "postgresql+asyncpg://siscom:siscom123@postgres:6432/siscom_dev",
+    "DATABASE_URL": "sqlite+aiosqlite:///./siscom.db",
+
+
+    "REDIS_URL": "redis://redis:6379/0",
     "DEBUG": "true"
   },
 

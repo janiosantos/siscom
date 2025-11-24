@@ -11,11 +11,12 @@ services:
       - .:/workspace:cached
       - backend-venv:/workspace/venv
     ports:
-      - "8001:8000"
+      - "8000:8000"
     environment:
       - PYTHONUNBUFFERED=1
       - PYTHONDONTWRITEBYTECODE=1
-      - DATABASE_URL=postgresql+asyncpg://siscom:siscom123@postgres:6432/siscom_dev
+      - DATABASE_URL=postgresql+asyncpg://siscom:siscom123@siscom-postgres-dev:5432/siscom_dev
+      #- DATABASE_URL=sqlite+aiosqlite:///./siscom.db
       - REDIS_URL=redis://redis:6479/0
       - DEBUG=true
       - SECRET_KEY=dev-secret-key-change-in-production
@@ -51,6 +52,8 @@ services:
   redis:
     image: redis:7-alpine
     container_name: siscom-redis-dev
+    ports:
+      - "6379:6379"
     volumes:
       - redis-data:/data
     networks:

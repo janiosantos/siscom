@@ -3,17 +3,19 @@ FROM python:3.12-bullseye
 # Instalar dependências do sistema
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends \
-        git \
-        curl \
-        wget \
-        zsh \
-        build-essential \
-        libpq-dev \
-        postgresql-client \
-        redis-tools \
-        vim \
-        nano \
-        sudo \
+    git \
+    curl \
+    wget \
+    fping \
+    net-tools \
+    zsh \
+    build-essential \
+    libpq-dev \
+    postgresql-client \
+    redis-tools \
+    vim \
+    nano \
+    sudo \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 

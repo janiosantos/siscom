@@ -2,12 +2,20 @@
 Configuração global da aplicação
 """
 from typing import List
-from pydantic_settings import BaseSettings
+
 from pydantic import validator
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
     """Configurações da aplicação"""
+
+    # model_config: set env file and ignore extra env vars
+    model_config = {
+        "env_file": ".env",
+        "case_sensitive": True,
+        "extra": "ignore",
+    }
 
     # Application
     APP_NAME: str = "ERP Materiais de Construção"
@@ -16,11 +24,13 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "test-secret-key-change-in-production"
 
     # Database
-    DATABASE_URL: str = "sqlite+aiosqlite:///:memory:"
+    # DATABASE_URL: str = "sqlite+aiosqlite:///:memory:"
+    DATABASE_URL = "postgresql+asyncpg://siscom:siscom123@172.21.0.2:5432/siscom_dev"
     DATABASE_TEST_URL: str = "sqlite+aiosqlite:///:memory:"
 
     # CORS
-    ALLOWED_ORIGINS: str = "http://localhost:3000,http://localhost:8000"
+    ALLOWED_ORIGINS: str = "http://localhost:3000,http://localhost:8000, \
+                                http://0.0.0.0:3000,http://0.0.0.0:8000"
 
     # Fiscal
     AMBIENTE_NFE: str = "homologacao"
@@ -34,14 +44,15 @@ class Settings(BaseSettings):
     SMTP_PASSWORD: str = ""
 
     # Redis (opcional)
-    REDIS_URL: str = "redis://localhost:6379/0"
+    REDIS_URL: str = "redis://172.21.0.2:6379/0"
 
     # JWT
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     # Logging and Monitoring
-    SENTRY_DSN: str = ""  # URL do Sentry para monitoramento de erros (opcional)
+    # URL do Sentry para monitoramento de erros (opcional)
+    SENTRY_DSN: str = ""
     LOG_LEVEL: str = "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
 
     @validator("ALLOWED_ORIGINS")
@@ -51,9 +62,7 @@ class Settings(BaseSettings):
             return [origin.strip() for origin in v.split(",")]
         return v
 
-    class Config:
-        env_file = ".env"
-        case_sensitive = True
+    # model_config replaces the old Config inner class for pydantic v2
 
 
 settings = Settings()
