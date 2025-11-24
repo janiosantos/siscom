@@ -5,23 +5,43 @@ services:
   backend:
     build:
       context: .
-      dockerfile: .devcontainer/Dockerfile
+      dockerfile: .devcontainer-backend/Dockerfile
     container_name: siscom-backend-dev
     volumes:
       - .:/workspace:cached
       - backend-venv:/workspace/venv
     ports:
-      - "8001:8000"
+      - "8000:8000"
     environment:
       - PYTHONUNBUFFERED=1
       - PYTHONDONTWRITEBYTECODE=1
-      - DATABASE_URL=postgresql+asyncpg://siscom:siscom123@postgres:6432/siscom_dev
-      - REDIS_URL=redis://redis:6479/0
+      - DATABASE_URL=postgresql+asyncpg://siscom:siscom123@postgres:5432/siscom_dev
+      - REDIS_URL=redis://redis:6379/0
       - DEBUG=true
       - SECRET_KEY=dev-secret-key-change-in-production
     depends_on:
       - postgres
       - redis
+    networks:
+      - siscom-network
+    command: sleep infinity
+
+  # Frontend - Node.js/Next.js
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ../.devcontainer-frontend/Dockerfile
+    container_name: siscom-frontend-dev
+    volumes:
+      - ./frontend:/workspace:cached
+      - frontend-node-modules:/workspace/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+      - NEXT_PUBLIC_APP_NAME=SISCOM ERP
+      - NEXT_PUBLIC_APP_VERSION=1.0.0
     networks:
       - siscom-network
     command: sleep infinity
@@ -51,6 +71,8 @@ services:
   redis:
     image: redis:7-alpine
     container_name: siscom-redis-dev
+    ports:
+      - "6379:6379"
     volumes:
       - redis-data:/data
     networks:
@@ -68,6 +90,8 @@ volumes:
     name: siscom-redis-dev-data
   backend-venv:
     name: siscom-backend-venv
+  frontend-node-modules:
+    name: siscom-frontend-node-modules
 
 networks:
   siscom-network:

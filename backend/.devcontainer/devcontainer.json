@@ -70,41 +70,24 @@
       },
       
       "extensions": [
-        // Python essenciais
         "ms-python.python",
         "ms-python.vscode-pylance",
         "ms-python.black-formatter",
         "ms-python.flake8",
         "ms-python.isort",
-        
-        // Testing
         "littlefoxteam.vscode-python-test-adapter",
         "hbenl.vscode-test-explorer",
-        
-        // Database
         "mtxr.sqltools",
         "mtxr.sqltools-driver-pg",
-        
-        // Git
         "eamodio.gitlens",
         "mhutchie.git-graph",
-        
-        // Docker
         "ms-azuretools.vscode-docker",
-        
-        // REST Client
         "humao.rest-client",
         "rangav.vscode-thunder-client",
-        
-        // Markdown
         "yzhang.markdown-all-in-one",
         "DavidAnson.vscode-markdownlint",
-        
-        // YAML/JSON
         "redhat.vscode-yaml",
         "tamasfe.even-better-toml",
-        
-        // Utilities
         "streetsidesoftware.code-spell-checker",
         "streetsidesoftware.code-spell-checker-portuguese-brazilian",
         "usernamehw.errorlens",
@@ -112,25 +95,28 @@
         "oderwat.indent-rainbow",
         "PKief.material-icon-theme",
         "GitHub.copilot",
-        "GitHub.copilot-chat"
+        "GitHub.copilot-chat",
+        "ms-vscode-remote.remote-containers",
+        "ms-vscode-remote.vscode-remote-extensionpack",
+        "Anthropic.claude-code"
       ]
     }
   },
 
   // Use 'forwardPorts' to make a list of ports inside the container available locally
-  "forwardPorts": [8000, 5432, 6379],
+  "forwardPorts": [8001, 6432, 6479],
   
   // Port labels
   "portsAttributes": {
-    "8000": {
+    "8001": {
       "label": "FastAPI Backend",
       "onAutoForward": "notify"
     },
-    "5432": {
+    "6432": {
       "label": "PostgreSQL",
       "onAutoForward": "silent"
     },
-    "6379": {
+    "6479": {
       "label": "Redis",
       "onAutoForward": "silent"
     }
@@ -149,8 +135,8 @@
   "remoteEnv": {
     "PYTHONUNBUFFERED": "1",
     "PYTHONDONTWRITEBYTECODE": "1",
-    "DATABASE_URL": "postgresql+asyncpg://siscom:siscom123@postgres:5432/siscom_dev",
-    "REDIS_URL": "redis://redis:6379/0",
+    "DATABASE_URL": "postgresql+asyncpg://siscom:siscom123@postgres:6432/siscom_dev",
+    "REDIS_URL": "redis://redis:6479/0",
     "DEBUG": "true"
   },
 

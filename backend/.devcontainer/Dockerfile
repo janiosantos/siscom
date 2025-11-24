@@ -1,4 +1,4 @@
-FROM python:3.12-slim
+FROM python:3.12-bullseye
 
 # Instalar dependências do sistema
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
