@@ -30,6 +30,10 @@ const customRender = (
 
 // Re-export everything
 export * from '@testing-library/react'
+
+// Explicitly re-export commonly used utilities for better TypeScript support
+export { screen, fireEvent, waitFor } from '@testing-library/react'
+
 export { customRender as render }
 
 // Mock user data for tests

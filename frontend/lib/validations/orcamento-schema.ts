@@ -4,29 +4,24 @@
 import { z } from 'zod'
 
 export const itemOrcamentoSchema = z.object({
-  produto_id: z.number({
-    required_error: 'Produto é obrigatório',
-  }).positive('Produto inválido'),
+  produto_id: z.number({ message: 'Produto é obrigatório' })
+    .positive('Produto inválido'),
 
-  quantidade: z.number({
-    required_error: 'Quantidade é obrigatória',
-  }).positive('Quantidade deve ser maior que zero'),
+  quantidade: z.number({ message: 'Quantidade é obrigatória' })
+    .positive('Quantidade deve ser maior que zero'),
 
-  preco_unitario: z.number({
-    required_error: 'Preço unitário é obrigatório',
-  }).positive('Preço deve ser maior que zero'),
+  preco_unitario: z.number({ message: 'Preço unitário é obrigatório' })
+    .positive('Preço deve ser maior que zero'),
 
   desconto_item: z.number().min(0, 'Desconto não pode ser negativo').default(0),
 })
 
 export const orcamentoCreateSchema = z.object({
-  cliente_id: z.number({
-    required_error: 'Cliente é obrigatório',
-  }).positive('Cliente inválido'),
+  cliente_id: z.number({ message: 'Cliente é obrigatório' })
+    .positive('Cliente inválido'),
 
-  validade_dias: z.number({
-    required_error: 'Validade é obrigatória',
-  }).int('Deve ser um número inteiro')
+  validade_dias: z.number({ message: 'Validade é obrigatória' })
+    .int('Deve ser um número inteiro')
     .min(1, 'Validade deve ser no mínimo 1 dia')
     .max(365, 'Validade não pode exceder 365 dias')
     .default(7),
