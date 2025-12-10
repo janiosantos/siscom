@@ -137,10 +137,7 @@
   "remoteEnv": {
     "PYTHONUNBUFFERED": "1",
     "PYTHONDONTWRITEBYTECODE": "1",
-    // "DATABASE_URL": "postgresql+asyncpg://siscom:siscom123@postgres:6432/siscom_dev",
-    "DATABASE_URL": "sqlite+aiosqlite:///./siscom.db",
-
-
+    "DATABASE_URL": "postgresql+asyncpg://siscom:siscom123@siscom-postgres-dev:5432/siscom_dev",
     "REDIS_URL": "redis://redis:6379/0",
     "DEBUG": "true"
   },

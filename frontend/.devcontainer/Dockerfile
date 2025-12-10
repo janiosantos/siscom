@@ -30,14 +30,16 @@ RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master
 # Instalar ferramentas globais do Node.js
 USER root
 RUN npm install -g \
-    npm@latest \
-    pnpm \
-    yarn \
     vercel \
     next \
     eslint \
     prettier \
     typescript
+
+RUN corepack enable \
+  && corepack prepare pnpm@latest --activate \
+  && corepack prepare yarn@stable --activate \
+  && npm i -g vercel
 
 # Configurar diretório de trabalho
 WORKDIR /workspace

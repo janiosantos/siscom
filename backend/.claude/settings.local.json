@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python:*)",
+      "Bash(make migrate:*)",
+      "Bash(alembic stamp:*)",
+      "Bash(alembic heads:*)",
+      "Bash(alembic current:*)",
+      "Bash(pg_isready:*)",
+      "Bash(export DATABASE_URL:*)",
+      "Bash(echo:*)",
+      "Bash(PGPASSWORD=siscom123 psql:*)",
+      "Bash(alembic revision:*)",
+      "Bash(alembic upgrade:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

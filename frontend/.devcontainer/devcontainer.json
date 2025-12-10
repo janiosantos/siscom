@@ -95,7 +95,7 @@
           "**/node_modules": true
         }
       },
-
+      
       "extensions": [
         // TypeScript & React essenciais
         "dbaeumer.vscode-eslint",
@@ -148,14 +148,25 @@
         "wix.vscode-import-cost",
 
         // Console Ninja (Debug)
-        "WallabyJs.console-ninja"
+        "WallabyJs.console-ninja",
+        "hbenl.vscode-test-explorer",
+        "mtxr.sqltools",
+        "mtxr.sqltools-driver-pg",
+        "eamodio.gitlens",
+        "mhutchie.git-graph",
+        "ms-azuretools.vscode-docker",
+        "tamasfe.even-better-toml",
+        "oderwat.indent-rainbow",
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+        "Anthropic.claude-code"
       ]
     }
   },
 
   // Use 'forwardPorts' to make a list of ports inside the container available locally
   "forwardPorts": [3000],
-
+  
   // Port labels
   "portsAttributes": {
     "3000": {
@@ -172,17 +183,18 @@
 
   // Comment out to connect as root instead
   "remoteUser": "node",
-
+  "updateRemoteUserUID": true,
+  
   // Set environment variables
   "remoteEnv": {
     "NODE_ENV": "development",
     "NEXT_PUBLIC_API_URL": "http://localhost:8000/api/v1",
     "NEXT_PUBLIC_APP_NAME": "SISCOM ERP",
     "NEXT_PUBLIC_APP_VERSION": "1.0.0"
-  },
+  }
 
   // Mount configuration
-  "mounts": [
-    "source=${localWorkspaceFolder}/frontend,target=/workspace,type=bind,consistency=cached"
-  ]
+  //"mounts": [
+  //  "source=${localWorkspaceFolder}/frontend,target=/workspace,type=bind,consistency=cached"
+  //]
 }
