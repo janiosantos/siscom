@@ -4,7 +4,8 @@
  * Monitora Core Web Vitals automaticamente
  */
 
-import { onCLS, onFCP, onFID, onINP, onLCP, onTTFB, Metric } from 'web-vitals'
+import React from 'react'
+import { onCLS, onFCP, onINP, onLCP, onTTFB, Metric } from 'web-vitals'
 
 // Tipos de métricas
 type WebVitalsMetric = {
@@ -20,7 +21,6 @@ type WebVitalsMetric = {
 const THRESHOLDS = {
   CLS: { good: 0.1, poor: 0.25 },
   FCP: { good: 1800, poor: 3000 },
-  FID: { good: 100, poor: 300 },
   INP: { good: 200, poor: 500 },
   LCP: { good: 2500, poor: 4000 },
   TTFB: { good: 800, poor: 1800 },
@@ -101,7 +101,6 @@ export function initWebVitals() {
   try {
     onCLS(handleMetric)
     onFCP(handleMetric)
-    onFID(handleMetric)
     onINP(handleMetric)
     onLCP(handleMetric)
     onTTFB(handleMetric)
@@ -136,7 +135,7 @@ export function clearWebVitals() {
 }
 
 // Componente React para exibir Web Vitals (DEV apenas)
-export function WebVitalsDebugger() {
+export function WebVitalsDebugger(): React.ReactElement | null {
   if (process.env.NODE_ENV !== 'development') {
     return null
   }
@@ -156,66 +155,73 @@ export function WebVitalsDebugger() {
     return null
   }
 
-  return (
-    <div
-      style={{
-        position: 'fixed',
-        bottom: 20,
-        right: 20,
-        background: 'rgba(0, 0, 0, 0.9)',
-        color: 'white',
-        padding: '10px 15px',
-        borderRadius: 8,
-        fontSize: 12,
-        fontFamily: 'monospace',
-        zIndex: 9999,
-        maxWidth: 300,
-      }}
-    >
-      <div style={{ fontWeight: 'bold', marginBottom: 8 }}>Web Vitals</div>
-      {Object.entries(vitals).map(([key, metric]) => (
-        <div
-          key={key}
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            marginBottom: 4,
-          }}
-        >
-          <span>{metric.name}:</span>
-          <span
-            style={{
-              color:
-                metric.rating === 'good'
-                  ? '#0f0'
-                  : metric.rating === 'needs-improvement'
-                  ? '#ff0'
-                  : '#f00',
+  const containerStyle: React.CSSProperties = {
+    position: 'fixed',
+    bottom: 20,
+    right: 20,
+    background: 'rgba(0, 0, 0, 0.9)',
+    color: 'white',
+    padding: '10px 15px',
+    borderRadius: 8,
+    fontSize: 12,
+    fontFamily: 'monospace',
+    zIndex: 9999,
+    maxWidth: 300,
+  }
+
+  const titleStyle: React.CSSProperties = {
+    fontWeight: 'bold',
+    marginBottom: 8,
+  }
+
+  const metricRowStyle: React.CSSProperties = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  }
+
+  const buttonStyle: React.CSSProperties = {
+    marginTop: 8,
+    padding: '4px 8px',
+    background: '#333',
+    border: '1px solid #666',
+    color: 'white',
+    borderRadius: 4,
+    cursor: 'pointer',
+    fontSize: 11,
+  }
+
+  const getMetricColor = (rating: string): string => {
+    if (rating === 'good') return '#0f0'
+    if (rating === 'needs-improvement') return '#ff0'
+    return '#f00'
+  }
+
+  return React.createElement(
+    'div',
+    { style: containerStyle },
+    React.createElement('div', { style: titleStyle }, 'Web Vitals'),
+    ...Object.entries(vitals).map(([key, metric]) =>
+      React.createElement(
+        'div',
+        { key, style: metricRowStyle },
+        React.createElement('span', null, `${metric.name}:`),
+        React.createElement(
+          'span',
+          {
+            style: {
+              color: getMetricColor(metric.rating),
               fontWeight: 'bold',
-            }}
-          >
-            {metric.value.toFixed(0)} ({metric.rating})
-          </span>
-        </div>
-      ))}
-      <button
-        onClick={clearWebVitals}
-        style={{
-          marginTop: 8,
-          padding: '4px 8px',
-          background: '#333',
-          border: '1px solid #666',
-          color: 'white',
-          borderRadius: 4,
-          cursor: 'pointer',
-          fontSize: 11,
-        }}
-      >
-        Clear
-      </button>
-    </div>
+            },
+          },
+          `${metric.value.toFixed(0)} (${metric.rating})`
+        )
+      )
+    ),
+    React.createElement(
+      'button',
+      { onClick: clearWebVitals, style: buttonStyle },
+      'Clear'
+    )
   )
 }
-
-// Import React (necessário para WebVitalsDebugger)
-import React from 'react'

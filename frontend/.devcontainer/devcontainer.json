@@ -7,7 +7,7 @@
   // Features to add to the dev container
   "features": {
     "ghcr.io/devcontainers/features/node:1": {
-      "version": "18",
+      "version": "20",
       "installTools": true
     },
     "ghcr.io/devcontainers/features/git:1": {
