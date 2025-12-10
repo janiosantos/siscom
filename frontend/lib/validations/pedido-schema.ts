@@ -4,17 +4,14 @@
 import { z } from 'zod'
 
 export const itemPedidoSchema = z.object({
-  produto_id: z.number({
-    required_error: 'Produto é obrigatório',
-  }).positive('Produto inválido'),
+  produto_id: z.number({ message: 'Produto é obrigatório' })
+    .positive('Produto inválido'),
 
-  quantidade: z.number({
-    required_error: 'Quantidade é obrigatória',
-  }).positive('Quantidade deve ser maior que zero'),
+  quantidade: z.number({ message: 'Quantidade é obrigatória' })
+    .positive('Quantidade deve ser maior que zero'),
 
-  preco_unitario: z.number({
-    required_error: 'Preço unitário é obrigatório',
-  }).positive('Preço deve ser maior que zero'),
+  preco_unitario: z.number({ message: 'Preço unitário é obrigatório' })
+    .positive('Preço deve ser maior que zero'),
 
   desconto_item: z.number()
     .min(0, 'Desconto não pode ser negativo')
@@ -26,23 +23,21 @@ export const itemPedidoSchema = z.object({
 })
 
 export const pedidoVendaCreateSchema = z.object({
-  cliente_id: z.number({
-    required_error: 'Cliente é obrigatório',
-  }).positive('Cliente inválido'),
+  cliente_id: z.number({ message: 'Cliente é obrigatório' })
+    .positive('Cliente inválido'),
 
   orcamento_id: z.number().positive().optional(),
 
-  data_entrega_prevista: z.string({
-    required_error: 'Data de entrega prevista é obrigatória',
-  }).refine((date) => {
-    const entrega = new Date(date)
-    const hoje = new Date()
-    hoje.setHours(0, 0, 0, 0)
-    return entrega >= hoje
-  }, 'Data de entrega não pode ser no passado'),
+  data_entrega_prevista: z.string({ message: 'Data de entrega prevista é obrigatória' })
+    .refine((date) => {
+      const entrega = new Date(date)
+      const hoje = new Date()
+      hoje.setHours(0, 0, 0, 0)
+      return entrega >= hoje
+    }, 'Data de entrega não pode ser no passado'),
 
   tipo_entrega: z.enum(['RETIRADA', 'ENTREGA', 'TRANSPORTADORA'], {
-    required_error: 'Tipo de entrega é obrigatório',
+    message: 'Tipo de entrega é obrigatório'
   }),
 
   endereco_entrega: z.string()
@@ -123,9 +118,8 @@ export const faturarPedidoSchema = z.object({
 })
 
 export const cancelarPedidoSchema = z.object({
-  motivo: z.string({
-    required_error: 'Motivo do cancelamento é obrigatório',
-  }).min(10, 'Motivo deve ter pelo menos 10 caracteres')
+  motivo: z.string({ message: 'Motivo do cancelamento é obrigatório' })
+    .min(10, 'Motivo deve ter pelo menos 10 caracteres')
     .max(500, 'Motivo limitado a 500 caracteres'),
 })
 
