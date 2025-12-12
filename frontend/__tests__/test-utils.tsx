@@ -1,5 +1,6 @@
 import React, { ReactElement } from 'react'
 import { render, RenderOptions } from '@testing-library/react'
+import { userEvent } from '@testing-library/user-event'
 import { SWRConfig } from 'swr'
 
 // Create a custom render function that includes providers
@@ -26,7 +27,13 @@ const AllTheProviders = ({ children }: AllTheProvidersProps) => {
 const customRender = (
   ui: ReactElement,
   options?: Omit<RenderOptions, 'wrapper'>,
-) => render(ui, { wrapper: AllTheProviders, ...options })
+) => {
+  const renderResult = render(ui, { wrapper: AllTheProviders, ...options })
+  return {
+    user: userEvent.setup(),
+    ...renderResult,
+  }
+}
 
 // Re-export everything
 export * from '@testing-library/react'

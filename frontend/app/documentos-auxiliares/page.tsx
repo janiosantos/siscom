@@ -47,6 +47,7 @@ export default function DocumentosAuxiliaresPage() {
   const [documentos, setDocumentos] = useState<DocumentoAuxiliar[]>([])
   const [loading, setLoading] = useState(true)
   const [filtroTipo, setFiltroTipo] = useState<TipoDocumento | 'TODOS'>('TODOS')
+  const [selectedDoc, setSelectedDoc] = useState<string>('')
   const [stats, setStats] = useState({
     total: 0,
     pedidosVenda: 0,
@@ -259,11 +260,12 @@ export default function DocumentosAuxiliaresPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Tipo de Documento</label>
-              <Select>
+              <Select onValueChange={(value) => setFiltroTipo(value as TipoDocumento | 'TODOS')} value={filtroTipo}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o tipo" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="TODOS">Todos</SelectItem>
                   <SelectItem value="PEDIDO_VENDA">Pedido de Venda</SelectItem>
                   <SelectItem value="ORCAMENTO">Orçamento</SelectItem>
                   <SelectItem value="NOTA_ENTREGA">Nota de Entrega</SelectItem>
@@ -276,7 +278,7 @@ export default function DocumentosAuxiliaresPage() {
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Pedido/Orçamento</label>
-              <Select>
+              <Select onValueChange={setSelectedDoc} value={selectedDoc}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione" />
                 </SelectTrigger>

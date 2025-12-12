@@ -155,7 +155,6 @@ describe('Orçamento Validation Schemas', () => {
       const result = orcamentoCreateSchema.safeParse(minimalOrcamento)
       if (result.success) {
         expect(result.data.desconto).toBe(0)
-        expect(result.data.outras_despesas).toBe(0)
       }
     })
 

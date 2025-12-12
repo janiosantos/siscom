@@ -149,7 +149,7 @@ export default function OrcamentosPage() {
         </div>
         <div className="flex gap-2">
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+            <DropdownMenuTrigger>
               <Button variant="outline" className="flex items-center gap-2">
                 <Download className="h-4 w-4" />
                 Exportar

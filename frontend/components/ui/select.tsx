@@ -16,8 +16,8 @@ export function Select({ value, onValueChange, children, disabled }: SelectProps
   React.useEffect(() => {
     // Find the selected option's label
     React.Children.forEach(children, (child) => {
-      if (React.isValidElement(child) && child.props.value === value?.toString()) {
-        setSelectedLabel(child.props.children)
+      if (React.isValidElement<{ value: string; children: React.ReactNode }>(child) && child.props.value === value?.toString()) {
+        setSelectedLabel(String(child.props.children))
       }
     })
   }, [value, children])
@@ -46,7 +46,7 @@ export function Select({ value, onValueChange, children, disabled }: SelectProps
           <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-md">
             <div className="max-h-60 overflow-auto p-1">
               {React.Children.map(children, (child) => {
-                if (React.isValidElement(child)) {
+                if (React.isValidElement<{ value: string }>(child)) {
                   return React.cloneElement(child as React.ReactElement<any>, {
                     onClick: () => {
                       onValueChange(child.props.value)

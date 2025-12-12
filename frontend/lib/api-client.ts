@@ -45,10 +45,6 @@ class ApiClient {
       ...options.headers,
     }
 
-    if (this.token) {
-      headers['Authorization'] = `Bearer ${this.token}`
-    }
-
     const url = `${this.baseURL}${endpoint}`
 
     try {

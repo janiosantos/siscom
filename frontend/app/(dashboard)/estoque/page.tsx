@@ -44,7 +44,7 @@ import { estoqueApi } from "@/lib/api/estoque"
 import { produtosApi } from "@/lib/api/produtos"
 import { formatCurrency } from "@/lib/utils"
 import { toast } from "sonner"
-import { MovimentacaoEstoqueCreate } from "@/types"
+import { MovimentacaoEstoqueCreate, TipoMovimentacao } from "@/types"
 
 const tipoMovimentacaoOptions = [
   { value: "", label: "Todos os tipos" },
@@ -62,7 +62,7 @@ export default function EstoquePage() {
 
   const [formData, setFormData] = useState<MovimentacaoEstoqueCreate>({
     produto_id: 0,
-    tipo: "entrada",
+    tipo: TipoMovimentacao.ENTRADA,
     quantidade: 0,
     observacao: "",
   })
@@ -113,7 +113,7 @@ export default function EstoquePage() {
       setFormOpen(false)
       setFormData({
         produto_id: 0,
-        tipo: "entrada",
+        tipo: TipoMovimentacao.ENTRADA,
         quantidade: 0,
         observacao: "",
       })
@@ -187,14 +187,14 @@ export default function EstoquePage() {
               <Select
                 value={formData.tipo}
                 onValueChange={(value) =>
-                  setFormData({ ...formData, tipo: value })
+                  setFormData({ ...formData, tipo: value as TipoMovimentacao })
                 }
                 disabled={isLoading}
               >
-                <SelectItem value="entrada">Entrada</SelectItem>
-                <SelectItem value="saida">Saída</SelectItem>
-                <SelectItem value="ajuste">Ajuste</SelectItem>
-                <SelectItem value="devolucao">Devolução</SelectItem>
+                <SelectItem value={TipoMovimentacao.ENTRADA}>Entrada</SelectItem>
+                <SelectItem value={TipoMovimentacao.SAIDA}>Saída</SelectItem>
+                <SelectItem value={TipoMovimentacao.AJUSTE}>Ajuste</SelectItem>
+                <SelectItem value={TipoMovimentacao.TRANSFERENCIA}>Transferência</SelectItem>
               </Select>
             </div>
 

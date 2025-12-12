@@ -1,53 +1,29 @@
-FROM node:18-slim
+FROM node:20-slim
 
-# Instalar dependências do sistema
+# Dependências do sistema
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y install --no-install-recommends \
-        git \
-        curl \
-        wget \
-        zsh \
-        vim \
-        nano \
-        sudo \
-        ca-certificates \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+  && apt-get -y install --no-install-recommends \
+    git curl wget zsh vim nano sudo ca-certificates \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
 
-# Criar usuário não-root
 ARG USERNAME=node
-ARG USER_UID=1000
-ARG USER_GID=$USER_UID
 
-# O usuário 'node' já existe na imagem node oficial, apenas configurar sudo
-RUN echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
-    && chmod 0440 /etc/sudoers.d/$USERNAME
+# Sudo sem senha para o usuário node (já existe na imagem)
+RUN echo ${USERNAME} ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/${USERNAME} \
+  && chmod 0440 /etc/sudoers.d/${USERNAME}
 
-# Instalar Oh My Zsh
-USER $USERNAME
-RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
-
-# Instalar ferramentas globais do Node.js
-USER root
-RUN npm install -g \
-    vercel \
-    next \
-    eslint \
-    prettier \
-    typescript
-
+# Corepack (pnpm/yarn) sem "npm install -g"
 RUN corepack enable \
   && corepack prepare pnpm@latest --activate \
-  && corepack prepare yarn@stable --activate \
-  && npm i -g vercel
+  && corepack prepare yarn@stable --activate
 
-# Configurar diretório de trabalho
+# Workspace
 WORKDIR /workspace
 
-# Mudar para usuário node
-USER $USERNAME
-
-# Configurar prompt do zsh
-RUN echo 'export PS1="%F{cyan}⚡ frontend%f %F{blue}%~%f $ "' >> ~/.zshrc
+# Oh My Zsh
+USER ${USERNAME}
+RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended \
+  && echo 'export PS1="%F{cyan}⚡ frontend%f %F{blue}%~%f $ "' >> ~/.zshrc
 
 CMD ["sleep", "infinity"]

@@ -43,7 +43,7 @@ export const pedidoVendaCreateSchema = z.object({
   endereco_entrega: z.string()
     .max(500, 'Endereço limitado a 500 caracteres')
     .optional()
-    .refine((val, ctx) => {
+    .refine((val: string | undefined, ctx: z.RefinementCtx) => {
       // Se tipo_entrega for ENTREGA, endereco é obrigatório
       const tipoEntrega = (ctx as any).parent?.tipo_entrega
       if (tipoEntrega === 'ENTREGA' && !val) {

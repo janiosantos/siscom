@@ -73,6 +73,45 @@ export interface ProdutoCreate {
 
 export interface ProdutoUpdate extends Partial<ProdutoCreate> {}
 
+// ========== Cliente Types ==========
+
+export interface Cliente {
+  id: number
+  nome: string
+  razao_social?: string
+  cpf_cnpj: string
+  email?: string
+  telefone?: string
+  endereco?: string
+  numero?: string
+  complemento?: string
+  bairro?: string
+  cidade?: string
+  estado?: string
+  cep?: string
+  ativo: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface ClienteCreate {
+  nome: string
+  razao_social?: string
+  cpf_cnpj: string
+  email?: string
+  telefone?: string
+  endereco?: string
+  numero?: string
+  complemento?: string
+  bairro?: string
+  cidade?: string
+  estado?: string
+  cep?: string
+  ativo?: boolean
+}
+
+export interface ClienteUpdate extends Partial<ClienteCreate> {}
+
 // ========== Categoria Types ==========
 
 export interface Categoria {
@@ -108,11 +147,14 @@ export interface ItemVenda {
 export interface Venda {
   id: number
   cliente_id?: number
+  cliente?: { id: number; nome: string }
   vendedor_id: number
   data_venda: string
   subtotal: number
   desconto: number
   valor_total: number
+  total_produtos: number
+  total_final: number
   forma_pagamento: string
   status: StatusVenda
   observacoes?: string
@@ -130,12 +172,16 @@ export interface VendaCreate {
   itens: ItemVendaCreate[]
 }
 
+export interface VendaUpdate extends Partial<VendaCreate> {}
+
 export interface ItemVendaCreate {
   produto_id: number
   quantidade: number
   preco_unitario: number
   desconto_item?: number
 }
+
+export type VendaItemCreate = ItemVendaCreate
 
 // ========== Estoque Types ==========
 
@@ -156,7 +202,17 @@ export interface MovimentacaoEstoque {
   valor_total?: number
   observacao?: string
   usuario_id: number
+  data_movimentacao: string
   created_at: string
+}
+
+export interface MovimentacaoEstoqueCreate {
+  produto_id: number
+  tipo: TipoMovimentacao
+  quantidade: number
+  custo_unitario?: number
+  valor_total?: number
+  observacao?: string
 }
 
 // ========== Financeiro Types ==========
@@ -174,6 +230,8 @@ export interface ContaPagar {
   descricao: string
   valor_original: number
   valor_pago: number
+  valor?: number
+  venda_id?: number
   data_emissao: string
   data_vencimento: string
   data_pagamento?: string
@@ -185,21 +243,46 @@ export interface ContaPagar {
   updated_at: string
 }
 
+export interface ContaPagarCreate {
+  fornecedor_id: number
+  descricao: string
+  valor_original: number
+  data_emissao: string
+  data_vencimento: string
+  documento?: string
+  categoria_financeira?: string
+  observacoes?: string
+}
+
 export interface ContaReceber {
   id: number
   cliente_id?: number
   descricao: string
   valor_original: number
   valor_recebido: number
+  valor?: number
+  venda_id?: number
   data_emissao: string
   data_vencimento: string
   data_recebimento?: string
+  data_pagamento?: string
   status: StatusFinanceiro
   documento?: string
   categoria_financeira?: string
   observacoes?: string
   created_at: string
   updated_at: string
+}
+
+export interface ContaReceberCreate {
+  cliente_id?: number
+  descricao: string
+  valor_original: number
+  data_emissao: string
+  data_vencimento: string
+  documento?: string
+  categoria_financeira?: string
+  observacoes?: string
 }
 
 // ========== Pagination Types ==========

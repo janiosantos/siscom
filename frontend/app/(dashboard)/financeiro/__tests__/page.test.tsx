@@ -185,7 +185,7 @@ describe('FinanceiroPage', () => {
 
       await waitFor(() => {
         const saldoElement = screen.getByText(/saldo líquido/i).nextElementSibling
-        expect(saldoElement).toHaveClass(/text-red/i)
+        expect(saldoElement).toHaveClass('text-red-500')
       })
     })
   })

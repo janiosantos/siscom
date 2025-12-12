@@ -46,8 +46,8 @@
         "editor.defaultFormatter": "esbenp.prettier-vscode",
         "editor.formatOnSave": true,
         "editor.codeActionsOnSave": {
-          "source.fixAll.eslint": true,
-          "source.organizeImports": true
+          "source.fixAll.eslint": "explicit",
+          "source.organizeImports": "explicit"
         },
 
         // Editor
@@ -176,7 +176,7 @@
   },
 
   // Run commands after container creation
-  "postCreateCommand": "npm install && npm run build",
+  "postCreateCommand": "sudo chown -R node:node /workspace/node_modules 2>/dev/null || true; npm install; npm run type-check || true",
 
   // Run commands on container start
   "postStartCommand": "echo '🚀 SISCOM Frontend Dev Container Ready!' && node --version && npm --version",

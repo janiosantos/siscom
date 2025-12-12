@@ -79,7 +79,7 @@ class ApiClient {
           toast.error("Recurso não encontrado")
         } else if (error.response?.status === 422) {
           toast.error("Dados inválidos")
-        } else if (error.response?.status >= 500) {
+        } else if ((error.response?.status ?? 0) >= 500) {
           toast.error("Erro no servidor")
         }
 

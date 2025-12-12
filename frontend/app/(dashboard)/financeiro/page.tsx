@@ -320,7 +320,7 @@ export default function FinanceiroPage() {
                     )}
                   </TableCell>
                   <TableCell className="text-right font-medium">
-                    {formatCurrency(conta.valor)}
+                    {formatCurrency(conta.valor ?? conta.valor_original)}
                   </TableCell>
                   <TableCell>
                     <Badge variant={getStatusVariant(conta.status)}>
@@ -328,7 +328,7 @@ export default function FinanceiroPage() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    {conta.status === "pendente" && (
+                    {conta.status === "PENDENTE" && (
                       <PermissionGuard permission="financeiro.update">
                         <Button
                           size="sm"
@@ -343,7 +343,7 @@ export default function FinanceiroPage() {
                         </Button>
                       </PermissionGuard>
                     )}
-                    {conta.status === "pago" && conta.data_pagamento && (
+                    {conta.status === "PAGO" && conta.data_pagamento && (
                       <p className="text-xs text-muted-foreground">
                         Pago em{" "}
                         {new Date(conta.data_pagamento).toLocaleDateString(

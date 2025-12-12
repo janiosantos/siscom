@@ -51,6 +51,14 @@ export const orcamentoCreateSchema = z.object({
 
 export const orcamentoUpdateSchema = orcamentoCreateSchema.partial().omit({ itens: true })
 
+export const aprovarOrcamentoSchema = z.object({
+  id: z.number({ message: 'ID do orçamento é obrigatório' }),
+})
+
+export const converterOrcamentoSchema = z.object({
+  id: z.number({ message: 'ID do orçamento é obrigatório' }),
+})
+
 export type OrcamentoCreateInput = z.infer<typeof orcamentoCreateSchema>
 export type OrcamentoUpdateInput = z.infer<typeof orcamentoUpdateSchema>
 export type ItemOrcamentoInput = z.infer<typeof itemOrcamentoSchema>
